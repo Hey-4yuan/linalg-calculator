@@ -66,6 +66,45 @@ export function extractJson(text: string): unknown | null {
   return parsed === NOT_JSON ? null : parsed;
 }
 
+/**
+ * 从推理模型的思维链里找「最像答案」的那段 JSON。
+ *
+ * 思维链和正文不一样：里面会有大量中间猜测（"可能是 4x4？""也许 3 列"），
+ * 还会复述提示词里的示例。取第一个 JSON 基本必错，所以这里从**尾部**往前找，
+ * 并且优先挑「带 data 或 box 字段」的数组 —— 那才是模型最终的结论。
+ */
+export function extractJsonFromReasoning(text: string): unknown | null {
+  // 先试整体解析（有的模型直接吐纯 JSON）
+  const direct = tryParse(text.trim());
+  if (direct !== NOT_JSON) return direct;
+
+  // 收集所有能解析的 [ ... ] / { ... } 片段
+  const candidates: { at: number; value: unknown }[] = [];
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    if (ch !== "[" && ch !== "{") continue;
+    const sliced = sliceBalanced(text, i);
+    if (!sliced) continue;
+    const parsed = tryParse(sliced);
+    if (parsed === NOT_JSON) continue;
+    candidates.push({ at: i, value: parsed });
+    i += sliced.length - 1; // 跳过已解析的整段
+  }
+  if (candidates.length === 0) return null;
+
+  // 越靠后越可能是结论；同等情况下优先带 data / box 的
+  const scored = candidates.map((c) => {
+    const s = JSON.stringify(c.value);
+    let score = c.at / text.length; // 位置权重 0..1
+    if (s.includes('"data"')) score += 1.2;
+    if (s.includes('"box"')) score += 0.6;
+    if (s.includes('"rows"')) score += 0.2;
+    return { ...c, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0].value;
+}
+
 const NOT_JSON = Symbol("not-json");
 
 function tryParse(text: string): unknown | typeof NOT_JSON {
@@ -268,19 +307,40 @@ export function normalizeOcrItem(obj: Record<string, unknown>): OcrItem | null {
 /**
  * 解析模型输出。形状完全不可用时抛错（错误信息带原文片段，方便反馈给模型/服务商）。
  */
-export function parseOcrResponse(raw: string): OcrParseResult {  const text = stripCodeFence(raw || "");
+export function parseOcrResponse(raw: string): OcrParseResult {
+  const text = stripCodeFence(raw || "");
   if (!text) throw new Error("模型返回内容为空");
 
-  const payload = extractJson(text);
-  if (payload === null) {
-    const head = text.slice(0, 120).replace(/\s+/g, " ");
-    throw new Error(`模型返回的不是合法 JSON：${head}${text.length > 120 ? "…" : ""}`);
+  // 正常输出走 extractJson；推理模型的思维链走 extractJsonFromReasoning。
+  // 思维链里常先出现「可能是 ["1","2"]」这类片段，extractJson 会抓到它 ——
+  // 所以要比较两种取法的产出，宁可多花一点 CPU，也不能静默返回 0 项。
+  const direct = extractJson(text);
+  const fromReasoning = extractJsonFromReasoning(text);
+
+  const directObjs = direct === null ? [] : toItemArray(direct);
+  const reasoningObjs = fromReasoning === null ? [] : toItemArray(fromReasoning);
+
+  let objs = directObjs;
+  let usedReasoning = false;
+  if (directObjs.length === 0 && reasoningObjs.length > 0) {
+    objs = reasoningObjs;
+    usedReasoning = true;
   }
 
-  const objs = toItemArray(payload);
+  if (objs.length === 0) {
+    if (direct === null && fromReasoning === null) {
+      const head = text.slice(0, 120).replace(/\s+/g, " ");
+      throw new Error(`模型返回的不是合法 JSON：${head}${text.length > 120 ? "…" : ""}`);
+    }
+    return { items: [], notes: ["模型返回的 JSON 里没有可用的矩阵结构"] };
+  }
+
   const items: OcrItem[] = [];
   const notes: string[] = [];
 
+  if (usedReasoning) {
+    notes.push("模型只输出了思维链，结果是从思维链里提取的，请务必核对");
+  }
   for (const obj of objs) {
     const item = normalizeOcrItem(obj);
     if (item) items.push(item);
@@ -290,18 +350,58 @@ export function parseOcrResponse(raw: string): OcrParseResult {  const text = st
   return { items, notes };
 }
 
+/** 模型给出的归一化位置（0-1000，相对图片宽高） */
+export interface OcrBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** 尺寸探测结果：行列数 + 可选位置 */
+export interface ProbeHint {
+  rows: number;
+  cols: number;
+  box?: OcrBox;
+}
+
+function parseBox(raw: unknown): OcrBox | undefined {
+  if (!isRecord(raw)) return undefined;
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : NaN);
+  const x = num(raw.x);
+  const y = num(raw.y);
+  const w = num(raw.w);
+  const h = num(raw.h);
+  if ([x, y, w, h].some(Number.isNaN)) return undefined;
+  if (w <= 0 || h <= 0) return undefined;
+  // 夹到图片范围内，并留一点余量：模型给的位置普遍偏紧，宁可多带一圈
+  const mx = w * 0.06;
+  const my = h * 0.06;
+  const nx = Math.max(0, x - mx);
+  const ny = Math.max(0, y - my);
+  const nw = Math.min(1000 - nx, w + mx * 2);
+  const nh = Math.min(1000 - ny, h + my * 2);
+  if (nw < 40 || nh < 40) return undefined; // 太小的框基本都是误报
+  return {
+    x: Math.round(nx),
+    y: Math.round(ny),
+    w: Math.round(nw),
+    h: Math.round(nh),
+  };
+}
+
 /**
- * 解析「尺寸探测」的返回：[{"rows":5,"cols":5}, …]
+ * 解析「定位 + 尺寸探测」的返回：[{"rows":6,"cols":6,"box":{...}}, …]
  *
  * 为什么要单独探一次：模型在直接输出 data 时经常「少读一行/一列」——
- * 生成 JSON 时按 token 走，写错了也没机会回头数。先让它只回答尺寸、
- * 用这个结果去约束主识别，5 阶以上明显更稳。
+ * 生成 JSON 时按 token 走，写错了也没机会回头数。先让它只回答尺寸和位置，
+ * 用尺寸约束主识别、用位置让客户端裁出目标区域，5 阶以上明显更稳。
  * 解析失败返回 null（调用方退化为不带提示的直接识别）。
  */
-export function parseDimensionProbe(raw: string): { rows: number; cols: number }[] | null {
+export function parseDimensionProbe(raw: string): ProbeHint[] | null {
   const text = stripCodeFence(raw || "");
   if (!text) return null;
-  const payload = extractJson(text);
+  const payload = extractJson(text) ?? extractJsonFromReasoning(text);
   if (payload === null) return null;
 
   const list = Array.isArray(payload)
@@ -312,7 +412,7 @@ export function parseDimensionProbe(raw: string): { rows: number; cols: number }
         ? [payload]
         : [];
 
-  const hints: { rows: number; cols: number }[] = [];
+  const hints: ProbeHint[] = [];
   for (const entry of list) {
     if (!isRecord(entry)) continue;
     const rows = Number(entry.rows);
@@ -320,7 +420,52 @@ export function parseDimensionProbe(raw: string): { rows: number; cols: number }
     if (!Number.isFinite(rows) || !Number.isFinite(cols)) continue;
     const r = Math.round(rows);
     const c = Math.round(cols);
-    if (r >= 1 && r <= 20 && c >= 1 && c <= 20) hints.push({ rows: r, cols: c });
+    if (r >= 1 && r <= 20 && c >= 1 && c <= 20) {
+      const box = parseBox(entry.box);
+      hints.push(box ? { rows: r, cols: c, box } : { rows: r, cols: c });
+    }
   }
   return hints.length > 0 ? hints : null;
+}
+
+/** 单元格墨迹占比超过这个值，就认为"那里有东西"（实测：空白纸面 0–1%，有数字 8–10%） */
+export const INK_THRESHOLD = 0.04;
+
+/**
+ * 像素自检：把「模型说的 0」和「图上有没有墨」对一遍。
+ *
+ * 为什么需要：模型会把没看清的格子直接填 0，而且结果稳定（重跑多次一模一样），
+ * 用户完全看不出哪里错了。这里用裁剪图的灰度分布做一次交叉校验 ——
+ * 格子里明显有笔画却报 0 的，逐个列出来让用户核对。
+ *
+ * @param ink 每格的墨迹占比（0~1），形状 [rows][cols]
+ * @param data 模型解析出的二维数组
+ * @returns 疑似漏读的坐标（0 起）与提示文案
+ */
+export function auditCellInk(
+  ink: number[][],
+  data: string[][]
+): { suspicious: [number, number][]; warning?: string } {
+  const rows = Math.min(ink.length, data.length);
+  const suspicious: [number, number][] = [];
+
+  for (let r = 0; r < rows; r += 1) {
+    const cols = Math.min(ink[r].length, data[r].length);
+    for (let c = 0; c < cols; c += 1) {
+      const value = (data[r][c] ?? "").trim();
+      const isZero = value === "0" || value === "";
+      if (isZero && ink[r][c] >= INK_THRESHOLD) suspicious.push([r, c]);
+    }
+  }
+
+  if (suspicious.length === 0) return { suspicious };
+  const first = suspicious
+    .slice(0, 5)
+    .map(([r, c]) => `第${r + 1}行第${c + 1}列`)
+    .join("、");
+  const more = suspicious.length > 5 ? ` 等 ${suspicious.length} 处` : "";
+  return {
+    suspicious,
+    warning: `这 ${suspicious.length} 个位置图上有内容但被读成 0（${first}${more}），请重点核对`,
+  };
 }

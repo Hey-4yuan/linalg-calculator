@@ -20,9 +20,27 @@ export default function StepsAccordion({
   augmentedCol = false,
 }: StepsAccordionProps) {
   const [open, setOpen] = useState(defaultOpen);
-  const [expandedAll, setExpandedAll] = useState(false);
+  // 展开状态由父级统一持有。
+  // 旧实现把 initial state 塞进 StepItem 的 useState(defaultExpanded)，
+  // 父组件翻「全部展开」时 prop 变了但 state 不会跟着变 —— 这就是点了没反应的原因。
+  const [openSteps, setOpenSteps] = useState<Set<number>>(() => new Set());
 
   if (steps.length === 0) return null;
+
+  const allExpanded = steps.length > 0 && openSteps.size === steps.length;
+
+  const toggleStep = (index: number) => {
+    setOpenSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    setOpenSteps(allExpanded ? new Set() : new Set(steps.map((_, i) => i)));
+  };
 
   return (
     <div className="border border-border/60 rounded-lg overflow-hidden">
@@ -49,12 +67,8 @@ export default function StepsAccordion({
       {open && (
         <div className="p-4 space-y-3">
           <div className="flex justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setExpandedAll(!expandedAll)}
-            >
-              {expandedAll ? "全部折叠" : "全部展开"}
+            <Button variant="ghost" size="sm" onClick={toggleAll}>
+              {allExpanded ? "全部折叠" : "全部展开"}
             </Button>
           </div>
 
@@ -65,7 +79,8 @@ export default function StepsAccordion({
                 index={idx}
                 step={step}
                 fractionMode={fractionMode}
-                defaultExpanded={expandedAll}
+                expanded={openSteps.has(idx)}
+                onToggle={() => toggleStep(idx)}
                 augmentedCol={augmentedCol}
               />
             ))}
@@ -80,21 +95,22 @@ function StepItem({
   index,
   step,
   fractionMode,
-  defaultExpanded,
+  expanded,
+  onToggle,
   augmentedCol,
 }: {
   index: number;
   step: RowStep;
   fractionMode: boolean;
-  defaultExpanded: boolean;
+  expanded: boolean;
+  onToggle: () => void;
   augmentedCol: boolean;
 }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-
   return (
     <div className="border border-border/40 rounded-md overflow-hidden">
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={onToggle}
+        aria-expanded={expanded}
         className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/40 transition-colors text-left"
       >
         <span className="text-xs bg-primary/10 text-primary font-mono px-2 py-0.5 rounded shrink-0">

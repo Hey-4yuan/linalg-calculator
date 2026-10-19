@@ -252,7 +252,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
   <div class="meta">
     <span class="pill">文档版本 v1.0</span>
     <span class="pill">产物构建 2026-10-18</span>
-    <span class="pill">生成于 2026-10-19 17:52</span>
+    <span class="pill">生成于 2026-10-19 22:29</span>
     <span class="pill">Ctrl/⌘ + P 可打印为 PDF</span>
   </div>
   <section class="doc-sec" id="doc-overview"><h1 id="_1">线性代数计算器</h1>
@@ -294,7 +294,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <blockquote>
 <p>两种前端产物来自同一份源码：Web 版是「单文件内联」，APK 版是「分块资源 + Capacitor 壳」。功能一致，存储键同格式。</p>
 <p>v1.2 相比 v1.0 修了两个问题：方程组「无解」时增广矩阵秩显示错误（L13）、OCR 请求无超时（L4）。改动在源码里，不是对压缩产物的补丁。
-v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风险提示）和结果卡「复制」按钮；v1.6 修了 OCR 只能认出 2 阶（提示词与解析器都改成数组契约，支持行列式与一图多题）；v1.7 修了 5 阶仍出低阶（图片默认整图、裁剪坐标一致、detail=high、先探尺寸）。</p>
+v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风险提示）和结果卡「复制」按钮；v1.6 修了 OCR 只能认出 2 阶（提示词与解析器都改成数组契约，支持行列式与一图多题）；v1.7 修了 5 阶仍出低阶（图片默认整图、裁剪坐标一致、detail=high、先探尺寸）；v1.8 修了「全部展开」无反应，并定位到 OCR 真正的原因 —— 推理模型（deepseek-flash）把 token 全花在思维链上、正文为空，现在会回落读取思维链，且先让模型报位置再自动裁图（整页照片从 4 分半降到 0.4 秒）。</p>
 </blockquote>
 <h2 id="overview-h2">二、功能总览</h2>
 <table>
@@ -375,7 +375,7 @@ API Key:  自行申请（见附图手册）
 │       │   └── scripts/         #   make-standalone / make-single-file
 │       ├── android/             # Capacitor 6 工程 + build-apk.sh
 │       └── single-file/         # 单文件产物副本
-├── tests/build-and-test.mjs     # 78 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析）+ 11 项 OCR 端到端
+├── tests/build-and-test.mjs     # 96 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检）+ 13 项 OCR 端到端 + 9 项折叠端到端
 ├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
 ├── .github/workflows/           # GitHub Pages 自动部署
 ├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）
@@ -1116,7 +1116,7 @@ API Key:  自行申请（见附图手册）
 </tr>
 <tr>
 <td>确认并识别</td>
-<td>导出 JPEG 后上传识别（会先后发两次请求：先问行列数，再逐格识别，比之前慢 1–3 秒）</td>
+<td>导出 JPEG 后上传识别（会先后发两次请求：先定位与数行列，再自动裁出那一块逐格识别）</td>
 </tr>
 </tbody>
 </table>
@@ -1177,16 +1177,19 @@ API Key:  自行申请（见附图手册）
 </tbody>
 </table>
 <p><strong>为什么要选</strong>：计算器一个面板只放得下一个矩阵，一次全塞进去没有意义。拍整页作业时，先挑你要算的那一道。</p>
+<p><strong>现在会自动裁图</strong>：识别前会先问模型"这道题在图里什么位置"，然后把那一块单独裁出来送去识别。拍整页作业时不用再手动拖裁剪框了 —— 模型会自己找到式子。当然，手动裁剪仍然可以叠加使用，两者不冲突。</p>
 <p>尺寸以<strong>图片实际行列数</strong>为准：四阶行列式就是 4×4，不会被截成 2×2（v1.6 修的问题）。</p>
 <h3 id="user-h24">7.5 识别结果的处理</h3>
 <ul>
 <li>识别成功：直接覆盖当前矩阵，并提示「识别成功：A 矩阵 3×3」；</li>
 <li><strong>部分单元格无法解析</strong>（模型返回了 <code>1/0</code>、乱码、<code>null</code> 等）：这些格子被置为 <strong>0</strong>，并弹出「有 N 个单元格识别失败，已置为 0，请核对」——<strong>务必人工核对这几个格子</strong>；</li>
 <li><strong>模型给的尺寸与内容不符</strong>：以实际内容为准（不会按声明的尺寸硬塞），并提示「模型声明 4 行，实际 2 行，已按实际处理」；</li>
+<li><strong>图上有字却被读成 0</strong>：会提示「这 N 个位置图上有内容但被读成 0（第x行第y列…），请重点核对」。这是客户端拿图片像素复核出来的，<strong>不是模型自述</strong>，出现就说明模型确实漏读了；</li>
 <li><strong>行列式不是方阵</strong>（比如竖线被误读）：降级成普通矩阵并提示；</li>
 <li>网络错误、鉴权失败、额度耗尽等：显示服务端返回的状态码与内容，例如 <code>API 请求失败 (401): ...</code>、<code>应用额度已耗尽，请联系应用开发者</code>。</li>
 </ul>
 <blockquote>
+<p><strong>关于模型选择</strong>：如果用的是<strong>推理型</strong>模型（<code>deepseek-flash</code> 这类会先"思考"再回答的），它可能把预算全花在思考上导致结果为空，我们会从思维链里提取并提示"请务必核对"。经验上：2×2～3×3 用哪个都行；<strong>四阶以上建议用非推理的视觉模型</strong>（<code>gpt-4o-mini</code>、<code>qwen-vl-max</code> 等），识别更稳也更快。</p>
 <p>识别只是「录入加速器」，不改变计算逻辑。识别后的一切计算仍是本地精确运算。</p>
 </blockquote>
 <h2 id="user-h25">8. 显示、精度与复制</h2>
@@ -2224,6 +2227,62 @@ Content-Type: application/json
 </tbody>
 </table>
 <p>验证方式：<code>node tests/ocr-e2e.mjs</code>（假模型 + headless Chrome 真点界面），11 项断言覆盖「默认整图 / detail=high / 尺寸提示注入 / 5×5 回填」。这套测试不需要真实 Key。</p>
+<p><strong>第三轮（v1.8）：用真实 Key 实测，发现真正的拦路虎是「推理模型」。</strong></p>
+<table>
+<thead>
+<tr>
+<th>观测</th>
+<th>数据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>整页照片（1440×1920，含 D/D1/D2 多题）</td>
+<td>4 分 33 秒；返回 14 个"行列式"，其中含 <code>...</code> 幻觉</td>
+</tr>
+<tr>
+<td>裁到 6×6</td>
+<td>尺寸正确，数值有错；同一张图连跑 4 次、放大 2×/3× 均字节级一致 → 稳定读错</td>
+</tr>
+<tr>
+<td>HTTP 响应本体</td>
+<td><code>finish_reason: "length"</code>、<code>completion_tokens</code> 打满、<code>content</code> 为空串、<code>reasoning_content</code> 上万字</td>
+</tr>
+</tbody>
+</table>
+<p><code>deepseek-flash</code> 属于<strong>推理模型</strong>：先产思维链（<code>reasoning_content</code>）再产正文（<code>content</code>），思考预算耗尽时正文直接为空。旧代码只读 <code>content</code>，于是拿到空串 → 报「格式异常」。<strong>这条链路此前从未真正跑通</strong>，之前所有"验证"都建立在假模型返回 <code>content</code> 的前提上 —— 这是测试设计的失误：假模型应该复刻真实响应形态。</p>
+<p>修复要点：</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>content</code> 为空</td>
+<td>回落读 <code>reasoning_content</code>，并在 <code>notes</code> 里写明「结果来自思维链，请务必核对」</td>
+</tr>
+<tr>
+<td>思维链里全是中间猜测</td>
+<td><code>extractJsonFromReasoning</code> 从尾部往前扫描，优先挑含 <code>data</code> / <code>box</code> 的片段（结论通常在最后）</td>
+</tr>
+<tr>
+<td>思维链里先出现的碎片 <code>["1","2"]</code> 被当成答案</td>
+<td><code>parseOcrResponse</code> 同时跑 direct / reasoning 两种提取，取产出条数多的那个</td>
+</tr>
+<tr>
+<td>思考吃光预算</td>
+<td><code>max_tokens: 8192</code></td>
+</tr>
+<tr>
+<td>整页照片又慢又乱</td>
+<td>「先定位再裁剪」：768px 小图问 <code>box</code>（0–1000 归一化）→ 客户端从原图裁 → 只送裁块。实测 4 分 33 秒 → 0.4 秒</td>
+</tr>
+</tbody>
+</table>
+<p><strong>教训（比前两轮更值得记）</strong>：用假模型做端到端测试时，假模型必须复刻<strong>真实响应的结构与失败模式</strong>（空 <code>content</code>、<code>finish_reason=length</code>、思维链塞满猜测），否则测试会给你虚假的安全感。</p>
 <h2 id="tech-h27">8. 存储与状态</h2>
 <p>全部状态在 <code>localStorage</code>，无后端、无账号体系（<code>window.userId</code> 为 <code>guest</code>）。</p>
 <p>存储键带宿主前缀，由 <code>__miaoda_${appId || "__global__"}__:</code> + 业务键拼接：</p>
@@ -3663,6 +3722,18 @@ python docs/build_docs.py     # → docs/手册.html
 <td>用不支持 <code>image_url.detail</code> 的兼容接口</td>
 <td>首次 400 后自动去掉 detail 重试，仍能识别成功</td>
 </tr>
+<tr>
+<td>OCR-28</td>
+<td><strong>P0</strong></td>
+<td>用模型不擅长的图（如 6 阶手写行列式）识别</td>
+<td>若模型把有笔画的格子读成 0，界面会提示「这 N 个位置图上有内容但被读成 0（第x行第y列…），请重点核对」，而不是静默接受</td>
+</tr>
+<tr>
+<td>OCR-29</td>
+<td>P1</td>
+<td>拍整页作业（含多道题与草稿）</td>
+<td>只发两次请求；识别的是题目主体而不是草稿里的一堆碎片；总耗时在数秒内（对比旧版整页要 4 分钟且超时）</td>
+</tr>
 </tbody>
 </table>
 <h2 id="test-h13">8. 界面与交互用例</h2>
@@ -3879,7 +3950,7 @@ python docs/build_docs.py     # → docs/手册.html
 <pre><code class="language-bash">node tests/build-and-test.mjs
 </code></pre>
 <p>机制：用 esbuild 把 <code>matrix-ops.ts</code>、<code>fraction.ts</code>、<code>base-path.ts</code>、<code>pwa.ts</code>、<code>copy-text.ts</code>、<code>ocr-parse.ts</code>、<code>ocr-prompt.ts</code> 打成一个 CJS 包（<strong>必须同一次打包</strong>，否则两份 <code>Fraction</code> 类身份不同，<code>instanceof</code> 会失效），再跑断言。</p>
-<p>覆盖 78 项：</p>
+<p>覆盖 96 项：</p>
 <table>
 <thead>
 <tr>
@@ -3956,12 +4027,26 @@ python docs/build_docs.py     # → docs/手册.html
 <td>OCR-06</td>
 <td>尺寸探测解析（5×5、单对象、items 包装、看不懂返回 null、越界过滤）+ 尺寸提示注入</td>
 </tr>
+<tr>
+<td>OCR-07</td>
+<td>定位框：解析 box、留余量、不越界、宽高为 0/过小丢弃、越界夹回、提示词要求 box</td>
+</tr>
+<tr>
+<td>OCR-08</td>
+<td>推理模型：思维链提取、只给猜测时不静默返回、思维链里的定位</td>
+</tr>
+<tr>
+<td>OCR-09</td>
+<td>像素自检：检出「图上有墨却报 0」、点名坐标、空白格不误报、读数非 0 不报</td>
+</tr>
 </tbody>
 </table>
 <blockquote>
-<p>另有<strong>端到端</strong>冒烟：<code>node tests/ocr-e2e.mjs</code>（11 项）。起一个假 OpenAI 接口 + headless Chrome 真点界面，验证「默认整图 / detail=high / 尺寸提示 / 5×5 回填」，<strong>不需要真实 API Key</strong>。</p>
+<p>另有<strong>端到端</strong>冒烟：<code>node tests/ocr-e2e.mjs</code>（13 项）。假接口故意模仿<strong>推理模型</strong>的返回形态（<code>content</code> 为空、<code>reasoning_content</code> 塞满猜测、<code>finish_reason=length</code>），验证「默认整图 / detail=high / 尺寸提示 / 定位裁剪 / 5×5 回填」。
+步骤面板另有 <code>node tests/steps-accordion-e2e.mjs</code>（9 项）：真点「全部展开」，验证展开数、按钮文案、矩阵行数、收回、单步独立切换。
+两者都<strong>不需要真实 API Key</strong>，但需要本机有 Chrome。</p>
 </blockquote>
-<p>预期输出：<code>结果：78 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
+<p>预期输出：<code>结果：96 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
 <h2 id="test-h18">附录 B：用 Python 交叉核对期望值</h2>
 <p>自动化校验的核心是用独立实现复算，避免「从程序输出反推期望值」。</p>
 <pre><code class="language-python">from fractions import Fraction as F

@@ -42,6 +42,26 @@ if (!fs.existsSync(path.join(ROOT, "线性代数计算器.html"))) {
   process.exit(1);
 }
 
+
+/** 从 dataURL 里读出 JPEG 的宽高（找 SOF0/1/2 段） */
+function jpegSize(dataUrl) {
+  try {
+    const b64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+    const buf = Buffer.from(b64, "base64");
+    let i = 2;
+    while (i < buf.length - 9) {
+      if (buf[i] !== 0xff) { i += 1; continue; }
+      const marker = buf[i + 1];
+      if (marker >= 0xc0 && marker <= 0xc3) {
+        return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
+      }
+      const len = buf.readUInt16BE(i + 2);
+      i += 2 + len;
+    }
+  } catch { /* 忽略 */ }
+  return null;
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------- 假视觉模型：按提示词判断是「尺寸探测」还是「正式识别」 ----------
@@ -70,25 +90,46 @@ const server = http.createServer((req, res) => {
   req.on("end", () => {
     let prompt = "";
     let detail = null;
+    let imgLen = 0;
+    let imgSize = null;
     try {
       const parsed = JSON.parse(body);
       const parts = parsed.messages?.[0]?.content ?? [];
       prompt = parts.find((p) => p.type === "text")?.text ?? "";
+      const imgUrl = parts.find((p) => p.type === "image_url")?.image_url?.url ?? "";
       detail = parts.find((p) => p.type === "image_url")?.image_url?.detail ?? null;
+      imgLen = imgUrl.length;
+      imgSize = jpegSize(imgUrl);
     } catch {
       /* 报文坏了就按空提示词处理 */
     }
-    const isProbe = prompt.includes("只回答图中有几个");
-    calls.push({ isProbe, detail, hasHint: prompt.includes("尺寸提示") });
+    const isProbe = prompt.includes("位置") && prompt.includes("box");
+    const wantsBox = prompt.includes('"box"');
+    calls.push({ isProbe, detail, hasHint: prompt.includes("尺寸提示"), wantsBox, imgLen, imgSize });
 
-    const content = isProbe
-      ? '[{"rows":5,"cols":5}]'
-      : JSON.stringify([
-          { kind: "determinant", rows: 5, cols: 5, data: FIVE, format: "numeric" },
-        ]);
+    // 用「推理模型」的返回形态应答：content 为空、只有 reasoning_content。
+    // 这正是 deepseek-flash 的真实行为，能同时验证思维链兜底。
+    const reasoningProbe =
+      '先看图：中间有一个大矩阵。数了一下是 5 行 5 列。位置大概在 x 280 y 300 宽 420 高 400。\n' +
+      '结论：[{"rows":5,"cols":5,"box":{"x":280,"y":300,"w":420,"h":400}}]';
+    const reasoningMain =
+      '需要逐行读出数字。第一行 3 1 0 2 1。第二行 1 4 2 0 3。第三行 0 2 5 1 2。' +
+      '第四行 2 0 1 3 4。第五行 1 3 2 4 5。所以是 5×5。\n' +
+      '最终答案：' + JSON.stringify([
+        { kind: "determinant", rows: 5, cols: 5, data: FIVE, format: "numeric" },
+      ]);
 
     res.writeHead(200, { ...cors, "Content-Type": "application/json" });
-    res.end(JSON.stringify({ choices: [{ message: { content } }] }));
+    res.end(JSON.stringify({
+      choices: [{
+        finish_reason: "length",
+        message: {
+          role: "assistant",
+          content: "",
+          reasoning_content: isProbe ? reasoningProbe : reasoningMain,
+        },
+      }],
+    }));
   });
 });
 
@@ -256,6 +297,14 @@ try {
   check("探测与主识别都使用 detail=high", probe?.detail === "high" && main?.detail === "high",
     JSON.stringify(calls.map((c) => c.detail)));
   check("主识别提示词带上了尺寸提示", main?.hasHint === true);
+  check("定位提示词要求 box", probe?.wantsBox === true);
+  // 原图是 900×700；裁剪后尺寸必然不同。用 JPEG 头里的宽高判断，比看字节数可靠
+  const mainSize = main?.imgSize;
+  check(
+    "主请求送的是裁剪后的图（不是整页原图）",
+    !!mainSize && !(mainSize.w === 900 && mainSize.h === 700),
+    `main=${JSON.stringify(mainSize)}`
+  );
 
   // 单元格不编辑时是 div（点进去才变 input），所以读 textContent
   const grid = await evaluate(`(() => {

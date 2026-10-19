@@ -61,10 +61,12 @@ const EXAMPLES_NUMERIC = `示例（注意尺寸各不相同，按图片实际行
 多矩阵 "A=..., B=..."（两个都输出） →
 [{"kind":"matrix","label":"A","rows":2,"cols":2,"data":[[1,0],[0,1]],"format":"numeric"},{"kind":"matrix","label":"B","rows":2,"cols":1,"data":[[2],[3]],"format":"numeric"}]`;
 
-/** 上一次探测得到的行列数，用来给主识别加约束 */
+/** 上一次探测得到的行列数 + 可选位置（位置用于客户端裁图） */
 export interface GridHint {
   rows: number;
   cols: number;
+  /** 0-1000 归一化矩形，缺省表示不裁 */
+  box?: { x: number; y: number; w: number; h: number };
 }
 
 function buildHintSection(hints?: GridHint[]): string {
@@ -97,17 +99,26 @@ export function buildOcrPrompt(mode: OcrPromptMode, hints?: GridHint[]): string 
   return `${COMMON_RULES}\n\n${modeRule}\n\n${EXAMPLES_NUMERIC}${buildHintSection(hints)}`;
 }
 
-/** 尺寸探测用的极简提示词：只问「有几个、各是几行几列」，输出极短，成本低 */
+/**
+ * 定位探测提示词：问「有几个、各是几行几列、在图的哪个位置」。
+ *
+ * 为什么要有 box：手机拍的是整页作业，直接整页送模型会（a）慢到超时，
+ * （b）把草稿、中间步骤全当成矩阵返回一堆垃圾。先让模型只报位置，
+ * 客户端按 box 裁出目标区域再识别，两个问题一起解决。
+ * box 用 0-1000 的归一化坐标（与图片宽高的千分比），不依赖具体像素。
+ */
 export function buildDimensionProbePrompt(mode: OcrPromptMode): string {
   const what =
     mode === "system" ? "增广矩阵" : mode === "symbolic" ? "符号矩阵" : "矩阵或行列式";
-  return `看这张图片，只回答图中有几个${what}，以及每一个的行数和列数。
+  return `看这张图片，只回答图中有几个${what}，每一个是几行几列，以及它大致在图中的位置。
 只返回 JSON 数组，不要任何解释：
-[{"rows":5,"cols":5}]
-要求：
+[{"rows":6,"cols":6,"box":{"x":300,"y":250,"w":420,"h":380}}]
+字段要求：
+- rows / cols：行数、列数，必须来自图片实际，先数一遍再回答；行列式一定是方阵
+- box：该矩阵（含两侧竖线或括号）的矩形范围，用 0-1000 的归一化坐标：
+  x、y 是左上角，w、h 是宽高，都是相对图片宽高的千分比（整张图 = 1000）
 - 按阅读顺序（从上到下、从左到右）排列
-- 行数、列数必须来自图片实际，先数一遍再回答；行列式一定是方阵
-- 看不出行列数时，返回你能确定的近似值并在对象里加 "uncertain": true
+- 只报题目主体，忽略手写草稿、批改痕迹、推导中间结果
 - 一个都没有就返回 []
 只返回 JSON 数组。`;
 }

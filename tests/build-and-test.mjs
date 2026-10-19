@@ -30,7 +30,7 @@ export { isIosDevice, isIosSafari, isStandaloneDisplay, shouldShowInstallHint } 
 export { joinRows, matrixToText } from ${JSON.stringify(
     path.join(SRC, "src/lib/copy-text.ts").replace(/\\/g, "/")
   )};
-export { parseOcrResponse, parseDimensionProbe } from ${JSON.stringify(
+export { parseOcrResponse, parseDimensionProbe, extractJsonFromReasoning, auditCellInk } from ${JSON.stringify(
     path.join(SRC, "src/lib/ocr-parse.ts").replace(/\\/g, "/")
   )};
 export { buildOcrPrompt, buildDimensionProbePrompt } from ${JSON.stringify(
@@ -56,8 +56,14 @@ const {
   shouldShowInstallHint,
 } = require(OUT);
 const { joinRows, matrixToText } = require(OUT);
-const { parseOcrResponse, parseDimensionProbe, buildOcrPrompt, buildDimensionProbePrompt } =
-  require(OUT);
+const {
+  parseOcrResponse,
+  parseDimensionProbe,
+  extractJsonFromReasoning,
+  auditCellInk,
+  buildOcrPrompt,
+  buildDimensionProbePrompt,
+} = require(OUT);
 
 const F = (o) =>
   Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v.toFractionString()]));
@@ -382,6 +388,135 @@ function run() {
     check("提示词带上尺寸约束", withHint.includes("5 行 × 5 列"), withHint.slice(-160));
     check("提示词要求真的写成 5 行 5 列", withHint.includes("必须真的写成 5 行 × 5 列"));
     check("探测提示词只问尺寸", buildDimensionProbePrompt("matrix").includes("只返回 JSON 数组"));
+  }
+
+  console.log("OCR-07 定位框（整页照片只裁目标区域）");
+  {
+    const withBox =
+      '[{"rows":6,"cols":6,"box":{"x":300,"y":250,"w":420,"h":380}}]';
+    const h = parseDimensionProbe(withBox);
+    check("解析出 6×6 + box", !!h && h[0].rows === 6 && !!h[0].box, JSON.stringify(h));
+    check(
+      "box 留了余量（向外扩）",
+      !!h && h[0].box.x < 300 && h[0].box.w > 420,
+      JSON.stringify(h?.[0]?.box),
+    );
+    check(
+      "box 不越界",
+      !!h && h[0].box.x >= 0 && h[0].box.x + h[0].box.w <= 1000,
+      JSON.stringify(h?.[0]?.box),
+    );
+
+    const noBox = parseDimensionProbe('[{"rows":3,"cols":3}]');
+    check("没有 box 也能用（只做尺寸约束）", !!noBox && noBox[0].box === undefined);
+
+    const badBox = parseDimensionProbe('[{"rows":3,"cols":3,"box":{"x":0,"y":0,"w":0,"h":0}}]');
+    check("宽高为 0 的框被丢弃", !!badBox && badBox[0].box === undefined, JSON.stringify(badBox));
+
+    const tiny = parseDimensionProbe('[{"rows":3,"cols":3,"box":{"x":10,"y":10,"w":20,"h":20}}]');
+    check("过小的框被丢弃（多半是误报）", !!tiny && tiny[0].box === undefined);
+
+    const outOfRange =
+      '[{"rows":3,"cols":3,"box":{"x":900,"y":900,"w":150,"h":150}}]';
+    const o = parseDimensionProbe(outOfRange);
+    check(
+      "越界框被夹回图内",
+      !!o && !!o[0].box && o[0].box.x + o[0].box.w <= 1000 && o[0].box.y + o[0].box.h <= 1000,
+      JSON.stringify(o?.[0]?.box),
+    );
+
+    check(
+      "定位提示词要求给 box",
+      buildDimensionProbePrompt("matrix").includes('"box"'),
+      "缺少 box 字段说明",
+    );
+  }
+
+  console.log("OCR-08 推理模型（deepseek-flash 等）：content 为空，只有思维链");
+  {
+    // 复刻真实返回：思维链里有大量中间猜测，最后才给出结论
+    const reasoning = [
+      "我们需要回答用户问题：图中有几个矩阵或行列式。",
+      "先看左上角，似乎有一个 2x2 的东西，可能是 [\"1\",\"2\"]？不确定。",
+      "示例里写的是 [{\"rows\":5,\"cols\":5}]，但那是示例。",
+      "再仔细数：顶部 D 的部分，第一行 1 4 2 0 0 0，第二行 5 8 4 0 0 0……",
+      "所以最终结论是 6 行 6 列。",
+      '因此答案：[{"kind":"determinant","label":"D","rows":6,"cols":6,"data":[[1,4,2,0,0,0],[5,8,4,0,0,0],[0,0,10,0,0,0],[8,9,1,5,0,1],[1,2,11,1,2,2],[22,3,6,2,2,5]]}]',
+    ].join("\n");
+
+    const picked = extractJsonFromReasoning(reasoning);
+    check(
+      "从思维链里挑出带 data 的最终结论",
+      !!picked && JSON.stringify(picked).includes('"data"'),
+      JSON.stringify(picked)?.slice(0, 80),
+    );
+
+    const r = parseOcrResponse(reasoning);
+    check("思维链可直接解析成 6×6", r.items.length === 1 && r.items[0].rows === 6, `${r.items.length} 项`);
+    check(
+      "会提示「结果来自思维链，请核对」",
+      r.notes.some((n) => n.includes("思维链")),
+      JSON.stringify(r.notes),
+    );
+
+    // 只有中间猜测、没有结论时不应瞎猜出矩阵
+    const onlyGuess = "可能是 2x2，也可能是 3x3。示例：[{\"rows\":5,\"cols\":5}] 但这只是示例。";
+    let threw = false;
+    try {
+      const g = parseOcrResponse(onlyGuess);
+      // 允许解析出示例（它会进 warnings），但必须有提示
+      threw = g.items.length === 0 || g.notes.length > 0;
+    } catch {
+      threw = true;
+    }
+    check("只有猜测时不静默返回结果", threw);
+
+    const probeOnly = '分析后确定：[{"rows":6,"cols":6,"box":{"x":291,"y":473,"w":347,"h":314}}]';
+    const ph = parseDimensionProbe(probeOnly);
+    check(
+      "思维链里的定位也能解析",
+      !!ph && ph[0].rows === 6 && !!ph[0].box,
+      JSON.stringify(ph),
+    );
+  }
+
+  console.log("OCR-09 像素自检：检出「图上有墨却报 0」的漏读");
+  {
+    // 真实数据：6×6 每格都有 8–10% 墨迹，模型却报了 24 个 0
+    const inkFull = Array.from({ length: 6 }, () =>
+      Array.from({ length: 6 }, () => 0.09),
+    );
+    const modelOut = [
+      ["1", "4", "2", "0", "0", "0"],
+      ["5", "8", "4", "0", "0", "0"],
+      ["0", "0", "10", "0", "0", "0"],
+      ["8", "9", "1", "5", "0", "1"],
+      ["1", "2", "11", "1", "1", "2"],
+      ["22", "3", "6", "2", "2", "5"],
+    ];
+    const a = auditCellInk(inkFull, modelOut);
+    check("检出漏读的 0", a.suspicious.length > 0, String(a.suspicious.length));
+    check(
+      "提示里点名具体位置",
+      !!a.warning && a.warning.includes("第1行第4列"),
+      a.warning,
+    );
+
+    // 空白格报 0 属正常，不该误报
+    const inkWithBlank = inkFull.map((row) => row.map(() => 0.005));
+    const b = auditCellInk(inkWithBlank, modelOut);
+    check("空白格报 0 不误报", b.suspicious.length === 0, String(b.suspicious.length));
+
+    // 真 0 且图上无墨
+    const c = auditCellInk(
+      [[0.09, 0.005], [0.005, 0.09]],
+      [["3", "0"], ["0", "5"]],
+    );
+    check("有无混排时只报漏读的那格", c.suspicious.length === 0, JSON.stringify(c.suspicious));
+
+    // 数字读对了但有墨 —— 不该报
+    const d = auditCellInk(inkFull, inkFull.map(() => ["1", "2", "3", "4", "5", "6"]));
+    check("读数非 0 时不报", d.suspicious.length === 0);
   }
 
   console.log(`\n结果：${pass} 通过，${fail} 失败`);
