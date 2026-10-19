@@ -1,8 +1,13 @@
-// OCR 服务 - 通过用户配置的视觉模型（兼容 OpenAI 协议）识别矩阵图片
+// OCR 服务 - 通过用户配置的视觉模型（兼容 OpenAI 协议）识别矩阵/行列式
 // API Key 等配置仅保存在浏览器本地，不上传到第三方
+//
+// v1.6 起模型返回数组（一张图里可能有多个矩阵/行列式）：解析交给 ocr-parse.ts，
+// 提示词交给 ocr-prompt.ts；本文件只负责「配置 + 发请求 + 错误翻译」。
 
 import { scopedStorage } from "@lark-apaas/client-toolkit-lite";
 import { logger } from "@lark-apaas/client-toolkit-lite";
+import { buildOcrPrompt, type OcrPromptMode } from "./ocr-prompt";
+import { parseOcrResponse, type OcrItem } from "./ocr-parse";
 
 // 配置存储键
 const OCR_CONFIG_KEY = "__app_linalg_ocr_config";
@@ -16,14 +21,23 @@ export interface OCRConfig {
   model: string;         // 视觉模型名，如 gpt-4o-mini
 }
 
-// 识别结果
+// 单个识别结果（兼容旧调用方的扁平结构）
 export interface OCRMatrixResult {
   rows: number;
   cols: number;
   data: string[][];      // 每个元素的字符串形式（数字、分数、符号等）
   isAugmented?: boolean; // 是否识别为增广矩阵（方程组）
   augmentedCol?: number; // 增广列索引
+  kind?: "matrix" | "determinant";
+  label?: string;
 }
+
+export interface OCROutcome {
+  items: OcrItem[];
+  notes: string[];
+}
+
+export type OCRMode = OcrPromptMode;
 
 // 读取配置
 export function getOCRConfig(): OCRConfig | null {
@@ -72,11 +86,8 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-// 调用视觉模型识别矩阵
-export async function recognizeMatrixFromImage(
-  file: File,
-  mode: "matrix" | "system" | "symbolic" = "matrix"
-): Promise<OCRMatrixResult> {
+/** 发一次请求，拿回模型原始文本 */
+async function requestOcrRaw(file: File, mode: OCRMode): Promise<string> {
   const config = getOCRConfig();
   if (!config) {
     throw new Error("请先配置 OCR 视觉模型 API");
@@ -86,45 +97,7 @@ export async function recognizeMatrixFromImage(
   }
 
   const dataUrl = await fileToDataUrl(file);
-
-  let prompt: string;
-  if (mode === "system") {
-    prompt = `你是一个数学 OCR 助手。请识别这张图片中的线性方程组增广矩阵。
-要求：
-1. 识别矩阵的行数和列数（包括常数列）
-2. 每个元素都以字符串形式给出，支持整数、小数、分数（如 3/4）、负数
-3. 如果是方程组（增广矩阵形式），请标记 isAugmented 为 true，并指出哪一列是常数列（augmentedCol，从 0 开始）
-4. 只返回严格的 JSON 格式，不要任何其他文字或代码块标记
-JSON 格式示例：
-{"rows":3,"cols":4,"data":[["1","2","3","4"],["5","6","7","8"],["9","10","11","12"]],"isAugmented":true,"augmentedCol":3}`;
-  } else if (mode === "symbolic") {
-    prompt = `你是一个数学 OCR 助手。请识别这张图片中的符号矩阵。
-要求：
-1. 识别矩阵的行数和列数
-2. 每个元素都以字符串形式给出，支持：
-   - 整数、小数、分数（如 3/4、-2/5）
-   - 字母变量（如 a、b、c、x、y、z、x1、x₂ 等）
-   - 常数 π（写作 pi 或 π）
-   - 运算符 +、-、*、/、^（如 2*a+3、x^2、a/b + c）
-   - 括号 ( 和 )
-3. 请将每个元素转换为可被代数解析的字符串形式：
-   - π 用 "pi" 表示
-   - 下标变量 x₁ 用 "x1" 表示
-   - 乘号用 "*" 表示（如 2a 写成 "2*a"）
-   - 除号用 "/" 表示（如分数 a/b 写成 "a/b"）
-   - 幂用 "^" 表示（如 x² 写成 "x^2"）
-4. 只返回严格的 JSON 格式，不要任何其他文字或代码块标记
-JSON 格式示例：
-{"rows":3,"cols":3,"data":[["a","b","c"],["2*x","pi","3/4"],["x^2","a+b","-5"]]}`;
-  } else {
-    prompt = `你是一个数学 OCR 助手。请识别这张图片中的矩阵。
-要求：
-1. 识别矩阵的行数和列数
-2. 每个元素都以字符串形式给出，支持整数、小数、分数（如 3/4）、负数
-3. 只返回严格的 JSON 格式，不要任何其他文字或代码块标记
-JSON 格式示例：
-{"rows":3,"cols":3,"data":[["1","2","3"],["4","5","6"],["7","8","9"]]}`;
-  }
+  const prompt = buildOcrPrompt(mode);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), OCR_TIMEOUT_MS);
@@ -164,28 +137,7 @@ JSON 格式示例：
     if (!content || typeof content !== "string") {
       throw new Error("API 返回格式异常，无法解析内容");
     }
-
-    // 清理可能的 markdown 代码块标记
-    let jsonStr = content.trim();
-    jsonStr = jsonStr.replace(/^```json\s*/i, "").replace(/\s*```$/, "");
-    jsonStr = jsonStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
-
-    const parsed = JSON.parse(jsonStr) as Partial<OCRMatrixResult>;
-    if (!parsed.rows || !parsed.cols || !parsed.data || !Array.isArray(parsed.data)) {
-      throw new Error("识别结果格式不正确");
-    }
-
-    // 校验行列数匹配
-    if (parsed.data.length !== parsed.rows) {
-      throw new Error(`识别结果行数不匹配: 期望 ${parsed.rows} 行，实际 ${parsed.data.length} 行`);
-    }
-    for (let i = 0; i < parsed.data.length; i++) {
-      if (parsed.data[i].length !== parsed.cols) {
-        throw new Error(`第 ${i + 1} 行列数不匹配: 期望 ${parsed.cols} 列，实际 ${parsed.data[i].length} 列`);
-      }
-    }
-
-    return parsed as OCRMatrixResult;
+    return content;
   } catch (e) {
     logger.error("OCR 识别失败:", String(e));
     if (e instanceof DOMException && e.name === "AbortError") {
@@ -198,4 +150,49 @@ JSON 格式示例：
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+/**
+ * 识别图片里的**所有**矩阵/行列式。
+ * 返回数组：一张图里有多道题、多个矩阵时不会只给你第一个。
+ */
+export async function recognizeAllFromImage(
+  file: File,
+  mode: OCRMode = "matrix"
+): Promise<OCROutcome> {
+  const raw = await requestOcrRaw(file, mode);
+  try {
+    return parseOcrResponse(raw);
+  } catch (e) {
+    logger.error("OCR 结果解析失败:", String(e));
+    throw e instanceof Error ? e : new Error("识别结果解析失败");
+  }
+}
+
+/** 新的 OcrItem → 旧的扁平结构（各 section 仍走这个） */
+export function toLegacyResult(item: OcrItem): OCRMatrixResult {
+  return {
+    rows: item.rows,
+    cols: item.cols,
+    data: item.data,
+    isAugmented: item.isAugmented,
+    augmentedCol: item.augmentedCol,
+    kind: item.kind,
+    label: item.label || undefined,
+  };
+}
+
+/**
+ * 兼容入口：只取第一个识别结果。
+ * 新代码请用 recognizeAllFromImage，避免图里多个矩阵时丢掉后面的。
+ */
+export async function recognizeMatrixFromImage(
+  file: File,
+  mode: OCRMode = "matrix"
+): Promise<OCRMatrixResult> {
+  const { items } = await recognizeAllFromImage(file, mode);
+  if (items.length === 0) {
+    throw new Error("没有识别到矩阵或行列式，请调整裁剪范围或换一张更清晰的照片");
+  }
+  return toLegacyResult(items[0]);
 }

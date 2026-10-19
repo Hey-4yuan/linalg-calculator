@@ -4,6 +4,34 @@
 
 ---
 
+## v1.6 — 2026-10-19
+
+### 修复：四阶行列式只识别出 2×2
+
+| 文件 | 内容 |
+|---|---|
+| `src/lib/ocr-prompt.ts` | **新增**：提示词独立成模（`buildOcrPrompt(mode)`）。改成**数组契约**、含四阶行列式示例、显式写「示例不是尺寸模板」、要求区分竖线/括号、行列式必须方阵 |
+| `src/lib/ocr-parse.ts` | **新增**：纯函数解析层。兼容裸数组 / `{matrices:[…]}` / 旧版单对象；剥代码围栏；从前后的解释文字里抠出配对完整的 JSON；尺寸不符以 `data` 为准；短行补空、`null`→`""`、非方阵行列式降级 |
+| `src/lib/ocr-service.ts` | 新增 `recognizeAllFromImage()` 返回 `OcrItem[]`；`recognizeMatrixFromImage()` 退化为「取第一个」的兼容入口；`toLegacyResult()` 转回各 section 用的扁平结构 |
+| `src/components/OCRResultPicker.tsx` | **新增**：一张图识别出多个矩阵/行列式时的选择框（序号 / 名称 / 类型 / 尺寸 / 首行预览 / 警告） |
+| `src/components/OCRUploadButton.tsx` | 0 个报「没识别到」、1 个直接回填、多个弹选择框；成功提示带上 kind 与 label；模型 warning 以 toast 呈现 |
+
+**根因（两个）**：① 旧提示词通篇只要求「一个矩阵」，示例是 2×2/3×3，模型把示例尺寸当成了输出规范；② 旧解析器只认 `{rows, cols, data}` 单对象，模型真要按数组返回反而报「格式不正确」——提示词与解析器互相锁死在「一个矩阵」。
+
+**验证**：无真实 Key，用构造的模型响应跑源码级断言（四阶行列式 4×4 不被截断、脏输出可救回、尺寸不符以 data 为准等）。
+
+### 测试
+
+- `tests/build-and-test.mjs`：新增 OCR-01～OCR-05（22 项），断言总数 48 → **70**
+
+### 产物
+
+- 单文件 `线性代数计算器.html` 重建（1,261,087 B）；`dist-pages` 重建（构建号 20261019092205）
+- 安卓工程 `versionCode 2→3`、`versionName 1.5→1.6`；`www` 与 `assets/public` 同步新资源
+- 安卓打包材料重出：`桌面/线性代数计算器-安卓打包-v1.6.zip`（v1.5 那份作废）
+
+---
+
 ## v1.5.1 — 2026-10-19
 
 ### 修复：双击单文件 html 显示 404

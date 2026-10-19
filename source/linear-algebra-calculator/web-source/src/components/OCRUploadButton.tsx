@@ -8,13 +8,16 @@ import {
 } from "@/components/ui/tooltip";
 import { Upload, Camera, Settings, Loader2 } from "lucide-react";
 import {
-  recognizeMatrixFromImage,
+  recognizeAllFromImage,
+  toLegacyResult,
   hasValidOCRConfig,
   type OCRMatrixResult,
 } from "@/lib/ocr-service";
+import type { OcrItem } from "@/lib/ocr-parse";
 import { toast } from "sonner";
 import OCRSettingsDialog from "./OCRSettingsDialog";
 import ImageEditorDialog from "./ImageEditorDialog";
+import OCRResultPicker from "./OCRResultPicker";
 import { Fraction, type FMatrix, toFMatrix } from "@/lib/fraction";
 
 interface OCRUploadButtonProps {
@@ -36,9 +39,25 @@ export default function OCRUploadButton({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [pendingImage, setPendingImage] = useState<string>("");
+  // 一张图识别出多个矩阵/行列式时，先让用户挑
+  const [pickerItems, setPickerItems] = useState<OcrItem[]>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const displayLabel = label ?? "图片识别";
+
+  /** 把选中的一项交给调用方（各 section 仍用旧的扁平结构） */
+  const applyItem = (item: OcrItem) => {
+    const kindText = item.kind === "determinant" ? "行列式" : "矩阵";
+    const labelText = item.label ? `「${item.label}」` : "";
+    toast.success(`识别成功：${labelText}${kindText} ${item.rows}×${item.cols}`, {
+      id: "ocr-loading",
+    });
+    if (item.warnings.length > 0) {
+      toast.warning(item.warnings.slice(0, 2).join("；"), { duration: 6000 });
+    }
+    onResult(toLegacyResult(item));
+  };
 
   const handleClick = () => {
     if (!hasValidOCRConfig()) {
@@ -73,11 +92,25 @@ export default function OCRUploadButton({
     toast.loading("正在识别图片中的内容...", { id: "ocr-loading" });
 
     try {
-      const result = await recognizeMatrixFromImage(editedFile, mode);
-      toast.success(`识别成功：${result.rows}×${result.cols} 矩阵`, {
-        id: "ocr-loading",
-      });
-      onResult(result);
+      const { items, notes } = await recognizeAllFromImage(editedFile, mode);
+
+      if (items.length === 0) {
+        toast.error(
+          notes[0] ?? "没有识别到矩阵或行列式，请调整裁剪范围或换一张更清晰的照片",
+          { id: "ocr-loading" }
+        );
+        return;
+      }
+
+      if (items.length === 1) {
+        applyItem(items[0]);
+        return;
+      }
+
+      // 多个结果：收起 loading，弹选择框
+      toast.dismiss("ocr-loading");
+      setPickerItems(items);
+      setPickerOpen(true);
     } catch (err) {
       toast.error(String(err), { id: "ocr-loading" });
     } finally {
@@ -154,6 +187,20 @@ export default function OCRUploadButton({
         }}
         imageSrc={pendingImage}
         onConfirm={handleEditorConfirm}
+      />
+
+      <OCRResultPicker
+        open={pickerOpen}
+        items={pickerItems}
+        onOpenChange={(v) => {
+          setPickerOpen(v);
+          if (!v) setPickerItems([]);
+        }}
+        onPick={(item) => {
+          setPickerOpen(false);
+          setPickerItems([]);
+          applyItem(item);
+        }}
       />
     </>
   );

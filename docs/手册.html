@@ -129,11 +129,12 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <li class="lv3"><a href="#user-h20">7.1 一次性配置</a></li>
 <li class="lv3"><a href="#user-h21">7.2 识别流程</a></li>
 <li class="lv3"><a href="#user-h22">7.3 三种识别模式</a></li>
-<li class="lv3"><a href="#user-h23">7.4 识别结果的处理</a></li>
-<li class="lv2"><a href="#user-h24">8. 显示、精度与复制</a></li>
-<li class="lv2"><a href="#user-h25">9. 报错速查表</a></li>
-<li class="lv2"><a href="#user-h26">10. 典型使用流程</a></li>
-<li class="lv2"><a href="#user-h27">11. FAQ</a></li></ul></div><div class="doc"><a href="#doc-tech">技术手册</a><ul><li class="lv2"><a href="#tech-h1">目录</a></li>
+<li class="lv3"><a href="#user-h23">7.4 一张图里有多道题</a></li>
+<li class="lv3"><a href="#user-h24">7.5 识别结果的处理</a></li>
+<li class="lv2"><a href="#user-h25">8. 显示、精度与复制</a></li>
+<li class="lv2"><a href="#user-h26">9. 报错速查表</a></li>
+<li class="lv2"><a href="#user-h27">10. 典型使用流程</a></li>
+<li class="lv2"><a href="#user-h28">11. FAQ</a></li></ul></div><div class="doc"><a href="#doc-tech">技术手册</a><ul><li class="lv2"><a href="#tech-h1">目录</a></li>
 <li class="lv2"><a href="#tech-h2">1. 产物形态</a></li>
 <li class="lv2"><a href="#tech-h3">2. 技术栈</a></li>
 <li class="lv2"><a href="#tech-h4">3. 代码分层与调用关系</a></li>
@@ -156,18 +157,19 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <li class="lv2"><a href="#tech-h21">7. OCR 子系统</a></li>
 <li class="lv3"><a href="#tech-h22">7.1 数据流</a></li>
 <li class="lv3"><a href="#tech-h23">7.2 请求格式</a></li>
-<li class="lv3"><a href="#tech-h24">7.3 三套提示词</a></li>
+<li class="lv3"><a href="#tech-h24">7.3 提示词：统一返回数组（v1.6 起）</a></li>
 <li class="lv3"><a href="#tech-h25">7.4 校验与降级</a></li>
-<li class="lv2"><a href="#tech-h26">8. 存储与状态</a></li>
-<li class="lv2"><a href="#tech-h27">9. 网络行为与离线能力</a></li>
-<li class="lv2"><a href="#tech-h28">10. 复杂度与规模上限</a></li>
-<li class="lv2"><a href="#tech-h29">11. 已知限制与风险</a></li>
-<li class="lv2"><a href="#tech-h30">12. 安全与隐私</a></li>
-<li class="lv2"><a href="#tech-h31">13. 可扩展方向</a></li>
-<li class="lv2"><a href="#tech-h32">14. 构建与补丁历史</a></li>
-<li class="lv3"><a href="#tech-h33">14.1 当前构建方式（v1.2 起）</a></li>
-<li class="lv3"><a href="#tech-h34">14.2 历史：v1.1 的字节级补丁（已归档）</a></li>
-<li class="lv3"><a href="#tech-h35">14.3 三个必须知道的构建坑</a></li></ul></div><div class="doc"><a href="#doc-dev">开发者指南</a><ul><li class="lv2"><a href="#dev-h1">目录</a></li>
+<li class="lv3"><a href="#tech-h26">7.5 事故复盘：四阶行列式只认出 2×2（v1.6 修复）</a></li>
+<li class="lv2"><a href="#tech-h27">8. 存储与状态</a></li>
+<li class="lv2"><a href="#tech-h28">9. 网络行为与离线能力</a></li>
+<li class="lv2"><a href="#tech-h29">10. 复杂度与规模上限</a></li>
+<li class="lv2"><a href="#tech-h30">11. 已知限制与风险</a></li>
+<li class="lv2"><a href="#tech-h31">12. 安全与隐私</a></li>
+<li class="lv2"><a href="#tech-h32">13. 可扩展方向</a></li>
+<li class="lv2"><a href="#tech-h33">14. 构建与补丁历史</a></li>
+<li class="lv3"><a href="#tech-h34">14.1 当前构建方式（v1.2 起）</a></li>
+<li class="lv3"><a href="#tech-h35">14.2 历史：v1.1 的字节级补丁（已归档）</a></li>
+<li class="lv3"><a href="#tech-h36">14.3 三个必须知道的构建坑</a></li></ul></div><div class="doc"><a href="#doc-dev">开发者指南</a><ul><li class="lv2"><a href="#dev-h1">目录</a></li>
 <li class="lv2"><a href="#dev-h2">1. 仓库里有什么</a></li>
 <li class="lv2"><a href="#dev-h3">2. 环境准备</a></li>
 <li class="lv2"><a href="#dev-h4">3. 日常开发</a></li>
@@ -250,7 +252,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
   <div class="meta">
     <span class="pill">文档版本 v1.0</span>
     <span class="pill">产物构建 2026-10-18</span>
-    <span class="pill">生成于 2026-10-19 16:59</span>
+    <span class="pill">生成于 2026-10-19 17:28</span>
     <span class="pill">Ctrl/⌘ + P 可打印为 PDF</span>
   </div>
   <section class="doc-sec" id="doc-overview"><h1 id="_1">线性代数计算器</h1>
@@ -292,7 +294,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <blockquote>
 <p>两种前端产物来自同一份源码：Web 版是「单文件内联」，APK 版是「分块资源 + Capacitor 壳」。功能一致，存储键同格式。</p>
 <p>v1.2 相比 v1.0 修了两个问题：方程组「无解」时增广矩阵秩显示错误（L13）、OCR 请求无超时（L4）。改动在源码里，不是对压缩产物的补丁。
-v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风险提示）和结果卡「复制」按钮。</p>
+v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风险提示）和结果卡「复制」按钮；v1.6 修了 OCR 只能认出 2 阶（提示词与解析器都改成数组契约，支持行列式与一图多题）。</p>
 </blockquote>
 <h2 id="overview-h2">二、功能总览</h2>
 <table>
@@ -337,9 +339,9 @@ v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风�
 </tr>
 <tr>
 <td>图片识别</td>
-<td>拍照/选图 → 裁剪旋转翻转 → 视觉模型识别为矩阵；三种模式（数值矩阵 / 符号矩阵 / 增广矩阵）</td>
+<td>拍照/选图 → 裁剪旋转翻转 → 视觉模型识别；三种模式（数值矩阵 / 符号矩阵 / 增广矩阵）；支持行列式（<code>|…|</code>）与一图多题（识别后选择载入）</td>
 <td>由模型与提示词约束</td>
-<td>识别失败单元格置 0 并提示核对</td>
+<td>识别失败单元格置 0 并提示核对；尺寸以图片实际行列数为准</td>
 </tr>
 </tbody>
 </table>
@@ -373,7 +375,7 @@ API Key:  自行申请（见附图手册）
 │       │   └── scripts/         #   make-standalone / make-single-file
 │       ├── android/             # Capacitor 6 工程 + build-apk.sh
 │       └── single-file/         # 单文件产物副本
-├── tests/build-and-test.mjs     # 48 项回归（求解器 + 路由 + iOS 判定 + 复制文本）
+├── tests/build-and-test.mjs     # 70 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析）
 ├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
 ├── .github/workflows/           # GitHub Pages 自动部署
 ├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）
@@ -471,10 +473,10 @@ API Key:  自行申请（见附图手册）
 <li><a href="#user-h12">线性方程组</a></li>
 <li><a href="#user-h16">向量运算</a></li>
 <li><a href="#user-h19">图片识别（OCR）</a></li>
-<li><a href="#user-h24">显示、精度与复制</a></li>
-<li><a href="#user-h25">报错速查表</a></li>
-<li><a href="#user-h26">典型使用流程</a></li>
-<li><a href="#user-h27">FAQ</a></li>
+<li><a href="#user-h25">显示、精度与复制</a></li>
+<li><a href="#user-h26">报错速查表</a></li>
+<li><a href="#user-h27">典型使用流程</a></li>
+<li><a href="#user-h28">FAQ</a></li>
 </ol>
 <hr />
 <h2 id="user-h2">1. 安装与启动</h2>
@@ -1133,7 +1135,7 @@ API Key:  自行申请（见附图手册）
 <tr>
 <td>矩阵 A / 矩阵 B / 单矩阵</td>
 <td>数值矩阵</td>
-<td>纯数字矩阵（含分数、负数）</td>
+<td>纯数字矩阵或行列式（含分数、负数）</td>
 </tr>
 <tr>
 <td>符号运算</td>
@@ -1147,17 +1149,47 @@ API Key:  自行申请（见附图手册）
 </tr>
 </tbody>
 </table>
-<h3 id="user-h23">7.4 识别结果的处理</h3>
+<blockquote>
+<p><strong>行列式也能识别</strong>：<code>|…|</code> 或 <code>det(…)</code> 会被识别成方阵并填进网格，之后点「行列式 det」即可求值。</p>
+</blockquote>
+<h3 id="user-h23">7.4 一张图里有多道题</h3>
+<p>识别完成后先判断结果数量：</p>
+<table>
+<thead>
+<tr>
+<th>识别到几个</th>
+<th>界面行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 个</td>
+<td>提示「没有识别到矩阵或行列式，请调整裁剪范围或换一张更清晰的照片」</td>
+</tr>
+<tr>
+<td>1 个</td>
+<td>直接填入矩阵，并提示「识别成功：A 矩阵 3×3」</td>
+</tr>
+<tr>
+<td>多个</td>
+<td>弹出选择框，列出每个结果的序号、名称（<code>A</code>、<code>det(A)</code>、<code>(1)</code>…）、类型、尺寸和首行内容，点一个载入</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么要选</strong>：计算器一个面板只放得下一个矩阵，一次全塞进去没有意义。拍整页作业时，先挑你要算的那一道。</p>
+<p>尺寸以<strong>图片实际行列数</strong>为准：四阶行列式就是 4×4，不会被截成 2×2（v1.6 修的问题）。</p>
+<h3 id="user-h24">7.5 识别结果的处理</h3>
 <ul>
-<li>识别成功：直接覆盖当前矩阵，并提示「识别成功：3×3 矩阵」（双矩阵场景为「已识别到矩阵 A」）；</li>
-<li><strong>部分单元格无法解析</strong>（模型返回了 <code>1/0</code>、乱码等）：这些格子被置为 <strong>0</strong>，并弹出「有 N 个单元格识别失败，已置为 0，请核对」——<strong>务必人工核对这几个格子</strong>；</li>
-<li>行列数校验：模型返回的行数/列数与声明不符时直接报错，不会张冠李戴地填进去；</li>
+<li>识别成功：直接覆盖当前矩阵，并提示「识别成功：A 矩阵 3×3」；</li>
+<li><strong>部分单元格无法解析</strong>（模型返回了 <code>1/0</code>、乱码、<code>null</code> 等）：这些格子被置为 <strong>0</strong>，并弹出「有 N 个单元格识别失败，已置为 0，请核对」——<strong>务必人工核对这几个格子</strong>；</li>
+<li><strong>模型给的尺寸与内容不符</strong>：以实际内容为准（不会按声明的尺寸硬塞），并提示「模型声明 4 行，实际 2 行，已按实际处理」；</li>
+<li><strong>行列式不是方阵</strong>（比如竖线被误读）：降级成普通矩阵并提示；</li>
 <li>网络错误、鉴权失败、额度耗尽等：显示服务端返回的状态码与内容，例如 <code>API 请求失败 (401): ...</code>、<code>应用额度已耗尽，请联系应用开发者</code>。</li>
 </ul>
 <blockquote>
 <p>识别只是「录入加速器」，不改变计算逻辑。识别后的一切计算仍是本地精确运算。</p>
 </blockquote>
-<h2 id="user-h24">8. 显示、精度与复制</h2>
+<h2 id="user-h25">8. 显示、精度与复制</h2>
 <table>
 <thead>
 <tr>
@@ -1195,7 +1227,7 @@ API Key:  自行申请（见附图手册）
 </code></pre>
 <p>小数模式下则是对应的小数；若浏览器不允许写剪贴板（例如用 <code>file://</code> 双击打开的单文件版被策略拦截），按钮会自动退回到备用的复制方式，仍失败时提示「长按选择文本手动复制」。</p>
 <p><strong>为什么分数模式是默认值之外的可选项</strong>：工程计算、编程作业更习惯小数；线性代数作业核对更关心 <code>1/7</code> 这类精确值。两种都保留，随时切换。</p>
-<h2 id="user-h25">9. 报错速查表</h2>
+<h2 id="user-h26">9. 报错速查表</h2>
 <table>
 <thead>
 <tr>
@@ -1286,9 +1318,19 @@ API Key:  自行申请（见附图手册）
 <td>补齐后保存</td>
 </tr>
 <tr>
-<td>识别结果格式不正确 / 识别结果行数不匹配</td>
-<td>模型返回结构异常</td>
-<td>重新识别，或裁剪图片后重试</td>
+<td>模型返回的不是合法 JSON：…</td>
+<td>模型没按 JSON 数组输出</td>
+<td>重新识别；换更强的视觉模型（<code>gpt-4o</code> 类）成功率明显更高</td>
+</tr>
+<tr>
+<td>没有识别到矩阵或行列式</td>
+<td>图里没有可识别的矩阵，或裁剪框裁空了</td>
+<td>重新裁剪到只保留矩阵区域</td>
+</tr>
+<tr>
+<td>识别超时（45 秒无响应）</td>
+<td>网络慢或接口未响应</td>
+<td>换网络重试，或更换模型接口</td>
 </tr>
 <tr>
 <td>需要登录后才能执行操作</td>
@@ -1297,7 +1339,7 @@ API Key:  自行申请（见附图手册）
 </tr>
 </tbody>
 </table>
-<h2 id="user-h26">10. 典型使用流程</h2>
+<h2 id="user-h27">10. 典型使用流程</h2>
 <p><strong>核对作业</strong>（最常用）</p>
 <ol>
 <li>矩阵运算 → 单矩阵运算 → 手输矩阵；</li>
@@ -1318,7 +1360,7 @@ API Key:  自行申请（见附图手册）
 <li>识别后核对被置 0 的格子；</li>
 <li>继续在线计算。</li>
 </ol>
-<h2 id="user-h27">11. FAQ</h2>
+<h2 id="user-h28">11. FAQ</h2>
 <p><strong>Q：断网还能用吗？</strong>
 A：能。所有计算在前端完成；只有 OCR 需要联网（调你自己配置的模型接口）。网页版首次加载时字体走 CDN，失败会自动回退系统字体，不影响功能。</p>
 <p><strong>Q：数据会上传吗？</strong>
@@ -1346,13 +1388,13 @@ A：计算逻辑完全一致，共用同一套存储键与配置格式。差别�
 <li><a href="#tech-h10">算法实现</a></li>
 <li><a href="#tech-h20">渲染与显示规则</a></li>
 <li><a href="#tech-h21">OCR 子系统</a></li>
-<li><a href="#tech-h26">存储与状态</a></li>
-<li><a href="#tech-h27">网络行为与离线能力</a></li>
-<li><a href="#tech-h28">复杂度与规模上限</a></li>
-<li><a href="#tech-h29">已知限制与风险</a></li>
-<li><a href="#tech-h30">安全与隐私</a></li>
-<li><a href="#tech-h31">可扩展方向</a></li>
-<li><a href="#tech-h32">构建与补丁历史</a></li>
+<li><a href="#tech-h27">存储与状态</a></li>
+<li><a href="#tech-h28">网络行为与离线能力</a></li>
+<li><a href="#tech-h29">复杂度与规模上限</a></li>
+<li><a href="#tech-h30">已知限制与风险</a></li>
+<li><a href="#tech-h31">安全与隐私</a></li>
+<li><a href="#tech-h32">可扩展方向</a></li>
+<li><a href="#tech-h33">构建与补丁历史</a></li>
 </ol>
 <hr />
 <h2 id="tech-h2">1. 产物形态</h2>
@@ -1958,9 +2000,17 @@ if rankA == n: x[i] = rref[i][n]
    ↓ FileReader → dataURL
 图片编辑对话框（canvas 旋转/翻转/裁剪 → toBlob(&quot;image/jpeg&quot;, 0.92)）
    ↓ File → FileReader → base64 dataURL
-POST {baseUrl}/chat/completions
+POST {baseUrl}/chat/completions        ← 提示词由 buildOcrPrompt(mode) 生成
    ↓ 取 choices[0].message.content
-去 ```json 围栏 → JSON.parse → 结构校验
+ocr-parse.parseOcrResponse(raw)
+   ├─ 剥 ```json 围栏 → 抠出第一段配对完整的 JSON
+   ├─ 数组 / {&quot;matrices&quot;:[…]} / 旧版单对象 都接受
+   └─ 逐项 normalized：rows/cols 以 data 为准、短行补空、null→&quot;&quot;、
+      非方阵行列式降级为矩阵、augmented_col 1 起转 0 起
+   ↓ items: OcrItem[]
+   0 个 → 报「没有识别到矩阵或行列式」
+   1 个 → 直接回填
+   多个 → 弹 OCRResultPicker，用户挑一个
    ↓ 逐格 safeParse，失败计入 failedCells 并置 0
 回填矩阵 / 提示「有 N 个单元格识别失败」
 </code></pre>
@@ -1986,63 +2036,151 @@ Content-Type: application/json
 <li><strong>没有</strong> <code>max_tokens</code>、<code>response_format</code>；超时由 <code>AbortController</code> 控制（45 秒，见 8.2 / 《源码解析》），超时后抛「识别超时（45 秒无响应）」；</li>
 <li><code>temperature: 0</code> 是为了让识别结果稳定。</li>
 </ul>
-<h3 id="tech-h24">7.3 三套提示词</h3>
+<h3 id="tech-h24">7.3 提示词：统一返回数组（v1.6 起）</h3>
+<p>所有模式共用一套骨架（<code>src/lib/ocr-prompt.ts</code> 的 <code>COMMON_RULES</code>），只替换「模式段」：</p>
 <table>
 <thead>
 <tr>
 <th>模式</th>
 <th>触发位置</th>
-<th>提示词要点</th>
+<th>模式段要点</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>数值矩阵</td>
-<td>单矩阵、双矩阵 A/B、方程组默认</td>
-<td>识别行列数；每格以字符串给出，支持整数/小数/分数/负数；<strong>只返回严格 JSON</strong>，形如 <code>{"rows":3,"cols":3,"data":[["1","2","3"],...]}</code></td>
+<td><code>matrix</code></td>
+<td>单矩阵、双矩阵 A/B</td>
+<td>以数值为主；行列式外框是竖线、矩阵是圆括号/方括号，别混淆</td>
 </tr>
 <tr>
-<td>符号矩阵</td>
-<td>符号运算</td>
-<td>额外允许字母、π（写作 <code>pi</code>）、<code>+ − * / ^</code>、括号；要求把 <code>2a</code> 转成 <code>2*a</code>、<code>x₁</code> 转成 <code>x1</code>、<code>x²</code> 转成 <code>x^2</code></td>
-</tr>
-<tr>
-<td>增广矩阵</td>
+<td><code>system</code></td>
 <td>线性方程组</td>
-<td>识别行数/列数（含常数列）；要求 <code>isAugmented: true</code> 并给出 <code>augmentedCol</code>（从 0 开始）</td>
+<td>优先找带竖线的 (A|b)，<code>augmented: true</code> + <code>augmented_col</code>（<strong>1 起算</strong>，竖线左侧列数），<code>data</code> 含两侧全部列</td>
+</tr>
+<tr>
+<td><code>symbolic</code></td>
+<td>符号运算</td>
+<td>全部按表达式字符串返回：<code>2a</code>→<code>"2*a"</code>、<code>x²</code>→<code>"x^2"</code>、<code>a/b</code>→<code>"a/b"</code>、π→<code>"pi"</code>、<code>x₁</code>→<code>"x1"</code></td>
 </tr>
 </tbody>
 </table>
-<p>提示词要求「只返回严格 JSON」，但代码仍做了<strong>双保险</strong>：先剥掉 <code>```json</code> 围栏，再 <code>JSON.parse</code>，失败则报「识别结果格式不正确」。</p>
-<h3 id="tech-h25">7.4 校验与降级</h3>
+<p>返回对象字段：<code>kind</code>（matrix/determinant）、<code>label</code>、<code>rows</code>、<code>cols</code>、<code>data</code>、<code>format</code>、<code>warnings</code>、<code>augmented</code>、<code>augmented_col</code>。</p>
+<p>三条写进提示词的硬约束，每条都对应一次真实事故：</p>
 <table>
 <thead>
 <tr>
-<th>检查</th>
-<th>失败表现</th>
+<th>约束</th>
+<th>为什么</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>rows</code>、<code>cols</code>、<code>data</code> 存在且 <code>data</code> 为数组</td>
-<td>「识别结果格式不正确」</td>
+<td><strong>始终返回 JSON 数组</strong>，只有一个也包成 <code>[{...}]</code></td>
+<td>旧版要求单对象，图里有多道题时模型只答第一个</td>
 </tr>
 <tr>
-<td><code>data.length === rows</code></td>
-<td>「识别结果行数不匹配: 期望 X 行，实际 Y 行」</td>
+<td><strong>尺寸必须来自图片</strong>，示例明确写「不是尺寸模板」</td>
+<td>旧版示例是 2×2/3×3，模型看到四阶行列式会按示例裁成左上角 2×2（v1.5 的真实 bug）</td>
 </tr>
 <tr>
-<td>每行长度 <code>=== cols</code></td>
-<td>「第 N 行列数不匹配: 期望 X 列，实际 Y 列」</td>
-</tr>
-<tr>
-<td>每格 <code>safeParse</code> 成功</td>
-<td>失败格置 0，汇总提示「有 N 个单元格识别失败，已置为 0，请核对」</td>
+<td>行列式必须方阵，且与矩阵区分</td>
+<td>竖线被当成「两列」时的典型误识别</td>
 </tr>
 </tbody>
 </table>
-<p>最后这条是刻意的<strong>降级策略</strong>：宁可让用户去核对几个格子，也不要整张图识别失败。</p>
-<h2 id="tech-h26">8. 存储与状态</h2>
+<h3 id="tech-h25">7.4 校验与降级</h3>
+<p>解析层刻意<strong>宽松</strong>：形状错了就救，不轻易整条失败。</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>内容为空 / 完全不是 JSON</td>
+<td>抛错，错误信息带原文前 120 字（方便反馈给服务商）</td>
+</tr>
+<tr>
+<td>前后夹带解释文字、```json 围栏</td>
+<td>剥掉围栏；失败则抠第一段括号配对完整的片段重试</td>
+</tr>
+<tr>
+<td><code>{"matrices":[…]}</code> 包装</td>
+<td>接受（提示词虽禁止，但模型常自作主张）</td>
+</tr>
+<tr>
+<td>旧版单对象 <code>{rows, cols, data}</code></td>
+<td>接受，包装成 1 项</td>
+</tr>
+<tr>
+<td>声明 <code>rows/cols</code> 与 <code>data</code> 不符</td>
+<td>以 <code>data</code> 为准，记 warning「模型声明 X 行，实际 Y 行」</td>
+</tr>
+<tr>
+<td>行内列数不齐</td>
+<td>按最长行补空串，记 warning</td>
+</tr>
+<tr>
+<td>单元格 <code>null</code></td>
+<td>转 <code>""</code>，记 warning，回填时按 0 处理并计入 failedCells</td>
+</tr>
+<tr>
+<td>行列式非方阵</td>
+<td>降级为 <code>matrix</code>，记 warning</td>
+</tr>
+<tr>
+<td><code>augmented_col</code> 越界</td>
+<td>忽略，记 warning</td>
+</tr>
+<tr>
+<td>元素总数 &gt; 400（20×20）</td>
+<td>丢弃该项并记 warning，防病态数组卡死页面</td>
+</tr>
+</tbody>
+</table>
+<p>最后两级的理念是<strong>「宁可让用户核对几个格子，也不要整张图白识别」</strong>——但尺寸问题例外：以 <code>data</code> 为准而不是硬塞成声明的尺寸，因为缩尺寸会静默丢数据。</p>
+<h3 id="tech-h26">7.5 事故复盘：四阶行列式只认出 2×2（v1.6 修复）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>现象</td>
+<td>上传一张含 4×4 行列式的图，返回 2×2，且没有任何报错</td>
+</tr>
+<tr>
+<td>直接原因</td>
+<td>提示词里的 JSON 示例是 2×2/3×3，模型把它当成了输出模板</td>
+</tr>
+<tr>
+<td>根因 1（提示词）</td>
+<td>旧提示词通篇没提「行列式」「竖线」「多个矩阵」，只要求「识别这张图片中的矩阵」，返回单个对象</td>
+</tr>
+<tr>
+<td>根因 2（解析器）</td>
+<td>只接受 <code>{rows, cols, data}</code> 单对象；模型真要按数组返回反而会报「识别结果格式不正确」——即提示词和解析器互相锁死在「一个矩阵」上</td>
+</tr>
+<tr>
+<td>修复</td>
+<td>提示词改成数组契约 + 四阶示例 + 「示例不是尺寸模板」；解析器改为宽容数组解析并在尺寸不符时以 <code>data</code> 为准；UI 加多结果选择框</td>
+</tr>
+<tr>
+<td>回归</td>
+<td><code>tests/build-and-test.mjs</code> 的 OCR-01 直接断言「四阶行列式不被截成 2×2」；OCR-05 断言提示词里必须还有「不是尺寸模板」这句话</td>
+</tr>
+<tr>
+<td>教训</td>
+<td><strong>示例的尺寸会被模型当成规范</strong>。给视觉模型的 JSON 示例，要么尺寸与常见题一致，要么显式声明「示例仅示范格式」</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tech-h27">8. 存储与状态</h2>
 <p>全部状态在 <code>localStorage</code>，无后端、无账号体系（<code>window.userId</code> 为 <code>guest</code>）。</p>
 <p>存储键带宿主前缀，由 <code>__miaoda_${appId || "__global__"}__:</code> + 业务键拼接：</p>
 <table>
@@ -2081,7 +2219,7 @@ Object.keys(localStorage)
   .forEach(k =&gt; localStorage.removeItem(k));
 </code></pre>
 <p>此外宿主 SDK 会写一个 <code>x_sdk_device_id</code>（设备标识，随机生成并持久化），与业务无关。</p>
-<h2 id="tech-h27">9. 网络行为与离线能力</h2>
+<h2 id="tech-h28">9. 网络行为与离线能力</h2>
 <table>
 <thead>
 <tr>
@@ -2114,7 +2252,7 @@ Object.keys(localStorage)
 </tbody>
 </table>
 <p><strong>离线结论</strong>：矩阵、方程组、向量、符号四类计算完全离线；OCR 必须联网；HTML 版的字体与宿主请求在离线时会失败但不阻塞使用。产物<strong>没有 Service Worker</strong>，因此不是 PWA，离线能力来自「资源已内联/已打包」而不是缓存策略。</p>
-<h2 id="tech-h28">10. 复杂度与规模上限</h2>
+<h2 id="tech-h29">10. 复杂度与规模上限</h2>
 <table>
 <thead>
 <tr>
@@ -2187,7 +2325,7 @@ Object.keys(localStorage)
 </tr>
 </tbody>
 </table>
-<h2 id="tech-h29">11. 已知限制与风险</h2>
+<h2 id="tech-h30">11. 已知限制与风险</h2>
 <p>按影响程度排序。编号可在 issue / 测试用例中引用。</p>
 <table>
 <thead>
@@ -2283,7 +2421,7 @@ Object.keys(localStorage)
 <p><strong>状态说明</strong>：L4、L13 已在 v1.2 源码中修复；L7 经复核不成立，已移除；其余为待办项。
 v1.1 曾在压缩产物上做过等价的字节级补丁，现已由源码修复取代，补丁仅作历史归档（第 14 节）。</p>
 </blockquote>
-<h2 id="tech-h30">12. 安全与隐私</h2>
+<h2 id="tech-h31">12. 安全与隐私</h2>
 <ul>
 <li><strong>计算不出网</strong>：所有矩阵运算在本地完成，没有任何上传结果的路径；</li>
 <li><strong>唯一外发</strong>：OCR 时上传用户主动选择的图片（base64）到用户自己配置的服务商；</li>
@@ -2291,7 +2429,7 @@ v1.1 曾在压缩产物上做过等价的字节级补丁，现已由源码修复
 <li><strong>APK 权限</strong>：对外权限以 <code>INTERNET</code> 为主，未见存储/相机权限——拍照是通过系统文件选择器的 <code>capture</code> 属性完成的，因此不需要 <code>CAMERA</code>；</li>
 <li><strong>无账号体系</strong>：<code>userId</code> 固定为 <code>guest</code>，不存在登录态泄露面。</li>
 </ul>
-<h2 id="tech-h31">13. 可扩展方向</h2>
+<h2 id="tech-h32">13. 可扩展方向</h2>
 <table>
 <thead>
 <tr>
@@ -2326,8 +2464,8 @@ v1.1 曾在压缩产物上做过等价的字节级补丁，现已由源码修复
 </tr>
 </tbody>
 </table>
-<h2 id="tech-h32">14. 构建与补丁历史</h2>
-<h3 id="tech-h33">14.1 当前构建方式（v1.2 起）</h3>
+<h2 id="tech-h33">14. 构建与补丁历史</h2>
+<h3 id="tech-h34">14.1 当前构建方式（v1.2 起）</h3>
 <p>源码到位后，产物一律由源码构建，不再对压缩产物做任何手工修改：</p>
 <pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
 npm install
@@ -2363,7 +2501,7 @@ node ../../../tests/build-and-test.mjs   # 18 项求解器断言
 </tbody>
 </table>
 <p>本次（2026-10-19）的构建已把两个修复带进产物，并同步了安卓工程的网页资源。</p>
-<h3 id="tech-h34">14.2 历史：v1.1 的字节级补丁（已归档）</h3>
+<h3 id="tech-h35">14.2 历史：v1.1 的字节级补丁（已归档）</h3>
 <p>源码到手前，P1/P2 两处修复只能在压缩产物上做字节替换（全文净增 62 字节，其余字节不变）：</p>
 <table>
 <thead>
@@ -2393,7 +2531,7 @@ node ../../../tests/build-and-test.mjs   # 18 项求解器断言
 <li>备份：<code>_backup/线性代数计算器_v1.0_backup.html</code>（原始）、<code>_backup/线性代数计算器_v1.1_bytepatch.html</code>（补丁版）</li>
 <li>脚本：<code>_backup/legacy/</code>（<code>patch_v1_1_bytes.py</code>、<code>extract_check.py</code>）——<strong>仅作历史参考，不要再执行</strong>：它会覆盖当前已由源码构建的产物。</li>
 </ul>
-<h3 id="tech-h35">14.3 三个必须知道的构建坑</h3>
+<h3 id="tech-h36">14.3 三个必须知道的构建坑</h3>
 <ol>
 <li><strong>原生可选依赖缺失</strong>（<code>@rolldown/binding-win32-x64-msvc</code>、<code>lightningcss-win32-x64-msvc</code>、<code>@tailwindcss/oxide-win32-x64-msvc</code>）。<code>package-lock.json</code> 在他平台生成，npm 不会自动补 Windows 二进制，报 <code>Cannot find module …win32-x64-msvc</code>。必须<strong>一条命令装齐</strong>（<code>--no-save</code> 会被下一次 install 清理）：
    <code>bash
@@ -3415,6 +3553,48 @@ python docs/build_docs.py     # → docs/手册.html
 <td>Base URL 填一个只吞请求不回包的地址（如 <code>http://10.255.255.1/v1</code>）</td>
 <td><strong>约 45 秒</strong>后结束等待，提示「识别超时（45 秒无响应），请检查网络或更换模型接口」（v1.2 源码）</td>
 </tr>
+<tr>
+<td>OCR-17</td>
+<td><strong>P0</strong></td>
+<td>上传一张<strong>四阶行列式</strong>（<code>|…|</code> 4 行 4 列，元素不重复）</td>
+<td>回填后网格是 <strong>4 行 4 列</strong>；提示「识别成功：行列式 4×4」。<strong>回归 v1.5 的 2×2 事故</strong></td>
+</tr>
+<tr>
+<td>OCR-18</td>
+<td>P0</td>
+<td>同一张图里放 3 个矩阵（A、B、C）</td>
+<td>弹出「识别到 3 个矩阵/行列式」，可选任一项；选中后网格尺寸与该项一致</td>
+</tr>
+<tr>
+<td>OCR-19</td>
+<td>P1</td>
+<td>选择题里的行列式（<code>det(A)</code> 写法）</td>
+<td>被识别为 determinant，选中后按方阵载入，点「行列式 det」能算出值</td>
+</tr>
+<tr>
+<td>OCR-20</td>
+<td>P1</td>
+<td>图里只有题号没有矩阵</td>
+<td>提示「没有识别到矩阵或行列式，请调整裁剪范围或换一张更清晰的照片」，不弹空的选择框</td>
+</tr>
+<tr>
+<td>OCR-21</td>
+<td>P1</td>
+<td>模型只返回旧格式单对象（可用 Postman 模拟）</td>
+<td>仍能正常识别（解析层向后兼容）</td>
+</tr>
+<tr>
+<td>OCR-22</td>
+<td>P2</td>
+<td>模型在 JSON 前后加了解释文字/```json 围栏</td>
+<td>仍能解析（剥围栏 + 抠括号配对片段）</td>
+</tr>
+<tr>
+<td>OCR-23</td>
+<td>P2</td>
+<td>行列式被错识别成 3 行 2 列</td>
+<td>降级成普通矩阵并提示「不是方阵」，不崩</td>
+</tr>
 </tbody>
 </table>
 <h2 id="test-h13">8. 界面与交互用例</h2>
@@ -3630,8 +3810,8 @@ python docs/build_docs.py     # → docs/手册.html
 <p>源码到位后，测试直接跑 <code>src/lib/matrix-ops.ts</code>，不再依赖压缩产物：</p>
 <pre><code class="language-bash">node tests/build-and-test.mjs
 </code></pre>
-<p>机制：用 esbuild 把 <code>matrix-ops.ts</code>、<code>fraction.ts</code>、<code>base-path.ts</code>、<code>pwa.ts</code>、<code>copy-text.ts</code> 打成一个 CJS 包（<strong>必须同一次打包</strong>，否则两份 <code>Fraction</code> 类身份不同，<code>instanceof</code> 会失效），再跑断言。</p>
-<p>覆盖 48 项：</p>
+<p>机制：用 esbuild 把 <code>matrix-ops.ts</code>、<code>fraction.ts</code>、<code>base-path.ts</code>、<code>pwa.ts</code>、<code>copy-text.ts</code>、<code>ocr-parse.ts</code>、<code>ocr-prompt.ts</code> 打成一个 CJS 包（<strong>必须同一次打包</strong>，否则两份 <code>Fraction</code> 类身份不同，<code>instanceof</code> 会失效），再跑断言。</p>
+<p>覆盖 70 项：</p>
 <table>
 <thead>
 <tr>
@@ -3673,6 +3853,10 @@ python docs/build_docs.py     # → docs/手册.html
 <td>7 种 URL 形态的 basename 推断，平台注入优先</td>
 </tr>
 <tr>
+<td>BASE-02</td>
+<td>Windows 磁盘路径不当作 basename；file/capacitor 用 HashRouter、http(s) 用 BrowserRouter</td>
+</tr>
+<tr>
 <td>PWA-01</td>
 <td>7 种 UA / 独立窗口组合：iPhone、iPadOS 桌面 UA、Android、iOS 版 Chrome、<code>navigator.standalone</code>、<code>display-mode</code>、非 HTTPS</td>
 </tr>
@@ -3680,9 +3864,29 @@ python docs/build_docs.py     # → docs/手册.html
 <td>COPY-01</td>
 <td>制表符分列、分数/小数两种输出、单行矩阵无多余换行</td>
 </tr>
+<tr>
+<td>OCR-01</td>
+<td><strong>四阶行列式不被截成 2×2</strong>（v1.5 事故回归）、kind 保留、数字转字符串</td>
+</tr>
+<tr>
+<td>OCR-02</td>
+<td>脏输出：代码块 + 前后文字、旧版单对象、<code>{matrices:[…]}</code>、空数组、非 JSON 抛错</td>
+</tr>
+<tr>
+<td>OCR-03</td>
+<td>声明尺寸不符以 data 为准、短行补空、null 转空串、format 推断、非方阵降级</td>
+</tr>
+<tr>
+<td>OCR-04</td>
+<td><code>augmented_col</code> 1 起转 0 起、越界忽略</td>
+</tr>
+<tr>
+<td>OCR-05</td>
+<td>提示词契约：始终返回数组、含四阶示例、「不是尺寸模板」、竖线、增广列、符号写法</td>
+</tr>
 </tbody>
 </table>
-<p>预期输出：<code>结果：48 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
+<p>预期输出：<code>结果：70 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
 <h2 id="test-h18">附录 B：用 Python 交叉核对期望值</h2>
 <p>自动化校验的核心是用独立实现复算，避免「从程序输出反推期望值」。</p>
 <pre><code class="language-python">from fractions import Fraction as F

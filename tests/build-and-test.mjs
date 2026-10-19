@@ -30,6 +30,12 @@ export { isIosDevice, isIosSafari, isStandaloneDisplay, shouldShowInstallHint } 
 export { joinRows, matrixToText } from ${JSON.stringify(
     path.join(SRC, "src/lib/copy-text.ts").replace(/\\/g, "/")
   )};
+export { parseOcrResponse } from ${JSON.stringify(
+    path.join(SRC, "src/lib/ocr-parse.ts").replace(/\\/g, "/")
+  )};
+export { buildOcrPrompt } from ${JSON.stringify(
+    path.join(SRC, "src/lib/ocr-prompt.ts").replace(/\\/g, "/")
+  )};
 `,
   "utf-8"
 );
@@ -50,6 +56,7 @@ const {
   shouldShowInstallHint,
 } = require(OUT);
 const { joinRows, matrixToText } = require(OUT);
+const { parseOcrResponse, buildOcrPrompt } = require(OUT);
 
 const F = (o) =>
   Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v.toFractionString()]));
@@ -254,6 +261,97 @@ function run() {
       JSON.stringify(matrixToText(m, false, 4)),
     );
     check("单行矩阵不产生多余换行", matrixToText(toFMatrix([[7, 8, 9]]), true) === "7\t8\t9");
+  }
+
+  console.log("OCR-01 四阶行列式与多结果解析（v1.6 核心回归）");
+  {
+    const fourByFour =
+      '[{"kind":"determinant","rows":4,"cols":4,"data":[[2,1,0,3],[1,3,2,1],[0,2,1,4],[3,1,2,1]],"format":"numeric"}]';
+    const r = parseOcrResponse(fourByFour);
+    check(
+      "四阶行列式不被截成 2×2",
+      r.items.length === 1 && r.items[0].rows === 4 && r.items[0].cols === 4,
+      r.items[0] ? `${r.items[0].rows}×${r.items[0].cols}` : "空",
+    );
+    check("kind 保留为 determinant", r.items[0].kind === "determinant");
+    check("数字单元格转成字符串", r.items[0].data[0][0] === "2");
+  }
+
+  console.log("OCR-02 各种脏输出都能救回来");
+  {
+    const messy =
+      '识别结果如下：\n```json\n[{"kind":"matrix","rows":2,"cols":2,"data":[[1,2],[3,4]]}]\n```\n以上。';
+    check("代码块 + 前后文字可救回", parseOcrResponse(messy).items.length === 1);
+    check(
+      "旧版单对象格式兼容",
+      parseOcrResponse('{"rows":3,"cols":3,"data":[[1,2,3],[4,5,6],[7,8,9]]}').items[0].rows === 3,
+    );
+    const wrapped = '{"matrices":[{"data":[[1,2],[3,4]]},{"data":[[5],[6]]}]}';
+    check("兼容 {matrices:[...]} 包装", parseOcrResponse(wrapped).items.length === 2);
+    check("空数组 [] 不报错", parseOcrResponse("[]").items.length === 0);
+
+    let err = null;
+    try {
+      parseOcrResponse("抱歉，我无法识别这张图片");
+    } catch (e) {
+      err = e;
+    }
+    check(
+      "非 JSON 抛错且带原文片段",
+      !!err && String(err.message).includes("不是合法 JSON"),
+      err ? err.message.slice(0, 40) : "没抛错",
+    );
+  }
+
+  console.log("OCR-03 尺寸与单元格异常的处理");
+  {
+    const declaredWrong = parseOcrResponse('[{"rows":4,"cols":4,"data":[[1,2],[3,4]]}]').items[0];
+    check(
+      "声明尺寸与 data 不符时以 data 为准",
+      declaredWrong.rows === 2 && declaredWrong.cols === 2,
+      `${declaredWrong.rows}×${declaredWrong.cols}`,
+    );
+    check(
+      "尺寸不符会记 warning",
+      declaredWrong.warnings.some((w) => w.includes("4 行")),
+      declaredWrong.warnings.join(" | "),
+    );
+
+    const ragged = parseOcrResponse('[{"data":[[1,2,3],[4]]}]').items[0];
+    check("短行补空列", ragged.cols === 3 && ragged.data[1].length === 3);
+
+    const withNull = parseOcrResponse('[{"data":[[1,null],["1/2","√2"]]}]').items[0];
+    check("null 转空串并提示", withNull.data[0][1] === "" && withNull.warnings.some((w) => w.includes("无法识别")));
+    check("混合内容 format 推断为 mixed", withNull.format === "mixed", withNull.format);
+
+    const notSquare = parseOcrResponse('[{"kind":"determinant","data":[[1,2,3],[4,5,6]]}]').items[0];
+    check(
+      "非方阵行列式降级为矩阵",
+      notSquare.kind === "matrix" && notSquare.warnings.some((w) => w.includes("方阵")),
+    );
+  }
+
+  console.log("OCR-04 增广矩阵列索引");
+  {
+    const aug = parseOcrResponse(
+      '[{"kind":"matrix","data":[[1,2,3],[4,5,6]],"augmented":true,"augmented_col":2}]',
+    ).items[0];
+    check("augmented_col 1 起 → 内部 0 起", aug.augmentedCol === 1, String(aug.augmentedCol));
+    const outOfRange = parseOcrResponse(
+      '[{"data":[[1,2]],"augmented":true,"augmented_col":9}]',
+    ).items[0];
+    check("越界增广列被忽略", outOfRange.augmentedCol === undefined);
+  }
+
+  console.log("OCR-05 提示词约束（防再次退化成「只认 2 阶」）");
+  {
+    const p = buildOcrPrompt("matrix");
+    check("要求始终返回数组", p.includes("始终只返回 JSON 数组"));
+    check("含四阶行列式示例", p.includes('"rows":4,"cols":4'));
+    check("明确「示例不是尺寸模板」", p.includes("不是尺寸模板"));
+    check("要求区分竖线/括号", p.includes("竖线"));
+    check("system 模式提到 augmented_col", buildOcrPrompt("system").includes("augmented_col"));
+    check("symbolic 模式给出写法约定", buildOcrPrompt("symbolic").includes('"*"'));
   }
 
   console.log(`\n结果：${pass} 通过，${fail} 失败`);
