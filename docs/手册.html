@@ -1,0 +1,5173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>线性代数计算器 · 技术文档合集</title>
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#ffffff; --ink:#1f2328; --muted:#5b6470;
+  --line:#e3e5e8; --accent:#3b5bdb; --accent-weak:#eef2ff;
+  --code-bg:#f4f5f7; --warn-bg:#fff8e6; --warn-line:#e0b34d;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",-apple-system,"Segoe UI",sans-serif;
+  font-size:15.5px; line-height:1.75; -webkit-font-smoothing:antialiased;
+}
+.wrap{display:flex; align-items:flex-start; max-width:1400px; margin:0 auto}
+/* ---------- 侧边栏 ---------- */
+aside{
+  position:sticky; top:0; flex:0 0 268px; width:268px; height:100vh; overflow-y:auto;
+  padding:26px 18px 60px; border-right:1px solid var(--line); background:var(--panel);
+}
+aside .brand{font-weight:700; font-size:16px; letter-spacing:.2px; margin:0 0 4px}
+aside .sub{color:var(--muted); font-size:12px; margin-bottom:20px}
+aside .doc{margin-bottom:18px}
+aside .doc > a{display:block; font-weight:600; font-size:13.5px; color:var(--ink); text-decoration:none; padding:5px 8px; border-radius:6px}
+aside .doc > a:hover{background:var(--accent-weak); color:var(--accent)}
+aside ul{list-style:none; margin:2px 0 0; padding:0 0 0 8px}
+aside li a{display:block; color:var(--muted); text-decoration:none; font-size:12.8px; line-height:1.5;
+  padding:3px 8px; border-left:2px solid transparent; border-radius:0 5px 5px 0}
+aside li a:hover{color:var(--accent); background:var(--accent-weak); border-left-color:var(--accent)}
+aside li.lv3 a{padding-left:20px; font-size:12.2px; opacity:.85}
+/* ---------- 正文 ---------- */
+main{flex:1 1 auto; min-width:0; padding:34px 44px 120px; max-width:940px}
+.doc-sec{padding-bottom:16px}
+.doc-sec + .doc-sec{margin-top:28px; border-top:1px solid var(--line); padding-top:34px}
+h1{font-size:26px; line-height:1.35; margin:0 0 18px; letter-spacing:.2px}
+h2{font-size:19.5px; margin:38px 0 12px; padding-bottom:6px; border-bottom:1px solid var(--line)}
+h3{font-size:16px; margin:26px 0 8px}
+h4{font-size:14.5px; margin:20px 0 6px; color:var(--muted)}
+p{margin:10px 0}
+a{color:var(--accent); text-decoration:none; border-bottom:1px solid rgba(59,91,219,.25)}
+a:hover{border-bottom-color:var(--accent)}
+ul,ol{padding-left:22px; margin:10px 0}
+li{margin:4px 0}
+li > ul, li > ol{margin:4px 0}
+strong{font-weight:600}
+hr{border:0; border-top:1px solid var(--line); margin:34px 0}
+/* 代码 */
+code{font-family:"JetBrains Mono","Cascadia Code",Consolas,"Courier New",monospace;
+  font-size:.88em; background:var(--code-bg); padding:.15em .38em; border-radius:4px; border:1px solid var(--line)}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:8px; padding:14px 16px;
+  overflow-x:auto; line-height:1.6; margin:14px 0}
+pre code{background:none; border:0; padding:0; font-size:13px; white-space:pre}
+/* 表格 */
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:13.8px; display:block; overflow-x:auto}
+table thead th{background:#f2f4f7; text-align:left; font-weight:600; white-space:nowrap}
+th,td{border:1px solid var(--line); padding:7px 10px; vertical-align:top}
+tbody tr:nth-child(even){background:#fcfcfd}
+/* 引用 / 提示 */
+blockquote{margin:14px 0; padding:10px 14px; background:var(--warn-bg);
+  border-left:3px solid var(--warn-line); border-radius:0 6px 6px 0; color:#4a3f22}
+blockquote p{margin:4px 0}
+/* 页头信息条 */
+.meta{display:flex; gap:10px; flex-wrap:wrap; margin:0 0 26px}
+.pill{font-size:12px; color:var(--muted); background:var(--panel); border:1px solid var(--line);
+  padding:3px 10px; border-radius:999px}
+/* 回到顶部 */
+.top{position:fixed; right:22px; bottom:22px; width:38px; height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; background:var(--panel);
+  border:1px solid var(--line); color:var(--muted); text-decoration:none; font-size:16px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.top:hover{color:var(--accent); border-color:var(--accent)}
+footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; border-top:1px solid var(--line)}
+/* 窄屏 */
+@media (max-width:900px){
+  .wrap{display:block}
+  aside{position:static; width:auto; height:auto; border-right:0; border-bottom:1px solid var(--line); padding:18px 16px}
+  aside ul{display:none}
+  main{padding:22px 16px 90px; max-width:none}
+  h1{font-size:22px}
+  table{font-size:13px}
+}
+/* 打印 */
+@media print{
+  aside,.top{display:none}
+  body{background:#fff; font-size:11.5pt}
+  main{padding:0; max-width:none}
+  .doc-sec + .doc-sec{page-break-before:always}
+  h2,h3{page-break-after:avoid}
+  pre,table,blockquote{page-break-inside:avoid}
+  a{color:inherit; border:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+  <div class="brand">线性代数计算器</div>
+  <div class="sub">技术文档合集 · 离线版</div>
+  <div class="doc"><a href="#doc-overview">项目总览</a><ul><li class="lv2"><a href="#overview-h1">一、交付物</a></li>
+<li class="lv2"><a href="#overview-h2">二、功能总览</a></li>
+<li class="lv2"><a href="#overview-h3">三、快速开始</a></li>
+<li class="lv2"><a href="#overview-h4">四、目录结构</a></li>
+<li class="lv2"><a href="#overview-h5">五、文档索引</a></li>
+<li class="lv2"><a href="#overview-h6">六、必须知道的三条限制</a></li>
+<li class="lv2"><a href="#overview-h7">七、部署到 GitHub Pages（可选）</a></li></ul></div><div class="doc"><a href="#doc-user">用户手册</a><ul><li class="lv2"><a href="#user-h1">目录</a></li>
+<li class="lv2"><a href="#user-h2">1. 安装与启动</a></li>
+<li class="lv2"><a href="#user-h3">2. 界面导览</a></li>
+<li class="lv2"><a href="#user-h4">3. 通用输入规则</a></li>
+<li class="lv3"><a href="#user-h5">3.1 单元格可以填什么</a></li>
+<li class="lv3"><a href="#user-h6">3.2 矩阵编辑器</a></li>
+<li class="lv3"><a href="#user-h7">3.3 尺寸与能力速查</a></li>
+<li class="lv2"><a href="#user-h8">4. 矩阵运算</a></li>
+<li class="lv3"><a href="#user-h9">4.1 单矩阵运算</a></li>
+<li class="lv3"><a href="#user-h10">4.2 双矩阵运算</a></li>
+<li class="lv3"><a href="#user-h11">4.3 符号运算</a></li>
+<li class="lv2"><a href="#user-h12">5. 线性方程组</a></li>
+<li class="lv3"><a href="#user-h13">5.1 尺寸控制</a></li>
+<li class="lv3"><a href="#user-h14">5.2 求解与结果</a></li>
+<li class="lv3"><a href="#user-h15">5.3 快速示例按钮</a></li>
+<li class="lv2"><a href="#user-h16">6. 向量运算</a></li>
+<li class="lv3"><a href="#user-h17">6.1 输入</a></li>
+<li class="lv3"><a href="#user-h18">6.2 六种运算</a></li>
+<li class="lv2"><a href="#user-h19">7. 图片识别（OCR）</a></li>
+<li class="lv3"><a href="#user-h20">7.1 一次性配置</a></li>
+<li class="lv3"><a href="#user-h21">7.2 识别流程</a></li>
+<li class="lv3"><a href="#user-h22">7.3 三种识别模式</a></li>
+<li class="lv3"><a href="#user-h23">7.4 识别结果的处理</a></li>
+<li class="lv2"><a href="#user-h24">8. 显示、精度与复制</a></li>
+<li class="lv2"><a href="#user-h25">9. 报错速查表</a></li>
+<li class="lv2"><a href="#user-h26">10. 典型使用流程</a></li>
+<li class="lv2"><a href="#user-h27">11. FAQ</a></li></ul></div><div class="doc"><a href="#doc-tech">技术手册</a><ul><li class="lv2"><a href="#tech-h1">目录</a></li>
+<li class="lv2"><a href="#tech-h2">1. 产物形态</a></li>
+<li class="lv2"><a href="#tech-h3">2. 技术栈</a></li>
+<li class="lv2"><a href="#tech-h4">3. 代码分层与调用关系</a></li>
+<li class="lv2"><a href="#tech-h5">4. 数值核心：有理数类</a></li>
+<li class="lv3"><a href="#tech-h6">4.1 表示</a></li>
+<li class="lv3"><a href="#tech-h7">4.2 解析规则（from / fromString / safeParse）</a></li>
+<li class="lv3"><a href="#tech-h8">4.3 精度边界</a></li>
+<li class="lv3"><a href="#tech-h9">4.4 运算 API</a></li>
+<li class="lv2"><a href="#tech-h10">5. 算法实现</a></li>
+<li class="lv3"><a href="#tech-h11">5.1 行最简形 RREF（rref）</a></li>
+<li class="lv3"><a href="#tech-h12">5.2 行列式（determinant）</a></li>
+<li class="lv3"><a href="#tech-h13">5.3 逆矩阵（inverse）</a></li>
+<li class="lv3"><a href="#tech-h14">5.4 秩 / 迹 / 转置</a></li>
+<li class="lv3"><a href="#tech-h15">5.5 矩阵幂（matrixPower）</a></li>
+<li class="lv3"><a href="#tech-h16">5.6 特征值与特征向量（eigenvalues）</a></li>
+<li class="lv3"><a href="#tech-h17">5.7 线性方程组（solveLinearSystem）</a></li>
+<li class="lv3"><a href="#tech-h18">5.8 符号运算</a></li>
+<li class="lv3"><a href="#tech-h19">5.9 向量运算</a></li>
+<li class="lv2"><a href="#tech-h20">6. 渲染与显示规则</a></li>
+<li class="lv2"><a href="#tech-h21">7. OCR 子系统</a></li>
+<li class="lv3"><a href="#tech-h22">7.1 数据流</a></li>
+<li class="lv3"><a href="#tech-h23">7.2 请求格式</a></li>
+<li class="lv3"><a href="#tech-h24">7.3 三套提示词</a></li>
+<li class="lv3"><a href="#tech-h25">7.4 校验与降级</a></li>
+<li class="lv2"><a href="#tech-h26">8. 存储与状态</a></li>
+<li class="lv2"><a href="#tech-h27">9. 网络行为与离线能力</a></li>
+<li class="lv2"><a href="#tech-h28">10. 复杂度与规模上限</a></li>
+<li class="lv2"><a href="#tech-h29">11. 已知限制与风险</a></li>
+<li class="lv2"><a href="#tech-h30">12. 安全与隐私</a></li>
+<li class="lv2"><a href="#tech-h31">13. 可扩展方向</a></li>
+<li class="lv2"><a href="#tech-h32">14. 构建与补丁历史</a></li>
+<li class="lv3"><a href="#tech-h33">14.1 当前构建方式（v1.2 起）</a></li>
+<li class="lv3"><a href="#tech-h34">14.2 历史：v1.1 的字节级补丁（已归档）</a></li>
+<li class="lv3"><a href="#tech-h35">14.3 三个必须知道的构建坑</a></li></ul></div><div class="doc"><a href="#doc-dev">开发者指南</a><ul><li class="lv2"><a href="#dev-h1">目录</a></li>
+<li class="lv2"><a href="#dev-h2">1. 仓库里有什么</a></li>
+<li class="lv2"><a href="#dev-h3">2. 环境准备</a></li>
+<li class="lv2"><a href="#dev-h4">3. 日常开发</a></li>
+<li class="lv2"><a href="#dev-h5">4. 构建与产物</a></li>
+<li class="lv2"><a href="#dev-h6">5. 打 Android 包</a></li>
+<li class="lv3"><a href="#dev-h7">5.1 快速出 debug 包</a></li>
+<li class="lv3"><a href="#dev-h8">5.2 只更新网页资源</a></li>
+<li class="lv3"><a href="#dev-h9">5.3 出正式包</a></li>
+<li class="lv2"><a href="#dev-h10">6. 验收与发版清单</a></li>
+<li class="lv2"><a href="#dev-h11">7. 故障排查</a></li>
+<li class="lv2"><a href="#dev-h12">8. 附录：没有源码时的应急手段</a></li>
+<li class="lv2"><a href="#dev-h13">9. 文档维护</a></li></ul></div><div class="doc"><a href="#doc-test">测试手册</a><ul><li class="lv2"><a href="#test-h1">目录</a></li>
+<li class="lv2"><a href="#test-h2">1. 测试范围与环境</a></li>
+<li class="lv2"><a href="#test-h3">2. 用例分级</a></li>
+<li class="lv2"><a href="#test-h4">3. 矩阵运算用例</a></li>
+<li class="lv3"><a href="#test-h5">3.1 单矩阵（P0/P1）</a></li>
+<li class="lv3"><a href="#test-h6">3.2 双矩阵（P0）</a></li>
+<li class="lv2"><a href="#test-h7">4. 线性方程组用例</a></li>
+<li class="lv3"><a href="#test-h8">4.1 三种结论</a></li>
+<li class="lv3"><a href="#test-h9">4.2 尺寸与录入</a></li>
+<li class="lv2"><a href="#test-h10">5. 向量运算用例</a></li>
+<li class="lv2"><a href="#test-h11">6. 符号运算用例</a></li>
+<li class="lv2"><a href="#test-h12">7. OCR 用例</a></li>
+<li class="lv2"><a href="#test-h13">8. 界面与交互用例</a></li>
+<li class="lv2"><a href="#test-h14">9. 性能观测</a></li>
+<li class="lv2"><a href="#test-h15">10. 发版回归清单</a></li>
+<li class="lv2"><a href="#test-h16">11. 缺陷记录模板</a></li>
+<li class="lv2"><a href="#test-h17">附录 A：可直接运行的自动回归（方程组求解器）</a></li>
+<li class="lv2"><a href="#test-h18">附录 B：用 Python 交叉核对期望值</a></li></ul></div><div class="doc"><a href="#doc-src">源码解析</a><ul><li class="lv2"><a href="#src-h1">目录</a></li>
+<li class="lv2"><a href="#src-h2">1. 一句话结论</a></li>
+<li class="lv2"><a href="#src-h3">2. 源码包构成</a></li>
+<li class="lv2"><a href="#src-h4">3. 技术栈（真实版本）</a></li>
+<li class="lv2"><a href="#src-h5">4. 目录与模块职责</a></li>
+<li class="lv3"><a href="#src-h6">4.1 业务核心 src/lib/</a></li>
+<li class="lv3"><a href="#src-h7">4.2 页面与组件</a></li>
+<li class="lv3"><a href="#src-h8">4.3 状态管理</a></li>
+<li class="lv2"><a href="#src-h9">5. 三条数据流</a></li>
+<li class="lv2"><a href="#src-h10">6. 构建链路：一份源码，三种产物</a></li>
+<li class="lv2"><a href="#src-h11">7. 读源码纠正的五个误判</a></li>
+<li class="lv2"><a href="#src-h12">8. 已做的源码级修复</a></li>
+<li class="lv3"><a href="#src-h13">8.1 无解时增广矩阵秩错误（原 L13）</a></li>
+<li class="lv3"><a href="#src-h14">8.2 OCR 无超时（原 L4）</a></li>
+<li class="lv3"><a href="#src-h15">8.3 构建脚本的 Windows 兼容</a></li>
+<li class="lv2"><a href="#src-h16">9. 本地构建与验证</a></li>
+<li class="lv2"><a href="#src-h17">10. 遗留问题与建议</a></li></ul></div><div class="doc"><a href="#doc-pages">部署：GitHub Pages</a><ul><li class="lv2"><a href="#pages-h1">1. 关于&quot;把 API Key 存在本地&quot;：cookie 是错的工具</a></li>
+<li class="lv2"><a href="#pages-h2">2. 部署前必须知道的三件事</a></li>
+<li class="lv3"><a href="#pages-h3">2.1 子路径问题（已修）</a></li>
+<li class="lv3"><a href="#pages-h4">2.2 CORS：浏览器直连模型接口必须被允许</a></li>
+<li class="lv3"><a href="#pages-h5">2.3 可达性</a></li>
+<li class="lv2"><a href="#pages-h6">3. 部署方式 A：GitHub Actions 自动部署（推荐）</a></li>
+<li class="lv3"><a href="#pages-h7">步骤</a></li>
+<li class="lv3"><a href="#pages-h8">工作流做了什么</a></li>
+<li class="lv2"><a href="#pages-h9">4. 部署方式 B：手动推 gh-pages 分支</a></li>
+<li class="lv2"><a href="#pages-h10">5. iOS 用户怎么用</a></li>
+<li class="lv2"><a href="#pages-h11">6. Windows 上本地构建的两个坑</a></li>
+<li class="lv2"><a href="#pages-h12">7. 安全须知</a></li>
+<li class="lv2"><a href="#pages-h13">8. 本次为部署做的代码改动</a></li>
+<li class="lv2"><a href="#pages-h14">9. 验收清单</a></li>
+<li class="lv2"><a href="#pages-h15">10. 常见问题</a></li></ul></div><div class="doc"><a href="#doc-ios">可行性：iOS 端</a><ul><li class="lv2"><a href="#ios-h1">1. 硬约束：到底卡在哪一步</a></li>
+<li class="lv2"><a href="#ios-h2">2. 四条路线对比</a></li>
+<li class="lv3"><a href="#ios-h3">2.1 为什么 A 排第一</a></li>
+<li class="lv3"><a href="#ios-h4">2.2 路线 B 的具体做法（零成本、真原生）</a></li>
+<li class="lv3"><a href="#ios-h5">2.3 路线 C / D 什么时候才值得</a></li>
+<li class="lv2"><a href="#ios-h6">3. 针对本项目的具体建议</a></li>
+<li class="lv2"><a href="#ios-h7">4. 与现有产物的差距清单（走 PWA 路线时）</a></li>
+<li class="lv2"><a href="#ios-h8">5. 风险与未决项</a></li></ul></div><div class="doc"><a href="#doc-cfg">可行性：配置存储</a><ul><li class="lv2"><a href="#cfg-h1">1. 现状：现在是怎么存的</a></li>
+<li class="lv2"><a href="#cfg-h2">2. 技术可行性的四条硬约束</a></li>
+<li class="lv3"><a href="#cfg-h3">2.1 Safari / iOS 的关键细节（容易踩）</a></li>
+<li class="lv3"><a href="#cfg-h4">2.2 file:// 的两个不确定性</a></li>
+<li class="lv2"><a href="#cfg-h5">3. 存储方案对比</a></li>
+<li class="lv2"><a href="#cfg-h6">4. 威胁模型：谁可能看到这个 Key</a></li>
+<li class="lv2"><a href="#cfg-h7">5. 建议方案（按投入分级）</a></li>
+<li class="lv3"><a href="#cfg-h8">P0：不改架构，只补三个缺口（半天）</a></li>
+<li class="lv3"><a href="#cfg-h9">P1：加一层口令加密（1 天）</a></li>
+<li class="lv3"><a href="#cfg-h10">P2：把 Key 移出客户端（1–2 天，需后端）</a></li>
+<li class="lv3"><a href="#cfg-h11">不建议做的</a></li>
+<li class="lv2"><a href="#cfg-h12">6. 结论</a></li></ul></div>
+</aside>
+<main>
+  <div class="meta">
+    <span class="pill">文档版本 v1.0</span>
+    <span class="pill">产物构建 2026-10-18</span>
+    <span class="pill">生成于 2026-10-19 16:43</span>
+    <span class="pill">Ctrl/⌘ + P 可打印为 PDF</span>
+  </div>
+  <section class="doc-sec" id="doc-overview"><h1 id="_1">线性代数计算器</h1>
+<p>一个纯前端、可离线使用的线性代数计算器，支持<strong>精确分数运算</strong>的矩阵计算、线性方程组求解、向量运算、符号矩阵运算，以及基于视觉大模型的<strong>图片识别录入</strong>。</p>
+<p>计算全部在浏览器本地完成，不依赖后端；唯一的外发请求是用户在设置中自行配置的 OCR 大模型接口。</p>
+<p><strong>源码已归档到 <code>source/</code></strong>，产物由源码构建（v1.2），可以本地改、本地出包。</p>
+<hr />
+<h2 id="overview-h1">一、交付物</h2>
+<table>
+<thead>
+<tr>
+<th>产物</th>
+<th>文件</th>
+<th>形态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Web 单文件版</td>
+<td><code>线性代数计算器.html</code>（1.24 MB）</td>
+<td>单 HTML 内联全部 JS/CSS，双击即用</td>
+<td><strong>v1.2 源码构建</strong></td>
+</tr>
+<tr>
+<td>Android 应用</td>
+<td><code>线性代数计算器.apk</code>（4.2 MB）</td>
+<td>Capacitor 6 壳 + 本地 Web 资源，包名 <code>com.doubao.linalg</code></td>
+<td>v1.0 旧构建；源码工程的网页资源已更新，重打包即得 v1.2</td>
+</tr>
+<tr>
+<td>图像识别手册</td>
+<td><code>线性代数计算器图像识别功能使用手册.pdf</code></td>
+<td>5 页图文，手机端 OCR 配置流程</td>
+<td>首次配置 API Key 的新手</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>两种前端产物来自同一份源码：Web 版是「单文件内联」，APK 版是「分块资源 + Capacitor 壳」。功能一致，存储键同格式。</p>
+<p>v1.2 相比 v1.0 修了两个问题：方程组「无解」时增广矩阵秩显示错误（L13）、OCR 请求无超时（L4）。改动在源码里，不是对压缩产物的补丁。
+v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风险提示）和结果卡「复制」按钮。</p>
+</blockquote>
+<h2 id="overview-h2">二、功能总览</h2>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>能力</th>
+<th>规模上限</th>
+<th>精度策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单矩阵运算</td>
+<td>行列式 det、逆矩阵、秩 rank、转置 Aᵀ、行最简形 RREF、特征值/特征向量、迹 tr、幂 Aⁿ</td>
+<td>10×10；特征值 ≤ 5 阶</td>
+<td>det/逆/RREF/幂 为<strong>精确分数</strong>；特征值为数值近似</td>
+</tr>
+<tr>
+<td>双矩阵运算</td>
+<td>A + B、A − B、A × B</td>
+<td>10×10</td>
+<td>精确分数</td>
+</tr>
+<tr>
+<td>符号运算</td>
+<td>含字母与 π 的矩阵：det、inv、rank、transpose、RREF、trace</td>
+<td>6×6（det/inv ≤ 3 阶，RREF ≤ 4×4）</td>
+<td>符号表达式精确化简</td>
+</tr>
+<tr>
+<td>线性方程组</td>
+<td>增广矩阵输入 → 唯一解 / 无穷多解（自由变量 + 基础解系）/ 无解，附高斯消元步骤</td>
+<td>10 行 × (1–10 未知数 + 1)</td>
+<td>精确分数</td>
+</tr>
+<tr>
+<td>向量运算</td>
+<td>点积、叉积（仅 3 维）、模、单位化、夹角（rad + °）、线性组合</td>
+<td>2–5 维</td>
+<td>点积/组合为精确分数，模与夹角为浮点</td>
+</tr>
+<tr>
+<td>图片识别</td>
+<td>拍照/选图 → 裁剪旋转翻转 → 视觉模型识别为矩阵；三种模式（数值矩阵 / 符号矩阵 / 增广矩阵）</td>
+<td>由模型与提示词约束</td>
+<td>识别失败单元格置 0 并提示核对</td>
+</tr>
+</tbody>
+</table>
+<p>顶栏右侧的开关（标签在<strong>「小数模式」/「分数模式」</strong>之间切换）决定所有结果的呈现方式：小数模式显示 6 位小数（自动去尾零），分数模式显示 <code>p/q</code>。开关状态随浏览器本地保存。</p>
+<p>每张结果卡右上角有<strong>「复制」</strong>：复制成制表符分列的纯文本，粘到 Excel / WPS 表格会自动分格。</p>
+<p><strong>iPhone / iPad</strong>：部署到 HTTPS 后建议先「分享 → 添加到主屏幕」再用。Safari 标签页里的本地数据（含 OCR 的 API Key）在 7 个「使用日」无交互后会被系统清理，主屏幕 Web App 使用独立存储，不受这条规则影响。应用内会主动弹提示。</p>
+<h2 id="overview-h3">三、快速开始</h2>
+<p><strong>Web 版</strong>：双击 <code>线性代数计算器.html</code> → 直接可用。首次打开无需联网（字体走系统回退），OCR 功能需先配置。</p>
+<p><strong>APK 版</strong>：安装 <code>线性代数计算器.apk</code> → 打开即用（仅申请网络权限，用于 OCR）。</p>
+<p><strong>配 OCR（两版通用）</strong>：在任意矩阵卡片标题右侧点「配置 OCR」→ 填 <code>Base URL</code>、<code>API Key</code>、<code>视觉模型名</code> → 保存。要求接口兼容 OpenAI Chat Completions 协议且支持图像输入。以 DeepSeek 中转为例：</p>
+<pre><code>Base URL: https://api.deepseek.com
+视觉模型名: deepseek-flash
+API Key:  自行申请（见附图手册）
+</code></pre>
+<p>保存后按钮变成「图片识别」，旁边多一个齿轮「OCR 设置」。</p>
+<blockquote>
+<p>API Key 以明文保存在浏览器 <code>localStorage</code>，不会上传到任何第三方；换设备或清缓存后需重新填写。<strong>不要使用他人共享的 Key，也不要把自己的 Key 发给别人。</strong> 存储边界与加固方案见 <a href="#doc-cfg">docs/可行性-视觉模型配置存储.md</a>。</p>
+</blockquote>
+<h2 id="overview-h4">四、目录结构</h2>
+<pre><code>线性代数计算器/
+├── 线性代数计算器.html          # Web 单文件产物（v1.2，源码构建）
+├── 线性代数计算器.apk           # Android 产物（v1.0）
+├── 线性代数计算器图像识别功能使用手册.pdf
+├── README.md / CHANGELOG.md
+├── source/
+│   └── linear-algebra-calculator/
+│       ├── web-source/          # ★ 前端源码：Vite + React 19 + TS + Tailwind v4
+│       │   ├── src/lib/         #   算法核心（fraction / matrix-ops / symbolic / vector-ops / ocr-service）
+│       │   ├── src/pages/       #   页面与 5 个功能区块
+│       │   ├── src/components/  #   输入网格、结果渲染、OCR 对话框
+│       │   └── scripts/         #   make-standalone / make-single-file
+│       ├── android/             # Capacitor 6 工程 + build-apk.sh
+│       └── single-file/         # 单文件产物副本
+├── tests/build-and-test.mjs     # 48 项回归（求解器 + 路由 + iOS 判定 + 复制文本）
+├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
+├── .github/workflows/           # GitHub Pages 自动部署
+├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）
+└── docs/
+    ├── 用户手册.md              # 面向使用者
+    ├── 技术手册.md              # 面向维护者：数据结构、算法、上限、缺陷
+    ├── 开发者指南.md            # 改源码、构建、打 APK、排错
+    ├── 测试手册.md              # 验收与回归用例（含标准答案）
+    ├── 源码解析.md              # 源码结构、数据流、构建链、与逆向结论的差异
+    ├── 部署-GitHub-Pages.md     # 托管到 GitHub Pages + iOS 添加到主屏的完整步骤
+    ├── 可行性-iOS端.md          # Windows 上开发/交付苹果端的四条路线
+    ├── 可行性-视觉模型配置存储.md  # 浏览器保存 API Key 的可行性、风险与加固
+    ├── 交接文档.md              # 给接手人：现状、决策、风险、未完成清单
+    ├── 新会话提示词.md          # 开新对话时粘贴的上下文模板（三档长度 + 专项片段）
+    ├── build_docs.py            # Markdown → 单文件 HTML 手册
+    └── 手册.html                # 离线阅读版（构建产物）
+</code></pre>
+<h2 id="overview-h5">五、文档索引</h2>
+<table>
+<thead>
+<tr>
+<th>想解决的问题</th>
+<th>看哪份</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>这个按钮是干什么的？结果怎么读？</td>
+<td><a href="#doc-user">docs/用户手册.md</a></td>
+</tr>
+<tr>
+<td>算法怎么实现的？为什么行列式是精确值？</td>
+<td><a href="#doc-tech">docs/技术手册.md</a></td>
+</tr>
+<tr>
+<td>源码怎么组织？构建链是什么？</td>
+<td><a href="#doc-src">docs/源码解析.md</a></td>
+</tr>
+<tr>
+<td>想改功能 / 重新打 APK</td>
+<td><a href="#doc-dev">docs/开发者指南.md</a></td>
+</tr>
+<tr>
+<td>改完怎么验证没算错</td>
+<td><a href="#doc-test">docs/测试手册.md</a></td>
+</tr>
+<tr>
+<td>没有 Mac，怎么把它弄到 iPhone 上？</td>
+<td><a href="#doc-ios">docs/可行性-iOS端.md</a></td>
+</tr>
+<tr>
+<td>想托管到 GitHub Pages 让手机直接用</td>
+<td><a href="#doc-pages">docs/部署-GitHub-Pages.md</a></td>
+</tr>
+<tr>
+<td>API Key 存浏览器里安全吗？会不会丢？</td>
+<td><a href="#doc-cfg">docs/可行性-视觉模型配置存储.md</a></td>
+</tr>
+<tr>
+<td>我要接手这个项目，从哪看起？</td>
+<td><a href="docs/交接文档.md">docs/交接文档.md</a></td>
+</tr>
+<tr>
+<td>开新对话，怎么让它快速进入状态？</td>
+<td><a href="docs/新会话提示词.md">docs/新会话提示词.md</a></td>
+</tr>
+<tr>
+<td>这个版本改了什么</td>
+<td><a href="CHANGELOG.md">CHANGELOG.md</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="overview-h6">六、必须知道的三条限制</h2>
+<ol>
+<li><strong>矩阵数值全部走 JS 的 <code>number</code></strong>（<code>Fraction</code> 内部是 <code>num/den</code> 两个 double）。元素绝对值超过 <code>2^53</code> 或分数分子分母累乘过大时会出现精度漂移，此时结果不再严格精确。</li>
+<li><strong>n ≥ 3 的特征值用 QR 迭代近似</strong>（100 次 / 容差 1e-10），只保证实特征值收敛；复特征值仅在 2×2 时专门处理；阶数上限 5。</li>
+<li><strong>产物不要手改</strong>。压缩后的 bundle 可读性差，改了下次构建就丢；改 <code>source/</code> 再 <code>npm run build:all</code>。</li>
+</ol>
+<h2 id="overview-h7">七、部署到 GitHub Pages（可选）</h2>
+<p>工程里已带 PWA 清单、Service Worker、iOS 主屏图标，以及一条 GitHub Actions 工作流：</p>
+<pre><code>push 到 main → 构建 → 跑 48 项回归 → 发布到 Pages
+</code></pre>
+<p>产物目录 <code>dist-pages</code> 也可以丢到任意静态托管。完整步骤、iOS 添加主屏的流程、CORS 与可达性实测、以及"为什么不要用 cookie 存 Key"，见 <a href="#doc-pages">docs/部署-GitHub-Pages.md</a>。</p>
+<hr />
+<p><em>文档版本 v1.4 · 源码构建 2026-10-19</em></p></section><section class="doc-sec" id="doc-user"><h1 id="_1">线性代数计算器 · 用户手册</h1>
+<p>适用产物：<code>线性代数计算器.html</code>（网页/单文件版）、<code>线性代数计算器.apk</code>（安卓版）
+本文覆盖全部六个模块的操作方式、结果解读与报错处理。图像识别的新手配置流程另见随附 PDF《线性代数计算器图像识别功能使用手册》。</p>
+<hr />
+<h2 id="user-h1">目录</h2>
+<ol>
+<li><a href="#user-h2">安装与启动</a></li>
+<li><a href="#user-h3">界面导览</a></li>
+<li><a href="#user-h4">通用输入规则</a></li>
+<li><a href="#user-h8">矩阵运算</a></li>
+<li><a href="#user-h12">线性方程组</a></li>
+<li><a href="#user-h16">向量运算</a></li>
+<li><a href="#user-h19">图片识别（OCR）</a></li>
+<li><a href="#user-h24">显示、精度与复制</a></li>
+<li><a href="#user-h25">报错速查表</a></li>
+<li><a href="#user-h26">典型使用流程</a></li>
+<li><a href="#user-h27">FAQ</a></li>
+</ol>
+<hr />
+<h2 id="user-h2">1. 安装与启动</h2>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>启动方式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>网页版</td>
+<td>双击 <code>线性代数计算器.html</code>，用 Chrome / Edge / Safari 打开</td>
+<td>单文件，所有代码已内联。断网也能算，除 OCR 外的功能不受影响</td>
+</tr>
+<tr>
+<td>在线版（推荐手机用）</td>
+<td>Safari / Chrome 打开 <code>https://&lt;账号&gt;.github.io/&lt;仓库名&gt;/</code></td>
+<td>可「添加到主屏」当 App 用；iPhone 上<strong>建议一定加</strong>，见下方说明</td>
+</tr>
+<tr>
+<td>安卓版</td>
+<td>安装 <code>线性代数计算器.apk</code> 后打开</td>
+<td>仅申请「网络」权限，用于图片识别；其余计算全在本机完成</td>
+</tr>
+</tbody>
+</table>
+<p><strong>iPhone / iPad 为什么一定要加到主屏</strong>：Safari 标签页里的本地数据（OCR 的 API Key、分数模式偏好）在 7 个「使用日」没有交互后会被系统清掉；从主屏图标启动的 Web App 使用独立存储，不受这条规则影响。iOS 上一旦检测到你在标签页里用，页面底部会自动弹出「添加到主屏」的引导条，按提示三步即可；OCR 设置对话框里也会再提示一次。</p>
+<p><strong>第一次使用建议</strong>：先打开「矩阵运算 → 单矩阵运算」，点「示例填充」再点「行列式 det」，确认能看到结果与计算步骤，说明运行正常。</p>
+<h2 id="user-h3">2. 界面导览</h2>
+<pre><code>┌──────────────────────────────────────────────────────────┐
+│ [图标] 线性代数计算器            (●—— 小数模式)         │  ← 顶栏
+│        Linear Algebra Calculator                          │
+├──────────────────────────────────────────────────────────┤
+│  [矩阵运算]  [线性方程组]  [向量运算]                     │  ← 一级 Tab
+├──────────────────────────────────────────────────────────┤
+│  [单矩阵运算] [双矩阵运算] [符号运算]                     │  ← 二级 Tab（仅矩阵运算）
+├───────────────────────────┬──────────────────────────────┤
+│  矩阵输入 / 编辑器         │  运算按钮 + 计算结果 + 步骤  │
+└───────────────────────────┴──────────────────────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>位置</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模式开关</td>
+<td>顶栏右侧</td>
+<td>标签在「小数模式」/「分数模式」间切换：小数显示 6 位（去尾零），分数显示 <code>p/q</code>。状态本地保存</td>
+</tr>
+<tr>
+<td>配置 OCR</td>
+<td><strong>各矩阵卡片标题右侧</strong></td>
+<td>填写视觉模型 API；未配置时该按钮就叫「配置 OCR」，配置后变成上传识别入口</td>
+</tr>
+<tr>
+<td>一级 Tab</td>
+<td>内容区顶部</td>
+<td>矩阵运算 / 线性方程组 / 向量运算</td>
+</tr>
+<tr>
+<td>结果卡</td>
+<td>右侧栏</td>
+<td>显示运算标题、结果矩阵或标量、可折叠的「计算步骤」</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>手机端为单列布局：输入在上，结果在下，需要向下滑动查看。</p>
+</blockquote>
+<h2 id="user-h4">3. 通用输入规则</h2>
+<h3 id="user-h5">3.1 单元格可以填什么</h3>
+<table>
+<thead>
+<tr>
+<th>输入</th>
+<th>是否支持</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>3</code>、<code>-7</code>、<code>0</code></td>
+<td>✅</td>
+<td>整数</td>
+</tr>
+<tr>
+<td><code>1/3</code>、<code>-5/2</code></td>
+<td>✅</td>
+<td>分数，会先约分</td>
+</tr>
+<tr>
+<td><code>0.25</code>、<code>-1.5</code></td>
+<td>✅</td>
+<td>小数，自动转成精确分数（<code>0.25 → 1/4</code>）</td>
+</tr>
+<tr>
+<td><code>2^3</code>、<code>1/2/3</code>、<code>π</code>、<code>sin(1)</code></td>
+<td>❌</td>
+<td>单元格是数值，不接受表达式；符号表达式请用「符号运算」模块</td>
+</tr>
+<tr>
+<td><code>1/0</code></td>
+<td>❌</td>
+<td>分母为 0，该格保持原值</td>
+</tr>
+</tbody>
+</table>
+<p>输入非法时<strong>不会写进矩阵</strong>：输入框会变红并保持编辑状态，改成合法值后按回车（或点击别处）才提交；按 <code>Esc</code> 放弃本次修改。</p>
+<h3 id="user-h6">3.2 矩阵编辑器</h3>
+<p>数值矩阵卡片上方有一排按钮：</p>
+<table>
+<thead>
+<tr>
+<th>按钮</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>− 行</code> / <code>+ 行</code></td>
+<td>增删行，范围 1–10 行</td>
+</tr>
+<tr>
+<td><code>− 列</code> / <code>+ 列</code></td>
+<td>增删列，范围 1–10 列</td>
+</tr>
+<tr>
+<td>零矩阵</td>
+<td>用 0 填满当前尺寸</td>
+</tr>
+<tr>
+<td>单位阵</td>
+<td>生成同阶单位矩阵（仅方阵可点）</td>
+</tr>
+<tr>
+<td>随机</td>
+<td>填充 −9 到 9 的随机整数，便于试算</td>
+</tr>
+<tr>
+<td>转置填充</td>
+<td>用当前矩阵的转置替换（行列互换）</td>
+</tr>
+</tbody>
+</table>
+<p>此外还有「示例填充」和「清空」，位于卡片标题右侧。</p>
+<h3 id="user-h7">3.3 尺寸与能力速查</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>行</th>
+<th>列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数值矩阵</td>
+<td>1–10</td>
+<td>1–10</td>
+</tr>
+<tr>
+<td>符号矩阵</td>
+<td>2–6</td>
+<td>2–6</td>
+</tr>
+<tr>
+<td>增广矩阵（方程组）</td>
+<td>1–10（＝方程数）</td>
+<td>2–11（＝未知数 1–10 再加常数列）</td>
+</tr>
+<tr>
+<td>向量</td>
+<td>2–5 维</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h2 id="user-h8">4. 矩阵运算</h2>
+<h3 id="user-h9">4.1 单矩阵运算</h3>
+<p>输入一个矩阵后，点右侧任一运算按钮，结果立即出现在右侧卡片。</p>
+<table>
+<thead>
+<tr>
+<th>按钮</th>
+<th>数学含义</th>
+<th>前置条件</th>
+<th>结果形式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>行列式 det</td>
+<td>det A</td>
+<td>方阵</td>
+<td>精确值（分数）</td>
+</tr>
+<tr>
+<td>逆矩阵</td>
+<td>A⁻¹</td>
+<td>方阵且可逆</td>
+<td>矩阵；不可逆时提示「该矩阵不可逆（奇异矩阵），行列式为 0」</td>
+</tr>
+<tr>
+<td>秩 rank</td>
+<td>rank A</td>
+<td>无</td>
+<td>整数</td>
+</tr>
+<tr>
+<td>转置 Aᵀ</td>
+<td>Aᵀ</td>
+<td>无</td>
+<td>矩阵</td>
+</tr>
+<tr>
+<td>行最简形 RREF</td>
+<td>行最简形</td>
+<td>无</td>
+<td>矩阵 + 主元列说明</td>
+</tr>
+<tr>
+<td>特征值/向量</td>
+<td>λ 与特征向量</td>
+<td>方阵，且 ≤ 5 阶</td>
+<td>特征值列表 + 每个特征值对应的特征向量（近似值）</td>
+</tr>
+<tr>
+<td>迹 tr</td>
+<td>tr A = Σ aᵢᵢ</td>
+<td>方阵</td>
+<td>精确值</td>
+</tr>
+<tr>
+<td>幂 Aⁿ</td>
+<td>Aⁿ</td>
+<td>方阵；n 为整数</td>
+<td>矩阵；n &lt; 0 需可逆</td>
+</tr>
+</tbody>
+</table>
+<p><strong>不满足前置条件的按钮是灰的</strong>（鼠标悬停会显示「仅适用于方阵」）。注意：在非方阵上点「行列式」，除按钮禁用外，逻辑层也会再拦一次并报「行列式仅适用于方阵」。</p>
+<h4 id="an">幂 Aⁿ 怎么用</h4>
+<p>点「幂 Aⁿ」后弹出指数输入框，输入整数（如 <code>5</code>、<code>-2</code>、<code>0</code>）再点计算：</p>
+<ul>
+<li>n &gt; 0：快速幂，n = 0 得单位矩阵；</li>
+<li>n &lt; 0：先求逆再取正幂，因此矩阵必须可逆；</li>
+<li>非整数（<code>1.5</code>）报「请输入有效的整数指数」。</li>
+</ul>
+<h4 id="_3">计算步骤</h4>
+<p>行列式、逆矩阵、RREF、方程组都会附「计算步骤」面板，可逐条展开查看每一步的行变换，记号约定：</p>
+<table>
+<thead>
+<tr>
+<th>记号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>R1 ↔ R2</code></td>
+<td>交换第 1、2 行</td>
+</tr>
+<tr>
+<td><code>R2 ← R2 × 1/3</code></td>
+<td>第 2 行乘以 1/3</td>
+</tr>
+<tr>
+<td><code>R3 ← R3 − 2R1</code></td>
+<td>第 3 行减去第 1 行的 2 倍</td>
+</tr>
+</tbody>
+</table>
+<p>逆矩阵的步骤是以 [A | I] 为起点做的，所以面板里会看到一个增广矩阵。</p>
+<p><strong>示例</strong></p>
+<pre><code>A = 1  2  3
+    4  5  6
+    7  8 10
+</code></pre>
+<ul>
+<li>det(A) = −3</li>
+<li>rank(A) = 3</li>
+<li>tr(A) = 16</li>
+<li>逆矩阵可用（det ≠ 0）</li>
+</ul>
+<h3 id="user-h10">4.2 双矩阵运算</h3>
+<p>分别填好「矩阵 A」和「矩阵 B」，卡片下方会实时显示维度是否匹配：</p>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>按钮</th>
+<th>条件</th>
+<th>提示文案（不匹配时）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>加法</td>
+<td><code>A + B</code></td>
+<td>A、B 同型</td>
+<td>矩阵加法要求同型矩阵。A 为 m×n，B 为 p×q</td>
+</tr>
+<tr>
+<td>减法</td>
+<td><code>A − B</code></td>
+<td>A、B 同型</td>
+<td>矩阵减法要求同型矩阵。A 为 m×n，B 为 p×q</td>
+</tr>
+<tr>
+<td>乘法</td>
+<td><code>A × B</code></td>
+<td>A 的列数 = B 的行数</td>
+<td>矩阵乘法要求 A 的列数等于 B 的行数。A 为 m×n，B 为 p×q</td>
+</tr>
+</tbody>
+</table>
+<p>匹配状态用绿色 <code>✓ 维度匹配</code> / 红色 <code>✗ 维度不匹配</code> 标出，「示例填充」会给出<strong>乘法可算、加减不可算</strong>的一组（A: 2×3，B: 3×2），正好用来体会维度规则。</p>
+<p>结果卡会显示形如 <code>2×3 × 3×2 = 2×2</code> 的维度说明。</p>
+<h3 id="user-h11">4.3 符号运算</h3>
+<p>用于带字母的矩阵，例如</p>
+<pre><code>A = a   b   c
+    d   e   f
+    g   h   i
+</code></pre>
+<h4 id="_4">输入语法</h4>
+<table>
+<thead>
+<tr>
+<th>语法</th>
+<th>说明</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>字母变量</td>
+<td>单字母或字母+数字</td>
+<td><code>a</code>、<code>x1</code>、<code>y2</code></td>
+</tr>
+<tr>
+<td>π</td>
+<td>写作 <code>pi</code> 或 <code>π</code></td>
+<td><code>2*pi</code></td>
+</tr>
+<tr>
+<td>四则运算</td>
+<td><code>+</code> <code>-</code> <code>*</code> <code>/</code></td>
+<td><code>2*a+3</code>、<code>a/b</code></td>
+</tr>
+<tr>
+<td>乘方</td>
+<td><code>^</code></td>
+<td><code>x^2</code></td>
+</tr>
+<tr>
+<td>括号</td>
+<td><code>(</code> <code>)</code></td>
+<td><code>(a+b)*(c-d)</code></td>
+</tr>
+<tr>
+<td>乘号</td>
+<td>建议显式写 <code>*</code></td>
+<td><code>2*a</code> 而不是 <code>2a</code>（后者可能被解析成变量名）</td>
+</tr>
+</tbody>
+</table>
+<p>支持 <code>×</code> <code>÷</code> 符号输入，内部会转成 <code>*</code> <code>/</code>。<strong>不支持</strong>三角函数、对数、开方等函数调用。</p>
+<h4 id="_5">可用的运算</h4>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>上限</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>行列式 det</td>
+<td>方阵且 ≤ 3 阶</td>
+<td>化简后的多项式，如 <code>a*d - b*c</code></td>
+</tr>
+<tr>
+<td>逆矩阵</td>
+<td>方阵且 ≤ 3 阶</td>
+<td>分式矩阵；奇异时提示不可逆</td>
+</tr>
+<tr>
+<td>秩 rank</td>
+<td>6×6</td>
+<td>整数</td>
+</tr>
+<tr>
+<td>转置 Aᵀ</td>
+<td>6×6</td>
+<td>矩阵</td>
+</tr>
+<tr>
+<td>行最简形 RREF</td>
+<td>≤ 4×4</td>
+<td>矩阵 + 秩 + 主元列</td>
+</tr>
+<tr>
+<td>迹 tr</td>
+<td>方阵</td>
+<td>表达式</td>
+</tr>
+</tbody>
+</table>
+<p>超出上限会明确报错（如「符号行列式最多支持 3 阶矩阵」），这是符号化简复杂度爆炸的工程折中。</p>
+<h2 id="user-h12">5. 线性方程组</h2>
+<p>把方程组写成<strong>增广矩阵</strong> [A | b] 输入。默认列标题为 <code>x1 x2 … xn | b</code>，最后一列是常数列。</p>
+<pre><code> 2x₁ +  x₂ −  x₃ =  8
+−3x₁ −  x₂ + 2x₃ = −11      →    [ 2  1 -1 |  8 ]
+−2x₁ +  x₂ + 2x₃ = −3            [-3 -1  2 | -11 ]
+                                  [-2  1  2 | -3 ]
+</code></pre>
+<h3 id="user-h13">5.1 尺寸控制</h3>
+<table>
+<thead>
+<tr>
+<th>控件</th>
+<th>范围</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>方程数</td>
+<td>1–10</td>
+<td>即行数</td>
+</tr>
+<tr>
+<td>未知数</td>
+<td>1–10</td>
+<td>即列数 − 1（列数 2–11）；改未知数时增减的总是增广列之前的部分，<code>b</code> 列始终留在最后</td>
+</tr>
+</tbody>
+</table>
+<h3 id="user-h14">5.2 求解与结果</h3>
+<p>点「求解」后，右侧「求解结果」卡片给出三种结论之一：</p>
+<table>
+<thead>
+<tr>
+<th>结论</th>
+<th>界面表现</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>唯一解</strong></td>
+<td>绿色标题 + 各变量取值</td>
+<td>rank A = rank [A∣b] = n</td>
+</tr>
+<tr>
+<td><strong>无穷多解</strong></td>
+<td>黄色标题 + 自由变量列表 + 特解 + 基础解系 η</td>
+<td>秩相等但小于未知数个数 n</td>
+</tr>
+<tr>
+<td><strong>无解</strong></td>
+<td>红色标题 + 「方程组存在矛盾方程，没有解。」 + 秩对比说明</td>
+<td>rank A ≠ rank [A∣b]，消元后出现 <code>0 = 非零常数</code> 的矛盾行</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>关于秩的显示（v1.2 已修复）</strong>：早先版本这句话里的两个秩会打印成同一个值（例如 <code>1 和 1</code>）。当前产物由源码重新构建，无解时会正确显示 <code>系数矩阵秩 = 1，增广矩阵秩 = 2，秩不相等故无解</code>。若你手上的副本仍是旧版，重新构建或取最新产物即可。</p>
+</blockquote>
+<p>无穷多解的通解形式为：</p>
+<p>x = 特解 + c₁η₁ + c₂η₂ + ⋯</p>
+<p>界面会分别给出「通解形式」「自由变量」「基础解系 η」三块内容，可直接抄进作业。</p>
+<p>「高斯消元过程」面板展示每一步行变换，增广列前有竖线分隔，方便对照。</p>
+<h3 id="user-h15">5.3 快速示例按钮</h3>
+<table>
+<thead>
+<tr>
+<th>按钮</th>
+<th>载入的方程</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>唯一解</td>
+<td>上文 3 元方程组</td>
+<td>x₁ = 2，x₂ = 3，x₃ = −1</td>
+</tr>
+<tr>
+<td>无穷多解</td>
+<td><code>x+2y+3z=1</code>、<code>2x+4y+6z=2</code>、<code>3x+6y+9z=3</code></td>
+<td>秩 1，自由变量 x₂、x₃</td>
+</tr>
+<tr>
+<td>无解</td>
+<td><code>x+y+z=1</code>、<code>2x+2y+3z=2</code></td>
+<td>rank A = 1、rank [A∣b] = 2</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>判断「无解 / 无穷多解」的依据是秩，不是行列式——非方阵或不齐次时，行列式那套判据不适用。</p>
+</blockquote>
+<h2 id="user-h16">6. 向量运算</h2>
+<h3 id="user-h17">6.1 输入</h3>
+<ul>
+<li>维度可调 <strong>2–5</strong>（调整维度时已有分量保留，缺的补 0）；</li>
+<li>「向量 v」「向量 w」两组输入，可用「示例填充」载入 v=(1,2,3)、w=(4,5,6)；</li>
+<li>「清空」把两组都置零。</li>
+</ul>
+<h3 id="user-h18">6.2 六种运算</h3>
+<table>
+<thead>
+<tr>
+<th>按钮</th>
+<th>公式</th>
+<th>前置条件</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>点积 v·w</td>
+<td>Σ vᵢwᵢ</td>
+<td>维度相同</td>
+<td>精确值（分数模式显示分数）</td>
+</tr>
+<tr>
+<td>叉积 v×w</td>
+<td>v × w</td>
+<td><strong>仅 3 维</strong></td>
+<td>向量（与 v、w 都垂直）</td>
+</tr>
+<tr>
+<td>长度/模</td>
+<td>‖v‖ = √(Σ vᵢ²)</td>
+<td>—</td>
+<td>两个模长，6 位小数</td>
+</tr>
+<tr>
+<td>单位化</td>
+<td>v̂ = v / ‖v‖</td>
+<td>非零向量</td>
+<td>两个单位向量</td>
+</tr>
+<tr>
+<td>夹角</td>
+<td>θ = arccos((v·w) / (‖v‖‖w‖))</td>
+<td>两个非零向量</td>
+<td>弧度 + 角度两种表示</td>
+</tr>
+<tr>
+<td>线性组合</td>
+<td>αv + βw</td>
+<td>维度相同</td>
+<td>向量</td>
+</tr>
+</tbody>
+</table>
+<p>「线性组合」会先展开两个系数输入框，填系数（支持分数，如 <code>1/2</code>）再点计算，标题会显示成 <code>线性组合 1/2·v + 3·w</code>。</p>
+<p><strong>维度不足时按钮自动禁用</strong>：叉积在 2 维向量下灰掉，悬停提示「仅三维向量可用」。</p>
+<p><strong>示例（v=(1,2,3)、w=(4,5,6)）</strong></p>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>点积</td>
+<td>32</td>
+</tr>
+<tr>
+<td>叉积</td>
+<td>(−3, 6, −3)</td>
+</tr>
+<tr>
+<td>模</td>
+<td>‖v‖ ≈ 3.741657，‖w‖ ≈ 8.774964</td>
+</tr>
+<tr>
+<td>夹角</td>
+<td>≈ 0.225726 rad ≈ 12.9332°</td>
+</tr>
+</tbody>
+</table>
+<h2 id="user-h19">7. 图片识别（OCR）</h2>
+<p>作用：把纸上/截图里的矩阵<strong>拍成图片自动填进输入框</strong>，省去手输十几格。</p>
+<h3 id="user-h20">7.1 一次性配置</h3>
+<ol>
+<li>在任意矩阵卡片标题右侧点「配置 OCR」（单矩阵、双矩阵 A/B、符号矩阵、方程组各有一个）；</li>
+<li>填写三项：
+   - <code>Base URL</code>：接口根地址，需兼容 OpenAI Chat Completions（如 <code>https://api.openai.com/v1</code>、<code>https://api.deepseek.com</code>）；
+   - <code>API Key</code>：你自己的密钥；
+   - <code>视觉模型名</code>：必须支持图像输入（<code>gpt-4o-mini</code>、<code>gpt-4o</code>、<code>claude-3-5-sonnet</code>、<code>deepseek-flash</code> 等）；</li>
+<li>「保存配置」，按钮由「配置 OCR」变为「图片识别」；旁边会多出一个齿轮按钮「OCR 设置」，之后想改配置点它。</li>
+</ol>
+<p>配置存在<strong>浏览器本地</strong>，换浏览器/清缓存/换设备都要重填。密钥明文存储，勿在公用电脑上配置。</p>
+<h3 id="user-h21">7.2 识别流程</h3>
+<pre><code>点识别按钮 → 选择/拍摄图片 → 图片编辑（可选）→ 确认并识别 → 自动填入矩阵
+</code></pre>
+<p>图片编辑对话框提供：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>拖动裁剪框 / 拖四角控制点</td>
+<td>只保留矩阵区域，能显著提升识别率</td>
+</tr>
+<tr>
+<td>左转 / 右转</td>
+<td>每次 90°，把横拍的照片摆正</td>
+</tr>
+<tr>
+<td>水平翻转 / 垂直翻转</td>
+<td>处理镜像图</td>
+</tr>
+<tr>
+<td>重置</td>
+<td>复原旋转、翻转与裁剪框</td>
+</tr>
+<tr>
+<td>确认并识别</td>
+<td>导出 JPEG 后上传识别</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建议</strong>：把矩阵裁到只剩数字与括号，去掉题号、手写批注、阴影；光线均匀、字迹与底色对比明显时准确率最高。</p>
+<h3 id="user-h22">7.3 三种识别模式</h3>
+<p>不同模块调用不同的识别模式，提示词不同：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>模式</th>
+<th>期望图片内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>矩阵 A / 矩阵 B / 单矩阵</td>
+<td>数值矩阵</td>
+<td>纯数字矩阵（含分数、负数）</td>
+</tr>
+<tr>
+<td>符号运算</td>
+<td>符号矩阵</td>
+<td>含字母、π、运算符的矩阵</td>
+</tr>
+<tr>
+<td>线性方程组</td>
+<td>增广矩阵</td>
+<td>增广矩阵，带 <code>∣</code> 或虚线分隔常数列</td>
+</tr>
+</tbody>
+</table>
+<h3 id="user-h23">7.4 识别结果的处理</h3>
+<ul>
+<li>识别成功：直接覆盖当前矩阵，并提示「识别成功：3×3 矩阵」（双矩阵场景为「已识别到矩阵 A」）；</li>
+<li><strong>部分单元格无法解析</strong>（模型返回了 <code>1/0</code>、乱码等）：这些格子被置为 <strong>0</strong>，并弹出「有 N 个单元格识别失败，已置为 0，请核对」——<strong>务必人工核对这几个格子</strong>；</li>
+<li>行列数校验：模型返回的行数/列数与声明不符时直接报错，不会张冠李戴地填进去；</li>
+<li>网络错误、鉴权失败、额度耗尽等：显示服务端返回的状态码与内容，例如 <code>API 请求失败 (401): ...</code>、<code>应用额度已耗尽，请联系应用开发者</code>。</li>
+</ul>
+<blockquote>
+<p>识别只是「录入加速器」，不改变计算逻辑。识别后的一切计算仍是本地精确运算。</p>
+</blockquote>
+<h2 id="user-h24">8. 显示、精度与复制</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分数模式（默认关）</td>
+<td>开：<code>1/3</code>、<code>-5/2</code>；关：<code>0.333333</code>、<code>-2.5</code>（6 位小数，去尾零）</td>
+</tr>
+<tr>
+<td>行列式 / 逆 / RREF / 幂 / 点积</td>
+<td>全程精确分数，无浮点误差</td>
+</tr>
+<tr>
+<td>特征值 / 特征向量</td>
+<td>数值近似，界面有「结果可能存在微小误差」提示</td>
+</tr>
+<tr>
+<td>模长 / 夹角 / 单位向量</td>
+<td>浮点，6 位小数（角度 4 位）</td>
+</tr>
+<tr>
+<td>结果复制</td>
+<td>每张结果卡右上角有「复制」按钮：复制成<strong>制表符分列</strong>的纯文本，粘到 Excel / WPS 会自动分格。也可以直接框选结果文字手动复制；步骤面板同样是文本，可整段选中</td>
+</tr>
+</tbody>
+</table>
+<p><strong>复制出来长什么样</strong>（以 3×3 逆矩阵为例）：</p>
+<pre><code>1   0   0
+0   1/2 -1/2
+-1  1   1
+</code></pre>
+<p>小数模式下则是对应的小数；若浏览器不允许写剪贴板（例如用 <code>file://</code> 双击打开的单文件版被策略拦截），按钮会自动退回到备用的复制方式，仍失败时提示「长按选择文本手动复制」。</p>
+<p><strong>为什么分数模式是默认值之外的可选项</strong>：工程计算、编程作业更习惯小数；线性代数作业核对更关心 <code>1/7</code> 这类精确值。两种都保留，随时切换。</p>
+<h2 id="user-h25">9. 报错速查表</h2>
+<table>
+<thead>
+<tr>
+<th>提示</th>
+<th>触发原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>行列式仅适用于方阵 / 逆矩阵仅适用于方阵 / 迹仅适用于方阵 / 特征值仅适用于方阵 / 矩阵幂要求方阵</td>
+<td>行列数不等</td>
+<td>调成方阵</td>
+</tr>
+<tr>
+<td>特征值计算最多支持 5 阶矩阵</td>
+<td>方阵但阶数 &gt; 5</td>
+<td>阶数上限，高阶请改用其他工具</td>
+</tr>
+<tr>
+<td>矩阵加法要求同型矩阵 / 矩阵减法要求同型矩阵</td>
+<td>A、B 形状不同</td>
+<td>使行、列数一致</td>
+</tr>
+<tr>
+<td>矩阵乘法要求 A 的列数等于 B 的行数</td>
+<td>维度不满足</td>
+<td>调整 B 的行数或 A 的列数</td>
+</tr>
+<tr>
+<td>该矩阵不可逆（奇异矩阵），行列式为 0</td>
+<td>det A = 0</td>
+<td>矩阵确实不可逆，或检查是否输错</td>
+</tr>
+<tr>
+<td>指数必须为整数 / 请输入有效的整数指数</td>
+<td>幂次填了小数或空</td>
+<td>填整数</td>
+</tr>
+<tr>
+<td>负指数要求矩阵可逆</td>
+<td>n &lt; 0 且 det A = 0</td>
+<td>换可逆矩阵或改用正幂</td>
+</tr>
+<tr>
+<td>符号行列式最多支持 3 阶矩阵 / 符号逆矩阵最多支持 3 阶矩阵</td>
+<td>符号矩阵 &gt; 3 阶</td>
+<td>拆成 3 阶子块，或改用数值矩阵</td>
+</tr>
+<tr>
+<td>符号行最简形最多支持 4×4 矩阵</td>
+<td>符号 RREF &gt; 4×4</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>点积要求向量维度相同 / 线性组合要求向量维度相同</td>
+<td>v、w 维数不同</td>
+<td>统一维度</td>
+</tr>
+<tr>
+<td>叉积仅适用于三维向量</td>
+<td>非 3 维</td>
+<td>叉积只在 3 维定义</td>
+</tr>
+<tr>
+<td>零向量不能单位化 / 零向量无法计算夹角</td>
+<td>有零向量参与</td>
+<td>换非零向量</td>
+</tr>
+<tr>
+<td>无效数值 / 无效分数 / 分母不能为 0</td>
+<td>单元格内容非法</td>
+<td>改成合法数字</td>
+</tr>
+<tr>
+<td>表达式未完全解析，多余: … / 缺少右括号 / 表达式意外结束 / 无法识别字符: …</td>
+<td>符号表达式语法错误</td>
+<td>检查括号与运算符，补 <code>*</code></td>
+</tr>
+<tr>
+<td>请先配置 OCR 视觉模型 API</td>
+<td>未配置</td>
+<td>点矩阵卡片标题右侧的「配置 OCR」</td>
+</tr>
+<tr>
+<td>OCR 配置不完整，请检查 Base URL、API Key 和模型名</td>
+<td>三项有空</td>
+<td>补齐后保存</td>
+</tr>
+<tr>
+<td>识别结果格式不正确 / 识别结果行数不匹配</td>
+<td>模型返回结构异常</td>
+<td>重新识别，或裁剪图片后重试</td>
+</tr>
+<tr>
+<td>需要登录后才能执行操作</td>
+<td>在平台内打开且未登录</td>
+<td>使用单文件版或先登录</td>
+</tr>
+</tbody>
+</table>
+<h2 id="user-h26">10. 典型使用流程</h2>
+<p><strong>核对作业</strong>（最常用）</p>
+<ol>
+<li>矩阵运算 → 单矩阵运算 → 手输矩阵；</li>
+<li>点「行列式 det」看值与步骤，与手算比对；</li>
+<li>点「计算步骤」逐步核查行变换，找出自己算错的那一步；</li>
+<li>顶栏切换到「分数模式」，确认结果是 <code>1/3</code> 还是 <code>0.333333</code>。</li>
+</ol>
+<p><strong>解方程组</strong></p>
+<ol>
+<li>线性方程组 → 把每行系数与常数填进增广矩阵（列数 = 未知数 + 1）；</li>
+<li>「求解」→ 看结论类型；</li>
+<li>如果是无穷多解，抄「特解 + 基础解系」；</li>
+<li>展开「高斯消元过程」写解题步骤。</li>
+</ol>
+<p><strong>手机快速录入</strong></p>
+<ol>
+<li>拍照 → 识别 → 编辑器里裁掉题号与手写内容；</li>
+<li>识别后核对被置 0 的格子；</li>
+<li>继续在线计算。</li>
+</ol>
+<h2 id="user-h27">11. FAQ</h2>
+<p><strong>Q：断网还能用吗？</strong>
+A：能。所有计算在前端完成；只有 OCR 需要联网（调你自己配置的模型接口）。网页版首次加载时字体走 CDN，失败会自动回退系统字体，不影响功能。</p>
+<p><strong>Q：数据会上传吗？</strong>
+A：计算结果不会。只有 OCR 时，你选中的那张图片会以 base64 发给你配置的模型服务商；API Key 只存在本机 <code>localStorage</code>。</p>
+<p><strong>Q：为什么 3 阶以上的特征值有小数尾巴？</strong>
+A：n≥3 用 QR 迭代求特征值、反幂法求特征向量，本质是数值方法，容差 1e-10、最多 100 次迭代。要精确值请手算或看 2×2 的解析结果。</p>
+<p><strong>Q：特征值为什么会缺？</strong>
+A：3 阶及以上目前只输出实特征值；如果矩阵有复特征值，只有 2×2 会被正确识别为复数对。</p>
+<p><strong>Q：为什么输入 <code>2a</code> 没被当成 2×a？</strong>
+A：符号解析器把连续字母当作一个变量名。乘号请显式写 <code>2*a</code>。</p>
+<p><strong>Q：换手机 / 清缓存后 OCR 配置没了？</strong>
+A：配置存在浏览器本地，不会同步。重新填一次即可。</p>
+<p><strong>Q：APK 和网页版有什么区别？</strong>
+A：计算逻辑完全一致，共用同一套存储键与配置格式。差别只在交付形态：网页版是单个 HTML（代码全部内联，双击即用），APK 是 Capacitor 壳 + 分块资源（需安装，可离线启动）。</p>
+<hr />
+<p><em>文档版本 v1.0 · 如与界面不符，以产物实际行为为准</em></p></section><section class="doc-sec" id="doc-tech"><h1 id="_1">线性代数计算器 · 技术手册</h1>
+<p>面向维护者。本文描述产物的运行形态、数值模型、算法实现、OCR 子系统、存储与网络行为，以及当前实现的边界与已知缺陷。</p>
+<hr />
+<h2 id="tech-h1">目录</h2>
+<ol>
+<li><a href="#tech-h2">产物形态</a></li>
+<li><a href="#tech-h3">技术栈</a></li>
+<li><a href="#tech-h4">代码分层与调用关系</a></li>
+<li><a href="#tech-h5">数值核心：有理数类</a></li>
+<li><a href="#tech-h10">算法实现</a></li>
+<li><a href="#tech-h20">渲染与显示规则</a></li>
+<li><a href="#tech-h21">OCR 子系统</a></li>
+<li><a href="#tech-h26">存储与状态</a></li>
+<li><a href="#tech-h27">网络行为与离线能力</a></li>
+<li><a href="#tech-h28">复杂度与规模上限</a></li>
+<li><a href="#tech-h29">已知限制与风险</a></li>
+<li><a href="#tech-h30">安全与隐私</a></li>
+<li><a href="#tech-h31">可扩展方向</a></li>
+<li><a href="#tech-h32">构建与补丁历史</a></li>
+</ol>
+<hr />
+<h2 id="tech-h2">1. 产物形态</h2>
+<p><strong>源码已在仓库内</strong>（<code>source/linear-algebra-calculator/</code>），因此本文的实现描述以源码为准；压缩产物只作为交付形态存在。源码结构见《源码解析》。</p>
+<table>
+<thead>
+<tr>
+<th>产物</th>
+<th>结构</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>线性代数计算器.html</code>（1.24 MB，176 行）</td>
+<td><code>&lt;head&gt;</code> 内联 <code>&lt;style&gt;</code>（约 233 KB CSS）、内联 <code>&lt;script&gt;</code> 注入运行时变量、<code>&lt;script type="module"&gt;</code> 内联全部 JS（React + 业务代码，约 1.02 MB）</td>
+<td>单文件打包，双击即用。由 <code>npm run build:all</code> 生成</td>
+</tr>
+<tr>
+<td><code>线性代数计算器.apk</code>（4.2 MB，496 个 zip 条目）</td>
+<td>Capacitor 6 壳（<code>classes.dex</code> 等） + <code>assets/public/</code> 下的静态站</td>
+<td><code>webDir = www</code>，运行时加载 <code>assets/public/index.html</code></td>
+</tr>
+</tbody>
+</table>
+<p>两者是<strong>同一份工程代码的两种打包方式</strong>：</p>
+<ul>
+<li>业务代码一致（同一套中文文案、同一套存储键）；</li>
+<li>HTML 版把依赖与业务代码全量内联进一个 module script；</li>
+<li>APK 版保留分块（<code>index-*.js</code> 业务、<code>toolkit-*.js</code> 平台工具库、<code>radix-*.js</code> 无障碍基础件、<code>index-*.css</code>）；</li>
+<li>两份产物都包含宿主平台运行时（<code>@lark-apaas/client-toolkit-lite</code>），因此带有平台的存储封装、埋点与品牌相关字符串。</li>
+</ul>
+<blockquote>
+<p><code>android/capacitor.config.json</code>：<code>appId = com.doubao.linalg</code>，<code>appName = 线性代数计算器</code>，<code>webDir = www</code>。
+<code>AndroidManifest.xml</code>：包名 <code>com.doubao.linalg</code>，主 Activity <code>com.doubao.linalg.MainActivity</code>，对外权限以 <code>INTERNET</code> 为主（另有 <code>androidx</code> 自用的 <code>DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION</code>），含 <code>androidx.core.content.FileProvider</code>。</p>
+</blockquote>
+<h2 id="tech-h3">2. 技术栈</h2>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>技术</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UI 框架</td>
+<td>React 19.2.4+（产物 reconciler 19.2.8）</td>
+<td><code>package.json</code> / bundle</td>
+</tr>
+<tr>
+<td>语言</td>
+<td>TypeScript 5.9，<code>tsc -p tsconfig.app.json</code> 做类型检查</td>
+<td><code>npm run typecheck</code></td>
+</tr>
+<tr>
+<td>组件库</td>
+<td>shadcn/ui + Radix 原语（Tabs / Dialog / Tooltip / Switch / Accordion…）</td>
+<td><code>src/components/ui/*</code></td>
+</tr>
+<tr>
+<td>样式</td>
+<td>Tailwind CSS v4 + CSS 变量主题</td>
+<td><code>src/index.css</code>、<code>@theme inline</code></td>
+</tr>
+<tr>
+<td>构建器</td>
+<td>Vite 8（底层 rolldown 1.2.7）</td>
+<td><code>vite.config.ts</code>、<code>rolldown-runtime-*.js</code></td>
+</tr>
+<tr>
+<td>提示</td>
+<td>sonner（<code>toast.success/error/loading</code>）</td>
+<td><code>src/components/OCRUploadButton.tsx</code> 等</td>
+</tr>
+<tr>
+<td>平台能力</td>
+<td><code>@lark-apaas/client-toolkit-lite</code>：<code>scopedStorage</code> / <code>logger</code> / <code>AppContainer</code> / <code>ErrorRender</code></td>
+<td><code>src/lib/ocr-service.ts</code>、<code>src/index.tsx</code></td>
+</tr>
+<tr>
+<td>图标</td>
+<td>内联 SVG path 数据集（lucide 风格）</td>
+<td><code>Xt("grid-3x3", [...])</code></td>
+</tr>
+<tr>
+<td>移动壳</td>
+<td>Capacitor（<code>capacitor.config.json</code>、<code>native-bridge.js</code>、<code>cordova.js</code> 占位）</td>
+<td>APK 资源</td>
+</tr>
+<tr>
+<td>数学</td>
+<td>自研有理数类 + 自研线性代数算法，<strong>无 math.js / numeric.js 等第三方数学库</strong></td>
+<td>bundle 中无相关依赖</td>
+</tr>
+</tbody>
+</table>
+<p>运行环境要求：支持 ES module、<code>canvas</code>、<code>fetch</code>、<code>localStorage</code> 的现代浏览器（Chrome/Edge 90+、Safari 15+）；Android 端 WebView 同理。</p>
+<h2 id="tech-h4">3. 代码分层与调用关系</h2>
+<p>源码（<code>source/linear-algebra-calculator/web-source/src</code>）的分层：</p>
+<pre><code>┌───────────────────────────────────────────────────────────────────┐
+│ 视图层  React 函数组件 + hooks，无全局 store                      │
+│  HomePage ─┬─ SingleMatrixSection   单矩阵 8 项                   │
+│            ├─ DoubleMatrixSection   A±B、A×B                      │
+│            ├─ SymbolicMatrixSection 符号 6 项                     │
+│            ├─ LinearSystemSection   增广矩阵 + 三态结果           │
+│            └─ VectorSection         向量 6 项                     │
+│  通用：MatrixGrid / MatrixDisplay / StepsAccordion / SymbolicMatrixDisplay │
+│  OCR ：OCRUploadButton / OCRSettingsDialog / ImageEditorDialog    │
+├───────────────────────────────────────────────────────────────────┤
+│ 算法层  纯函数，不碰 DOM                                          │
+│  matrix-ops.ts  rref / determinant / inverse / rank / trace        │
+│                 add / subtract / multiply / matrixPower            │
+│                 qrEigenvalues + inverseIteration + eigenvalues     │
+│                 solveLinearSystem                                  │
+│  symbolic.ts    词法/语法分析、化简、符号 det/inv/rref/rank/trace  │
+│  vector-ops.ts  dot / cross / magnitude / normalize / angle / combo│
+├───────────────────────────────────────────────────────────────────┤
+│ 数值层  fraction.ts  Fraction 类 + 矩阵工具                        │
+│  约分、符号归一、分数/小数互转、显示格式化                          │
+└───────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p>对应关系（阅读压缩产物时用得上）：</p>
+<table>
+<thead>
+<tr>
+<th>语义</th>
+<th>源码名</th>
+<th>旧构建中的压缩名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>行最简形</td>
+<td><code>rref</code></td>
+<td><code>B0</code></td>
+</tr>
+<tr>
+<td>行列式</td>
+<td><code>determinant</code></td>
+<td><code>T$</code></td>
+</tr>
+<tr>
+<td>逆矩阵</td>
+<td><code>inverse</code></td>
+<td><code>XO</code></td>
+</tr>
+<tr>
+<td>矩阵幂</td>
+<td><code>matrixPower</code></td>
+<td><code>YO</code></td>
+</tr>
+<tr>
+<td>特征值</td>
+<td><code>eigenvalues</code></td>
+<td><code>z$</code></td>
+</tr>
+<tr>
+<td>方程组</td>
+<td><code>solveLinearSystem</code></td>
+<td><code>I$</code></td>
+</tr>
+<tr>
+<td>有理数类</td>
+<td><code>Fraction</code></td>
+<td><code>Ar</code> / 实例别名 <code>ur</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>压缩名随每次构建变化，<strong>不要再依赖它定位</strong>；源码在手时直接读源码。</p>
+</blockquote>
+<p>设计要点：</p>
+<ul>
+<li><strong>算法层不依赖 React</strong>，可单独抽出做单元测试（见测试手册）；</li>
+<li><strong>视图层只负责取值、校验前置条件、调算法、渲染结果</strong>，错误以中文消息抛出；</li>
+<li><strong>所有数值运算统一走 Fraction</strong>，算法层不出现裸浮点（特征值与向量模长/夹角除外，见 5.6、5.9）。</li>
+</ul>
+<h2 id="tech-h5">4. 数值核心：有理数类</h2>
+<h3 id="tech-h6">4.1 表示</h3>
+<pre><code class="language-js">class Fraction {
+  num;  // 分子，JS number
+  den;  // 分母，JS number，恒 &gt; 0
+}
+</code></pre>
+<p>构造时做两件事：<strong>约分</strong>（<code>gcd(|num|, den)</code>）与<strong>符号归一</strong>（负号一律挂在 <code>num</code>）。因此 <code>2/4</code>、<code>-1/-2</code>、<code>0.5</code> 都规范化为 <code>1/2</code>。<code>den === 1</code> 即整数。</p>
+<h3 id="tech-h7">4.2 解析规则（<code>from</code> / <code>fromString</code> / <code>safeParse</code>）</h3>
+<table>
+<thead>
+<tr>
+<th>输入</th>
+<th>结果</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>""</code> / <code>"-"</code></td>
+<td><code>0</code></td>
+<td>空输入按 0 处理</td>
+</tr>
+<tr>
+<td><code>"12"</code></td>
+<td><code>12/1</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>"-7"</code></td>
+<td><code>-7/1</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>"3/4"</code></td>
+<td><code>3/4</code></td>
+<td>以 <code>/</code> 切分，两侧 <code>parseFloat</code> 后再规范化</td>
+</tr>
+<tr>
+<td><code>"-5/2"</code></td>
+<td><code>-5/2</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>"0.25"</code></td>
+<td><code>1/4</code></td>
+<td><code>fromDecimal</code>：按小数点位数放大成 <code>25/100</code> 再约分</td>
+</tr>
+<tr>
+<td><code>"1/2/3"</code></td>
+<td>抛「无效分数」</td>
+<td>只允许一个 <code>/</code></td>
+</tr>
+<tr>
+<td><code>"1/0"</code></td>
+<td>抛「分母不能为 0」</td>
+<td></td>
+</tr>
+<tr>
+<td><code>"abc"</code> / <code>"2a"</code></td>
+<td>抛「无效数值」</td>
+<td>单元格不做表达式解析</td>
+</tr>
+<tr>
+<td><code>"1e-3"</code></td>
+<td><code>1/1000</code></td>
+<td>走 <code>parseFloat</code> → 十进制字符串 → 分数</td>
+</tr>
+</tbody>
+</table>
+<p>安全入口 <code>safeParse</code> 捕获异常返回 <code>null</code>，视图层据此<strong>保留原值</strong>或<strong>置 0</strong>（OCR 场景），不会让一个坏格子崩掉整个页面。</p>
+<h3 id="tech-h8">4.3 精度边界</h3>
+<p><code>num</code>、<code>den</code> 是 IEEE-754 double，只有 <code>|num|</code>、<code>den</code> ≤ 2⁵³ 时运算才严格精确：</p>
+<ul>
+<li>10×10 的整数矩阵做完 RREF 后，中间量的分子分母通常仍在 10⁶ 量级，安全；</li>
+<li>但含大整数（如元素是 10 位以上）、或 10 阶分数矩阵做行列式展开时，分子分母会快速膨胀，<strong>可能越过 2⁵³ 而悄悄失去精确性</strong>；</li>
+<li>这不是可选优化，而是当前实现的硬边界。若要彻底解决，需把 <code>num/den</code> 换成 <code>BigInt</code>。</li>
+</ul>
+<h3 id="tech-h9">4.4 运算 API</h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>add</code> / <code>sub</code> / <code>mul</code> / <code>div</code></td>
+<td>四则运算，结果自动约分</td>
+</tr>
+<tr>
+<td><code>neg</code> / <code>abs</code> / <code>reciprocal</code></td>
+<td>取负 / 绝对值 / 倒数（零的倒数抛错）</td>
+</tr>
+<tr>
+<td><code>isZero</code> / <code>isOne</code> / <code>isNegOne</code> / <code>isInteger</code> / <code>isNegative</code> / <code>sign</code></td>
+<td>判定与符号</td>
+</tr>
+<tr>
+<td><code>compare</code> / <code>eq</code></td>
+<td>交叉相乘比较，避免浮点误差</td>
+</tr>
+<tr>
+<td><code>toDecimal</code></td>
+<td>转浮点（仅显示与特征值路径使用）</td>
+</tr>
+<tr>
+<td><code>toFractionString</code></td>
+<td><code>p/q</code>；整数输出 <code>p</code></td>
+</tr>
+<tr>
+<td><code>toDecimalString(6)</code></td>
+<td>保留 6 位后<strong>去尾零</strong></td>
+</tr>
+<tr>
+<td><code>toCoeffString</code></td>
+<td>系数专用：1 → <code>""</code>，−1 → <code>"-"</code>（用于步骤描述里 <code>R1 ← R1 + R2</code> 这种写法）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tech-h10">5. 算法实现</h2>
+<p>矩阵统一用<strong>行优先二维数组</strong>表示。分两种元素类型：有理数（数值模式）与符号表达式 AST（符号模式），两者算法结构对称、实现分离。</p>
+<h3 id="tech-h11">5.1 行最简形 RREF（<code>rref</code>）</h3>
+<p>Gauss-Jordan 消元，主元采用<strong>整数友好策略</strong>（与行列式同一套评分函数）：</p>
+<pre><code>pivotFriendliness(f) = 0                       若 f 是整数
+                     = f.den + |f.num| × 0.1   否则
+score(f) = pivotFriendliness(f) × 1000 − |f|
+
+m = 0
+for col in 0 .. 系数列数-1:
+    在 i ≥ m 的行中，选 score(A[i][col]) 最小的非零元作主元
+    if 无主元: continue
+    if pivotRow ≠ m: 交换 R_m, R_pivotRow        → step{type:&quot;swap&quot;}
+    if A[m][col] ≠ 1:
+        整行乘以 1/A[m][col]                     → step{type:&quot;scale&quot;}
+    for i in 0..rows-1, i ≠ m:
+        if A[i][col] ≠ 0:
+            R_i ← R_i − A[i][col]·R_m            → step{type:&quot;add&quot;}
+    pivotCols.push(col); m++
+return { rref, rank: pivotCols.length, pivotCols, steps }
+</code></pre>
+<p>要点：</p>
+<ul>
+<li><strong>主元不是"第一个非零"，而是"算起来最省事的"</strong>：优先整数主元，其次分母小的；同分时取绝对值大的（数值更稳）。这是为了让消元过程尽量不产生复杂分数——既好看也好核对；</li>
+<li>归一化只在主元不为 1 时执行（少一步无意义的 <code>× 1</code>）；</li>
+<li><strong>消去所有行</strong>（含上方），一次跑完即得行最简形；</li>
+<li>步骤只有三种：<code>swap</code> / <code>scale</code> / <code>add</code>，渲染为 <code>R₂ ← R₂ − 3R₁</code>（行号用 Unicode 下标）；</li>
+<li><code>augmentedCols &gt; 0</code> 时（方程组、求逆），最后一列/右侧块不参与主元选择，但仍参与行变换——保证「常数列不能当主元」；</li>
+<li>精确算术下这种主元选择不影响正确性，只影响<strong>步骤最短</strong>与<strong>中间分数规模</strong>。</li>
+</ul>
+<p>复杂度 O(min(m,n)·m·n)。源码位置：<code>src/lib/matrix-ops.ts</code> 的 <code>rref()</code>。</p>
+<h3 id="tech-h12">5.2 行列式（<code>determinant</code>）</h3>
+<p>同样是「消元到上三角再乘对角」，但<strong>带主元启发式</strong>，目的是压制分数膨胀：</p>
+<pre><code>for m in 0 .. n-1:
+    # 选主元：优先整数（分母为 1），其次分母小、分子小
+    pivotScore(S) = 0                        if S 是整数
+                  = S.den + |S.num| * 0.1    otherwise
+    v = argmin over i ≥ m of ( pivotScore(S) * 1000 − |S| )
+    if 该列全零: return det = 0
+    if v ≠ m: 交换 → sign = −sign，记录 step
+    for i in m+1 .. n-1:
+        # 只对下方消元，不做归一化
+        倍数 = −A[i][m] / A[m][m]
+        R_i ← R_i + 倍数·R_m                 → 记录 step
+det = sign · Π A[i][i]
+</code></pre>
+<p>关键取舍：</p>
+<ul>
+<li><strong>不归一化主元行</strong>——避免了除法带来的分母膨胀，最后的 det 由「符号 × 对角乘积」直接得到；</li>
+<li>主元评分里 <code>×1000</code> 让「是否整数」成为最高优先级，<code>− |S|</code> 在同类中偏向绝对值大的（数值更稳）；</li>
+<li>与 RREF 使用<strong>同一套</strong> <code>pivotFriendliness</code> 评分（见 5.1），区别只在于 det 不做归一化、只消下方；</li>
+<li>源码里 <code>detScale</code> 变量恒为 <code>Fraction.ONE</code>（从未被修改），属于死代码，可删。</li>
+</ul>
+<h3 id="tech-h13">5.3 逆矩阵（<code>inverse</code>）</h3>
+<pre><code>构造 [A | I]（n × 2n）
+对前 n 列做 RREF（augmentedOffset = n）
+if rank &lt; n: return null   // 奇异，视图层提示「该矩阵不可逆」
+return RREF 的右侧 n 列
+</code></pre>
+<p>步骤面板展示的正是这个 <code>[A|I]</code> 的化简过程。</p>
+<h3 id="tech-h14">5.4 秩 / 迹 / 转置</h3>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>实现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rank</td>
+<td>直接取 <code>RREF().rank</code>（主元个数）</td>
+</tr>
+<tr>
+<td>trace</td>
+<td><code>Σ A[i][i]</code>，循环 <code>min(rows, cols)</code>（非方阵取较短的主对角）</td>
+</tr>
+<tr>
+<td>transpose</td>
+<td>行列互换，返回新矩阵，不改原值</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tech-h15">5.5 矩阵幂（<code>matrixPower</code>）</h3>
+<pre><code>if 非方阵: 抛「矩阵幂要求方阵」
+if n 不是整数: 抛「指数必须为整数」
+if n &lt; 0: A⁻¹ 存在则递归求 (A⁻¹)^(−n)，否则抛「负指数要求矩阵可逆」
+if n == 0: 返回 I
+二进制快速幂：结果 = I; 底 = A
+while n &gt; 0: if n 奇数: 结果 = 结果 × 底; 底 = 底 × 底; n &gt;&gt;= 1
+</code></pre>
+<p>全程有理数精确运算，10 阶矩阵 30 次幂仍在毫秒级。</p>
+<h3 id="tech-h16">5.6 特征值与特征向量（<code>eigenvalues</code>）</h3>
+<p>先统一转成浮点（<strong>这是全应用唯一的浮点主路径</strong>），再按阶数分支：</p>
+<blockquote>
+<p>入口限制：<code>SingleMatrixSection</code> 在调用前判断 <code>size &gt; 5</code> → 直接报错，因此实际最多 5 阶。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>阶数</th>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>直接取 <code>A[0][0]</code></td>
+<td>特征向量取 <code>[1]</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>解析解：<code>λ = (tr ± √(tr² − 4det)) / 2</code></td>
+<td>判别式 &lt; 0 时返回 <code>complexEigenvalues = [{real, imag}, {real, −imag}]</code>，此时 <code>eigenvalues</code> 为空</td>
+</tr>
+<tr>
+<td>n ≥ 3</td>
+<td>QR 迭代</td>
+<td>见下</td>
+</tr>
+</tbody>
+</table>
+<p><strong>QR 迭代（<code>M$</code>）</strong>：</p>
+<ul>
+<li>对当前矩阵做 QR 分解（Gram-Schmidt 正交化，遇到近似零列时补标准基向量）；</li>
+<li><code>A ← R·Q</code>，重复至多 <strong>100 次</strong>，判据是下三角部分所有元素绝对值 ≤ <strong>1e-10</strong>；</li>
+<li>收敛后取对角线作为特征值，<strong>降序排列</strong>。</li>
+</ul>
+<p><strong>特征向量（<code>fO</code>）</strong>：对每个 λ 做反幂法/逆迭代——解 <code>(A − λI)x = b</code>（部分主元高斯消元 + 回代），归一化后与上一次迭代比较，最多 <strong>50 次</strong>，初值取 <code>(1/√n, …, 1/√n)</code>。</p>
+<blockquote>
+<p>界面提示：「特征值与特征向量采用数值方法近似计算，结果可能存在微小误差」——用户手册中也强调 3 阶以上只有实特征值。</p>
+</blockquote>
+<h3 id="tech-h17">5.7 线性方程组（<code>solveLinearSystem</code>）</h3>
+<p>输入是增广矩阵 <code>[A|b]</code>，变量名按 <code>x1 … xn</code>（<code>n = 列数 − 1</code>）生成。</p>
+<pre><code>{rref, rank, pivotCols, steps} = RREF([A|b], augmentedOffset = 1)
+rankA = |pivotCols|, rankAb = rank
+
+# 1) 矛盾判定：存在「系数全零但常数非零」的行
+for each row: if 前 n 列全零 且 常数列非零 → 无解
+
+# 2) 唯一解：rankA == n
+if rankA == n: x[i] = rref[i][n]
+
+# 3) 无穷多解：rankA &lt; n
+自由变量 = 非主元列对应的变量
+特解：主元变量取 rref[行][常数列]，其余为 0
+基础解系：对每个自由变量 f
+    η[f] = 1
+    每个主元行 r：η[pivotCols[r]] = −rref[r][f]
+</code></pre>
+<p>返回值结构：</p>
+<pre><code class="language-js">{ type: &quot;unique&quot;   , solution, rankA, rankAb, rref, pivotCols, variableNames, steps }
+{ type: &quot;infinite&quot; , freeVariables, particularSolution, basisVectors, rankA, rankAb, ... }
+{ type: &quot;no-solution&quot;, rankA, rankAb, ... }
+</code></pre>
+<p>三个结论分别对应 <code>rankA = rankAb = n</code>、<code>rankA = rankAb &lt; n</code>、<code>rankA ≠ rankAb</code> 三种情形，与线性代数教材判据一致。</p>
+<blockquote>
+<p><strong>已修复（源代码修复，v1.2）</strong>：原实现把 <code>rref(augmented, 1)</code> 返回的 <code>rank</code> 当作 <code>rankAb</code>，而该调用的主元只在<strong>系数列</strong>内选取，所以 <code>rankAb</code> 恒等于 <code>rankA</code>，界面会打印「系数矩阵秩 = 1，增广矩阵秩 = 1，秩不相等」。
+修复后直接按定义算：<code>rankAb = 行最简形中非零行的行数</code>（行变换不改变行空间维数）。
+无解结论本身一直是对的（由「系数全零但常数非零」的矛盾行判定），错的只是展示值。详见《源码解析》8.1。</p>
+</blockquote>
+<h3 id="tech-h18">5.8 符号运算</h3>
+<h4 id="ast">AST 节点</h4>
+<pre><code class="language-js">{ type: &quot;num&quot;, value }     // 有理数常量
+{ type: &quot;var&quot;, name }      // 变量，如 &quot;a&quot;、&quot;x1&quot;
+{ type: &quot;pi&quot;  }            // 常量 π
++ 二元/一元运算节点（add / sub / mul / div / pow / neg）
+</code></pre>
+<h4 id="_3">解析</h4>
+<p>递归下降 + 词法分析：</p>
+<ul>
+<li>词法：数字、标识符（连续字母+数字）、运算符 <code>+ − * / ^</code>、括号 <code>( )</code>；<code>×</code> <code>÷</code> 视同 <code>*</code> <code>/</code>；<code>π</code> 视同标识符 <code>pi</code>；</li>
+<li>语法：<code>expr → term (('+'|'-') term)*</code>，<code>term → factor (('*'|'/') factor)*</code>，<code>factor → base ('^' factor)?</code>，<code>base → num | ident | '(' expr ')' | '-' base</code>；</li>
+<li>解析结束后若还有剩余 token，报「表达式未完全解析，多余: …」；</li>
+<li>每次构造节点都会做一次<strong>化简</strong>（合并常数、消去 0/1、合并同类项的最小子集），所以 <code>a*1</code> 直接得到 <code>a</code>。</li>
+</ul>
+<h4 id="_4">各运算</h4>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>实现</th>
+<th>上限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>det</td>
+<td>1/2/3 阶用显式公式（2 阶 <code>ad−bc</code>，3 阶按第一行代数余子式展开），更高阶退化为符号高斯消元</td>
+<td>3 阶（UI 拦截）</td>
+</tr>
+<tr>
+<td>inv</td>
+<td><code>[A∣I]</code> 做符号 RREF，秩不足返回 null</td>
+<td>3 阶</td>
+</tr>
+<tr>
+<td>rank</td>
+<td>符号 RREF 的主元数</td>
+<td>6×6</td>
+</tr>
+<tr>
+<td>transpose</td>
+<td>转置</td>
+<td>6×6</td>
+</tr>
+<tr>
+<td>RREF</td>
+<td>与数值版同结构，主元「是否为 1」的判断用化简后的结构比较</td>
+<td>4×4</td>
+</tr>
+<tr>
+<td>trace</td>
+<td>主对角求和 + 化简</td>
+<td>6×6</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么限制在 3–4 阶</strong>：符号消元的中间表达式规模随阶数指数增长，3 阶行列式展开已是 6 项多项式，4 阶 RREF 在含分母的情况下表达式体积会爆炸，浏览器会明显卡顿。这是有意的产品取舍，不是算法缺陷。</p>
+<h3 id="tech-h19">5.9 向量运算</h3>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>公式 / 实现</th>
+<th>数值类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>点积</td>
+<td><code>Σ vᵢwᵢ</code></td>
+<td>有理数（精确）</td>
+</tr>
+<tr>
+<td>叉积</td>
+<td><code>(v₂w₃−v₃w₂, v₃w₁−v₁w₃, v₁w₂−v₂w₁)</code>，仅 3 维</td>
+<td>有理数</td>
+</tr>
+<tr>
+<td>模</td>
+<td><code>√(Σ vᵢ²)</code></td>
+<td>浮点</td>
+</tr>
+<tr>
+<td>单位化</td>
+<td><code>v / ‖v‖</code>，零向量抛错</td>
+<td>浮点</td>
+</tr>
+<tr>
+<td>夹角</td>
+<td><code>arccos(clamp(v·w / (‖v‖‖w‖), −1, 1))</code>，同时输出 rad 与 °</td>
+<td>浮点</td>
+</tr>
+<tr>
+<td>线性组合</td>
+<td><code>αv + βw</code>，系数走 <code>safeParse</code> 支持分数</td>
+<td>有理数</td>
+</tr>
+</tbody>
+</table>
+<p>夹角里对点积比值做了 <code>clamp(−1, 1)</code>——浮点误差会让 <code>cos θ</code> 略微超出 <code>[−1,1]</code>，不做裁剪会得到 <code>NaN</code>。</p>
+<h2 id="tech-h20">6. 渲染与显示规则</h2>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>矩阵渲染 <code>pg</code></td>
+<td>外层用左右两条 <code>border-l-2/border-r-2</code> 竖线模拟矩阵括号；<code>augmentedCol</code> 为真时在最后一列前加竖线；尺寸 sm/md/lg 三档</td>
+</tr>
+<tr>
+<td>单元格编辑 <code>A0</code></td>
+<td>点击进入编辑，失焦/回车提交；提交时 <code>safeParse</code>，<strong>非法则保留旧值</strong>（不报错打断）</td>
+</tr>
+<tr>
+<td>标量结果 <code>hx</code></td>
+<td>左标签右值，支持单位后缀（如 <code>rad</code>、<code>°</code>）</td>
+</tr>
+<tr>
+<td>步骤面板 <code>KO</code></td>
+<td>折叠面板，逐条渲染行变换描述 + 变换后的矩阵快照</td>
+</tr>
+<tr>
+<td>小数格式 <code>toDecimalString(6)</code></td>
+<td><code>toFixed(6)</code> 后去掉末尾 0 与孤立小数点；角度用 4 位，模长用 6 位并去尾零</td>
+</tr>
+<tr>
+<td>分数/小数开关</td>
+<td>页面级状态，写入 <code>localStorage</code>，向下传给所有结果组件</td>
+</tr>
+</tbody>
+</table>
+<p>矩阵快照在步骤里是<strong>每步都存一份矩阵副本</strong>（<code>Mf</code> = 深拷贝），因此步骤面板可以独立回放，不受后续计算影响。代价是内存随步骤数线性增长，10 阶矩阵的 RREF 会存几十份副本——可接受。</p>
+<h2 id="tech-h21">7. OCR 子系统</h2>
+<h3 id="tech-h22">7.1 数据流</h3>
+<pre><code>&lt;input type=file accept=&quot;image/*&quot; capture=environment&gt;
+   ↓ FileReader → dataURL
+图片编辑对话框（canvas 旋转/翻转/裁剪 → toBlob(&quot;image/jpeg&quot;, 0.92)）
+   ↓ File → FileReader → base64 dataURL
+POST {baseUrl}/chat/completions
+   ↓ 取 choices[0].message.content
+去 ```json 围栏 → JSON.parse → 结构校验
+   ↓ 逐格 safeParse，失败计入 failedCells 并置 0
+回填矩阵 / 提示「有 N 个单元格识别失败」
+</code></pre>
+<h3 id="tech-h23">7.2 请求格式</h3>
+<pre><code class="language-http">POST {baseUrl}/chat/completions
+Authorization: Bearer {apiKey}
+Content-Type: application/json
+
+{
+  &quot;model&quot;: &quot;{model}&quot;,
+  &quot;messages&quot;: [{
+    &quot;role&quot;: &quot;user&quot;,
+    &quot;content&quot;: [
+      { &quot;type&quot;: &quot;text&quot;, &quot;text&quot;: &quot;&lt;该模式的提示词&gt;&quot; },
+      { &quot;type&quot;: &quot;image_url&quot;, &quot;image_url&quot;: { &quot;url&quot;: &quot;data:image/jpeg;base64,...&quot; } }
+    ]
+  }],
+  &quot;temperature&quot;: 0
+}
+</code></pre>
+<ul>
+<li><code>baseUrl</code> 结尾的 <code>/</code> 会被去掉再拼 <code>/chat/completions</code>；</li>
+<li><strong>没有</strong> <code>max_tokens</code>、<code>response_format</code>；超时由 <code>AbortController</code> 控制（45 秒，见 8.2 / 《源码解析》），超时后抛「识别超时（45 秒无响应）」；</li>
+<li><code>temperature: 0</code> 是为了让识别结果稳定。</li>
+</ul>
+<h3 id="tech-h24">7.3 三套提示词</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>触发位置</th>
+<th>提示词要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数值矩阵</td>
+<td>单矩阵、双矩阵 A/B、方程组默认</td>
+<td>识别行列数；每格以字符串给出，支持整数/小数/分数/负数；<strong>只返回严格 JSON</strong>，形如 <code>{"rows":3,"cols":3,"data":[["1","2","3"],...]}</code></td>
+</tr>
+<tr>
+<td>符号矩阵</td>
+<td>符号运算</td>
+<td>额外允许字母、π（写作 <code>pi</code>）、<code>+ − * / ^</code>、括号；要求把 <code>2a</code> 转成 <code>2*a</code>、<code>x₁</code> 转成 <code>x1</code>、<code>x²</code> 转成 <code>x^2</code></td>
+</tr>
+<tr>
+<td>增广矩阵</td>
+<td>线性方程组</td>
+<td>识别行数/列数（含常数列）；要求 <code>isAugmented: true</code> 并给出 <code>augmentedCol</code>（从 0 开始）</td>
+</tr>
+</tbody>
+</table>
+<p>提示词要求「只返回严格 JSON」，但代码仍做了<strong>双保险</strong>：先剥掉 <code>```json</code> 围栏，再 <code>JSON.parse</code>，失败则报「识别结果格式不正确」。</p>
+<h3 id="tech-h25">7.4 校验与降级</h3>
+<table>
+<thead>
+<tr>
+<th>检查</th>
+<th>失败表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rows</code>、<code>cols</code>、<code>data</code> 存在且 <code>data</code> 为数组</td>
+<td>「识别结果格式不正确」</td>
+</tr>
+<tr>
+<td><code>data.length === rows</code></td>
+<td>「识别结果行数不匹配: 期望 X 行，实际 Y 行」</td>
+</tr>
+<tr>
+<td>每行长度 <code>=== cols</code></td>
+<td>「第 N 行列数不匹配: 期望 X 列，实际 Y 列」</td>
+</tr>
+<tr>
+<td>每格 <code>safeParse</code> 成功</td>
+<td>失败格置 0，汇总提示「有 N 个单元格识别失败，已置为 0，请核对」</td>
+</tr>
+</tbody>
+</table>
+<p>最后这条是刻意的<strong>降级策略</strong>：宁可让用户去核对几个格子，也不要整张图识别失败。</p>
+<h2 id="tech-h26">8. 存储与状态</h2>
+<p>全部状态在 <code>localStorage</code>，无后端、无账号体系（<code>window.userId</code> 为 <code>guest</code>）。</p>
+<p>存储键带宿主前缀，由 <code>__miaoda_${appId || "__global__"}__:</code> + 业务键拼接：</p>
+<table>
+<thead>
+<tr>
+<th>业务键</th>
+<th>内容</th>
+<th>写入时机</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>__app_linalg_ocr_config</code></td>
+<td><code>{"baseUrl","apiKey","model"}</code></td>
+<td>保存/清除 OCR 配置</td>
+</tr>
+<tr>
+<td><code>__app_linalg_fraction_mode</code></td>
+<td><code>"true"</code> / <code>"false"</code></td>
+<td>顶栏「小数模式 / 分数模式」开关</td>
+</tr>
+</tbody>
+</table>
+<p><code>appId</code> 来自页面注入的 <code>window.appId</code>：</p>
+<ul>
+<li>HTML 版注入 <code>linear-algebra-calculator</code> → 键形如 <code>__miaoda_linear-algebra-calculator__:__app_linalg_ocr_config</code>；</li>
+<li>APK 版注入空串 → 走 <code>__global__</code> 分支。</li>
+</ul>
+<p><strong>排查/清理方法</strong>（浏览器控制台）：</p>
+<pre><code class="language-js">// 列出本应用写入的所有键
+Object.keys(localStorage).filter(k =&gt; k.includes('linalg'));
+
+// 只清 OCR 配置（会同时清掉所有前缀下的同名键）
+Object.keys(localStorage)
+  .filter(k =&gt; k.endsWith('__app_linalg_ocr_config'))
+  .forEach(k =&gt; localStorage.removeItem(k));
+</code></pre>
+<p>此外宿主 SDK 会写一个 <code>x_sdk_device_id</code>（设备标识，随机生成并持久化），与业务无关。</p>
+<h2 id="tech-h27">9. 网络行为与离线能力</h2>
+<table>
+<thead>
+<tr>
+<th>请求</th>
+<th>触发条件</th>
+<th>失败影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@import https://miaoda.feishu.cn/fonts/css2?...</code>（字体）</td>
+<td>HTML 版加载时</td>
+<td>回退系统字体（<code>PingFang SC</code> / 微软雅黑等），布局不受影响</td>
+</tr>
+<tr>
+<td><code>GET /app/&lt;appId&gt;/routes.json</code>（宿主路由表）</td>
+<td>HTML 版启动</td>
+<td>捕获异常后回退为 <code>[{path:"/"}]</code>，单页应用照常工作</td>
+</tr>
+<tr>
+<td>宿主埋点/指标上报</td>
+<td>HTML 版运行期</td>
+<td>静默失败，不影响功能</td>
+</tr>
+<tr>
+<td><code>POST {用户配置的 baseUrl}/chat/completions</code></td>
+<td>用户点识别</td>
+<td>报错提示，已有矩阵不被清空</td>
+</tr>
+</tbody>
+</table>
+<p><strong>离线结论</strong>：矩阵、方程组、向量、符号四类计算完全离线；OCR 必须联网；HTML 版的字体与宿主请求在离线时会失败但不阻塞使用。产物<strong>没有 Service Worker</strong>，因此不是 PWA，离线能力来自「资源已内联/已打包」而不是缓存策略。</p>
+<h2 id="tech-h28">10. 复杂度与规模上限</h2>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>上限</th>
+<th>复杂度</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数值矩阵输入</td>
+<td>10×10</td>
+<td>—</td>
+<td>100 个格子，DOM 压力可接受</td>
+</tr>
+<tr>
+<td>RREF / rank / inv</td>
+<td>10×10</td>
+<td>O(m²n)</td>
+<td>精确分数，最坏情况分子分母膨胀</td>
+</tr>
+<tr>
+<td>det</td>
+<td>10×10</td>
+<td>O(n³)</td>
+<td>主元启发式降低膨胀</td>
+</tr>
+<tr>
+<td>power</td>
+<td>10×10，指数为 int</td>
+<td>O(log n · k³)</td>
+<td>快速幂</td>
+</tr>
+<tr>
+<td>eigen</td>
+<td>5×5（UI 限制）</td>
+<td>O(100 · n³)</td>
+<td>QR 迭代上限 100 次；&gt; 5 阶提示「特征值计算最多支持 5 阶矩阵」</td>
+</tr>
+<tr>
+<td>方程组</td>
+<td>10 行 × (1–10 未知数 + 1)</td>
+<td>O(m²n)</td>
+<td>与 RREF 同；<code>maxCols=11</code></td>
+</tr>
+<tr>
+<td>符号 RREF</td>
+<td>4×4</td>
+<td>表达式规模主导</td>
+<td>无严格时间上界</td>
+</tr>
+<tr>
+<td>符号 det / inv</td>
+<td>3 阶</td>
+<td>显式公式</td>
+<td>常数时间</td>
+</tr>
+<tr>
+<td>向量</td>
+<td>2–5 维</td>
+<td>O(n)</td>
+<td></td>
+</tr>
+<tr>
+<td>OCR</td>
+<td>图片大小不限</td>
+<td>网络与模型主导</td>
+<td>图片仅在客户端压缩，未做尺寸上限保护</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tech-h29">11. 已知限制与风险</h2>
+<p>按影响程度排序。编号可在 issue / 测试用例中引用。</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>影响</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>有理数用 double 存储分子分母</td>
+<td>大数/高阶分数矩阵越界后<strong>静默失去精确性</strong></td>
+<td>改 <code>BigInt</code>；或在中途检测 <code>&gt; 2^53</code> 时提示「结果已超出精确范围」</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>n≥3 特征值仅支持实特征值</td>
+<td>复特征值矩阵给出错误/不收敛的对角元，且<strong>无收敛标志</strong></td>
+<td>QR 后检查次对角元是否收敛，未收敛则提示；或实现 2×2 块提取（real Schur）</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>重特征值的特征向量可能重复</td>
+<td>反幂法对重根收敛到同一方向</td>
+<td>用零空间基（RREF of A−λI）替代逆迭代，重根时返回多个基向量</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>OCR 请求无超时/中断</td>
+<td>接口挂起时界面停在 loading</td>
+<td><strong>已修复（v1.2 源码）</strong>：<code>AbortController</code> + 45s 超时，超时抛「识别超时（45 秒无响应）」，<code>finally</code> 清理定时器</td>
+</tr>
+<tr>
+<td>L5</td>
+<td>API Key 明文存 <code>localStorage</code></td>
+<td>本机被他人使用时泄露</td>
+<td>至少做混淆/会话级存储，并在文档中明确风险（详见《可行性-视觉模型配置存储》）</td>
+</tr>
+<tr>
+<td>L6</td>
+<td>单文件版依赖宿主运行时</td>
+<td>体积 1.2 MB、含埋点代码、离线加载字体失败</td>
+<td>如需纯净版，用 APK 那套分块构建自行打包静态站</td>
+</tr>
+<tr>
+<td>~~L7~~</td>
+<td>~~非法输入静默保留旧值~~</td>
+<td><strong>经源码复核：不成立</strong>。<code>MatrixCell</code> 解析失败时输入框变红、保持编辑态、不提交，符合 PRD</td>
+<td>已从缺陷表移除</td>
+</tr>
+<tr>
+<td>L8</td>
+<td>没有「复制结果」按钮</td>
+<td>该函数来自平台库 <code>@lark-apaas/client-toolkit-lite</code>，业务代码未接；用户只能框选复制</td>
+<td>在结果卡加「复制」按钮并调用库函数，或自行实现</td>
+</tr>
+<tr>
+<td>L9</td>
+<td>符号 RREF 上限 4×4 无提示入口</td>
+<td>用户看到按钮变灰却不知原因</td>
+<td>在卡片上标注「≤4×4」</td>
+</tr>
+<tr>
+<td>L10</td>
+<td>方程组未知数上限 10（列 11）、矩阵上限 10×10 未在 UI 标明</td>
+<td>加到上限时按钮禁用，原因不明</td>
+<td>加 tooltip</td>
+</tr>
+<tr>
+<td>L11</td>
+<td>无测试框架</td>
+<td>只有 <code>tests/build-and-test.mjs</code> 自建断言（18 项，覆盖方程组）</td>
+<td>引入 Vitest，覆盖 <code>matrix-ops</code> / <code>symbolic</code> / <code>fraction</code> 全量</td>
+</tr>
+<tr>
+<td>L12</td>
+<td>~~产物是压缩 bundle，无法改功能~~</td>
+<td><strong>源码已到位</strong>（<code>source/</code>），可本地构建</td>
+<td>见《开发者指南》与《源码解析》第 9 节</td>
+</tr>
+<tr>
+<td>L13</td>
+<td>方程组「无解」时 <code>rankAb</code> 恒等于 <code>rankA</code></td>
+<td>界面打印「1 与 1，秩不相等故无解」这种错误文案，结论对但数字错</td>
+<td><strong>已修复（v1.2 源码）</strong>：<code>rankAb</code> 改为统计行最简形的非零行数</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>状态说明</strong>：L4、L13 已在 v1.2 源码中修复；L7 经复核不成立，已移除；其余为待办项。
+v1.1 曾在压缩产物上做过等价的字节级补丁，现已由源码修复取代，补丁仅作历史归档（第 14 节）。</p>
+</blockquote>
+<h2 id="tech-h30">12. 安全与隐私</h2>
+<ul>
+<li><strong>计算不出网</strong>：所有矩阵运算在本地完成，没有任何上传结果的路径；</li>
+<li><strong>唯一外发</strong>：OCR 时上传用户主动选择的图片（base64）到用户自己配置的服务商；</li>
+<li><strong>密钥</strong>：仅存本机 <code>localStorage</code>，不走任何中转；但为明文，公用设备需谨慎；</li>
+<li><strong>APK 权限</strong>：对外权限以 <code>INTERNET</code> 为主，未见存储/相机权限——拍照是通过系统文件选择器的 <code>capture</code> 属性完成的，因此不需要 <code>CAMERA</code>；</li>
+<li><strong>无账号体系</strong>：<code>userId</code> 固定为 <code>guest</code>，不存在登录态泄露面。</li>
+</ul>
+<h2 id="tech-h31">13. 可扩展方向</h2>
+<table>
+<thead>
+<tr>
+<th>方向</th>
+<th>落点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>精确大数</td>
+<td>有理数类换 <code>BigInt</code>，其余算法零改动（接口不变）</td>
+</tr>
+<tr>
+<td>复特征值</td>
+<td>实现 real Schur 分解的 2×2 块提取，补复数特征向量</td>
+</tr>
+<tr>
+<td>更多符号能力</td>
+<td>增加 <code>sqrt</code>、<code>abs</code>、因式分解、多项式展开；受限于 AST 化简器</td>
+</tr>
+<tr>
+<td>结果导出</td>
+<td>已有 <code>copyToClipboard</code>，接一个「复制 / 导出 LaTeX」按钮即可</td>
+</tr>
+<tr>
+<td>离线字体</td>
+<td>把字体子集内联进 HTML，去掉 CDN <code>@import</code></td>
+</tr>
+<tr>
+<td>自动化测试</td>
+<td>抽出算法层为 ES module，用 Vitest 跑测试手册中的用例</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tech-h32">14. 构建与补丁历史</h2>
+<h3 id="tech-h33">14.1 当前构建方式（v1.2 起）</h3>
+<p>源码到位后，产物一律由源码构建，不再对压缩产物做任何手工修改：</p>
+<pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
+npm install
+npm run typecheck            # 必须 0 错误
+npm run build:all            # dist/client → dist-standalone → 单文件 HTML
+node ../../../tests/build-and-test.mjs   # 18 项求解器断言
+</code></pre>
+<p>产物落点：</p>
+<table>
+<thead>
+<tr>
+<th>产物</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>平台部署版</td>
+<td><code>web-source/dist/client/</code></td>
+</tr>
+<tr>
+<td>离线站点（Capacitor webDir）</td>
+<td><code>web-source/dist-standalone/</code></td>
+</tr>
+<tr>
+<td>单文件</td>
+<td><code>web-source/线性代数计算器.html</code>（再复制到仓库根目录）</td>
+</tr>
+<tr>
+<td>安卓资源</td>
+<td><code>android/www/</code> 与 <code>android/android/app/src/main/assets/public/</code></td>
+</tr>
+</tbody>
+</table>
+<p>本次（2026-10-19）的构建已把两个修复带进产物，并同步了安卓工程的网页资源。</p>
+<h3 id="tech-h34">14.2 历史：v1.1 的字节级补丁（已归档）</h3>
+<p>源码到手前，P1/P2 两处修复只能在压缩产物上做字节替换（全文净增 62 字节，其余字节不变）：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>位置</th>
+<th>原片段</th>
+<th>改为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>求解器无解分支</td>
+<td><code>type:"no-solution",rankA:v,rankAb:d,</code></td>
+<td><code>…rankAb:v+1,</code></td>
+</tr>
+<tr>
+<td>P2</td>
+<td>OCR fetch</td>
+<td><code>fetch(d,{method:"POST",headers:{…</code></td>
+<td>插入 <code>signal:AbortSignal.timeout?…</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>备份：<code>_backup/线性代数计算器_v1.0_backup.html</code>（原始）、<code>_backup/线性代数计算器_v1.1_bytepatch.html</code>（补丁版）</li>
+<li>脚本：<code>_backup/legacy/</code>（<code>patch_v1_1_bytes.py</code>、<code>extract_check.py</code>）——<strong>仅作历史参考，不要再执行</strong>：它会覆盖当前已由源码构建的产物。</li>
+</ul>
+<h3 id="tech-h35">14.3 三个必须知道的构建坑</h3>
+<ol>
+<li><strong>原生可选依赖缺失</strong>（<code>@rolldown/binding-win32-x64-msvc</code>、<code>lightningcss-win32-x64-msvc</code>、<code>@tailwindcss/oxide-win32-x64-msvc</code>）。<code>package-lock.json</code> 在他平台生成，npm 不会自动补 Windows 二进制，报 <code>Cannot find module …win32-x64-msvc</code>。必须<strong>一条命令装齐</strong>（<code>--no-save</code> 会被下一次 install 清理）：
+   <code>bash
+   npm install --no-save @rolldown/binding-win32-x64-msvc@1.2.7 \
+     lightningcss-win32-x64-msvc@1.32.0 @tailwindcss/oxide-win32-x64-msvc@4.3.3</code></li>
+<li><strong><code>fs.cpSync</code> 在本机会静默崩溃</strong>（退出码 127，无输出，<code>try/catch</code> 抓不到）。已把 <code>make-standalone.mjs</code> 改成手写递归复制。</li>
+<li><strong>路径含中文 + OneDrive</strong>：Vite 本身没问题，但建议仓库放纯 ASCII 路径（如 <code>D:////projects////linalg</code>），可减少脚本层的意外。</li>
+</ol>
+<hr />
+<p><em>文档版本 v1.2 · 源码构建 2026-10-19 · 实现描述以 <code>source/</code> 中的 TypeScript 源码为准</em></p></section><section class="doc-sec" id="doc-dev"><h1 id="_1">线性代数计算器 · 开发者指南</h1>
+<p>面向要改这个项目的人。前提已经变了：<strong>源码在仓库里</strong>（<code>source/linear-algebra-calculator/</code>），所以标准流程是"改源码 → 构建 → 验证"，不再需要对压缩产物动刀。</p>
+<hr />
+<h2 id="dev-h1">目录</h2>
+<ol>
+<li><a href="#dev-h2">仓库里有什么</a></li>
+<li><a href="#dev-h3">环境准备</a></li>
+<li><a href="#dev-h4">日常开发</a></li>
+<li><a href="#dev-h5">构建与产物</a></li>
+<li><a href="#dev-h6">打 Android 包</a></li>
+<li><a href="#dev-h10">验收与发版清单</a></li>
+<li><a href="#dev-h11">故障排查</a></li>
+<li><a href="#dev-h12">附录：没有源码时的应急手段</a></li>
+<li><a href="#dev-h13">文档维护</a></li>
+</ol>
+<hr />
+<h2 id="dev-h2">1. 仓库里有什么</h2>
+<pre><code>线性代数计算器/
+├── 线性代数计算器.html        # 交付产物（源码构建，勿手改）
+├── 线性代数计算器.apk         # 安卓产物（旧版，按 §5 重新打包）
+├── README.md / CHANGELOG.md
+├── source/
+│   └── linear-algebra-calculator/
+│       ├── web-source/        # ★ 前端源码（Vite + React + TS）
+│       │   ├── src/lib/       #   算法核心：fraction / matrix-ops / symbolic / vector-ops / ocr-service
+│       │   ├── src/pages/     #   页面与 5 个功能区块
+│       │   ├── src/components/#   输入网格、结果渲染、OCR 对话框
+│       │   └── scripts/       #   make-standalone / make-single-file
+│       ├── android/           # Capacitor 6 工程 + build-apk.sh
+│       └── single-file/       # 单文件产物副本
+├── tests/build-and-test.mjs   # 18 项求解器断言（直接测源码）
+├── docs/                      # 全部文档 + 手册构建脚本
+└── _backup/                   # 历史产物与旧补丁脚本（只读归档）
+</code></pre>
+<p>三条原则：</p>
+<ol>
+<li><strong>只改 <code>source/</code> 里的东西</strong>；根目录的 HTML 是产物，改了下一次构建就没了。</li>
+<li><strong>产物由 <code>npm run build:all</code> 生成</strong>，不要手工编辑压缩后的 JS。</li>
+<li><strong>改完必须跑 <code>npm run typecheck</code> 与 <code>tests/build-and-test.mjs</code></strong>，这两步比肉眼点界面可靠。</li>
+</ol>
+<h2 id="dev-h3">2. 环境准备</h2>
+<table>
+<thead>
+<tr>
+<th>依赖</th>
+<th>版本</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node.js</td>
+<td>20 / 22 LTS</td>
+<td>Vite 8 与构建脚本</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>3.9+</td>
+<td>仅用于文档构建（可选）</td>
+</tr>
+<tr>
+<td>JDK 17</td>
+<td>—</td>
+<td>打 APK</td>
+</tr>
+<tr>
+<td>Android SDK</td>
+<td>platform 34 + build-tools 34</td>
+<td>打 APK</td>
+</tr>
+</tbody>
+</table>
+<p>首次安装：</p>
+<pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
+npm install          # 约 874 个包，2–3 分钟
+</code></pre>
+<blockquote>
+<p><strong>Windows 必看</strong>：<code>package-lock.json</code> 是在别的平台生成的，npm 不会补装 Windows 原生二进制，构建会报
+<code>Cannot find module '@rolldown/binding-win32-x64-msvc'</code> 之类的错。一次装齐：</p>
+</blockquote>
+<pre><code class="language-bash">npm install --no-save \
+  @rolldown/binding-win32-x64-msvc@1.2.7 \
+  lightningcss-win32-x64-msvc@1.32.0 \
+  @tailwindcss/oxide-win32-x64-msvc@4.3.3
+</code></pre>
+<p>⚠️ 必须<strong>一条命令装完</strong>——<code>--no-save</code> 装的包会在下一次 <code>npm install</code> 时被当"多余依赖"删掉。</p>
+<h2 id="dev-h4">3. 日常开发</h2>
+<pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
+npm run dev          # http://localhost:5173
+npm run typecheck    # tsc 类型检查
+npm run lint         # typecheck + eslint
+</code></pre>
+<p>改代码时的落点：</p>
+<table>
+<thead>
+<tr>
+<th>想改什么</th>
+<th>改哪里</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>算法（RREF / det / 逆 / 特征值 / 方程组）</td>
+<td><code>src/lib/matrix-ops.ts</code></td>
+</tr>
+<tr>
+<td>分数精度、显示格式</td>
+<td><code>src/lib/fraction.ts</code></td>
+</tr>
+<tr>
+<td>符号运算的解析与化简</td>
+<td><code>src/lib/symbolic.ts</code></td>
+</tr>
+<tr>
+<td>向量运算</td>
+<td><code>src/lib/vector-ops.ts</code></td>
+</tr>
+<tr>
+<td>OCR 提示词、请求、配置存取</td>
+<td><code>src/lib/ocr-service.ts</code></td>
+</tr>
+<tr>
+<td>单个功能区块的 UI</td>
+<td><code>src/pages/HomePage/sections/*.tsx</code></td>
+</tr>
+<tr>
+<td>矩阵输入网格、单元格校验</td>
+<td><code>src/components/MatrixGrid.tsx</code></td>
+</tr>
+<tr>
+<td>结果渲染、步骤面板</td>
+<td><code>src/components/MatrixDisplay.tsx</code>、<code>StepsAccordion.tsx</code></td>
+</tr>
+<tr>
+<td>顶栏、Tab、分数开关</td>
+<td><code>src/pages/HomePage/HomePage.tsx</code></td>
+</tr>
+<tr>
+<td>主题色、字体</td>
+<td><code>src/index.css</code>、<code>src/tailwind-theme.css</code></td>
+</tr>
+</tbody>
+</table>
+<p>约定（来自 <code>web-source/README.md</code>，要遵守）：</p>
+<ul>
+<li><code>src/index.tsx</code> 与 <code>src/components/ui/*</code> 是模板托管文件，<strong>不要改</strong>；</li>
+<li>新页面放 <code>src/pages/&lt;Name&gt;/&lt;Name&gt;.tsx</code>，页面专属组件放同级 <code>components/</code>；</li>
+<li>导入别名：<code>@/</code> → <code>src/</code>，<code>@shared/</code> → <code>shared/</code>。</li>
+</ul>
+<h2 id="dev-h5">4. 构建与产物</h2>
+<pre><code class="language-bash">npm run build:all
+</code></pre>
+<p>等价于三步：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>命令</th>
+<th>产物</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>vite build</code></td>
+<td><code>dist/client/</code></td>
+<td>平台部署（含 <code>routes.json</code>、polyfills、字体重写）</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>node scripts/make-standalone.mjs</code></td>
+<td><code>dist-standalone/</code></td>
+<td>离线静态站；Capacitor 的 <code>webDir</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>node scripts/make-single-file.mjs</code></td>
+<td><code>线性代数计算器.html</code></td>
+<td>单文件，双击可用</td>
+</tr>
+</tbody>
+</table>
+<p>把单文件复制到仓库根目录：</p>
+<pre><code class="language-bash">cp 线性代数计算器.html ../../../线性代数计算器.html
+</code></pre>
+<blockquote>
+<p><code>make-single-file.mjs</code> 会注入 <code>window.appId / userId / __BASENAME__ / _appInfo</code>，并做两次安全断言（CSS 里不能有 <code>&lt;/style&gt;</code>、JS 里不能有 <code>&lt;/script&gt;</code>）。改脚本时别破坏这两条。</p>
+</blockquote>
+<p><strong>已知构建坑</strong>：</p>
+<ol>
+<li>原生可选依赖缺失 → 见 §2 的一次性安装；</li>
+<li><code>fs.cpSync</code> 在本机 Windows 上会静默崩溃（退出码 127，无输出，<code>try/catch</code> 抓不到）→ <code>make-standalone.mjs</code> 已改为手写递归复制；</li>
+<li>路径含中文 / 放在 OneDrive 下 → Vite 能跑，但建议放到纯 ASCII 路径（如 <code>D:\projects\linalg</code>）。</li>
+</ol>
+<h2 id="dev-h6">5. 打 Android 包</h2>
+<p>仓库里的 <code>source/linear-algebra-calculator/android/</code> 是现成的 Capacitor 6 工程（<code>appId=com.doubao.linalg</code>，<code>webDir=www</code>），网页资源已同步为最新构建。</p>
+<h3 id="dev-h7">5.1 快速出 debug 包</h3>
+<pre><code class="language-bash">cd source/linear-algebra-calculator/android
+export JAVA_HOME=/path/to/jdk17
+export ANDROID_HOME=/path/to/Android/Sdk
+./build-apk.sh
+# 产物：android/app/build/outputs/apk/debug/app-debug.apk
+</code></pre>
+<p>脚本做三件事：<code>npm install</code> → 写 <code>local.properties</code> 并 <code>npx cap sync android</code> → <code>./gradlew assembleDebug</code>。</p>
+<h3 id="dev-h8">5.2 只更新网页资源</h3>
+<pre><code class="language-bash"># 用最新 dist-standalone 覆盖 www（cap sync 会再同步到 app/src/main/assets/public）
+cp -r web-source/dist-standalone/* ../linear-algebra-calculator/android/www/
+cd ../linear-algebra-calculator/android &amp;&amp; npx cap sync android
+</code></pre>
+<p><code>.map</code> 文件不要带进 APK（体积白涨约 4 MB）。</p>
+<h3 id="dev-h9">5.3 出正式包</h3>
+<p>Android Studio 打开 <code>android/android/</code>，<code>Build → Generate Signed APK</code> 用你的 keystore 签名；或命令行：</p>
+<pre><code class="language-bash">cd android/android
+./gradlew assembleRelease
+$ANDROID_HOME/build-tools/34.0.0/apksigner sign --ks my.jks \
+  --out app-release-signed.apk app/build/outputs/apk/release/app-release-unsigned.apk
+</code></pre>
+<p>注意：</p>
+<ul>
+<li><strong>签名密钥丢失 = 无法给已安装用户推送更新</strong>，务必备份；</li>
+<li>包名 <code>com.doubao.linalg</code> 不要改，否则手机会装成两个应用；</li>
+<li>仓库根目录的 APK 是旧构建，未包含 v1.2 的修复，需按本节重打。</li>
+</ul>
+<h2 id="dev-h10">6. 验收与发版清单</h2>
+<pre><code class="language-bash"># 1) 类型检查
+cd source/linear-algebra-calculator/web-source &amp;&amp; npm run typecheck
+
+# 2) 算法回归（18 项，覆盖方程组三种结论与分数系数）
+node ../../../tests/build-and-test.mjs
+</code></pre>
+<p>人工补充（机器测不到的部分）：</p>
+<ul>
+<li>[ ] 单矩阵 8 个按钮各点一次，结果非空、无红字报错</li>
+<li>[ ] 双矩阵 <code>A+B</code> / <code>A−B</code> / <code>A×B</code>，维度不匹配时有明确提示</li>
+<li>[ ] 方程组三种结论各跑一次示例；无解时秩显示为「1 与 2」</li>
+<li>[ ] 向量 6 项；2 维下叉积按钮禁用</li>
+<li>[ ] 符号矩阵 6 项；4×4 时 det/inv 报上限、RREF 正常</li>
+<li>[ ] 分数/小数开关切换、刷新后保持</li>
+<li>[ ] OCR：配置 → 选图 → 裁剪 → 识别 → 回填；断网时约 45 秒内报超时</li>
+<li>[ ] 375px 窄屏无横向溢出</li>
+<li>[ ] <code>docs/测试手册.md</code> 的 P0 用例通过</li>
+</ul>
+<h2 id="dev-h11">7. 故障排查</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Cannot find module …win32-x64-msvc</code></td>
+<td>原生可选依赖缺失</td>
+<td>§2 的一次性安装</td>
+</tr>
+<tr>
+<td><code>build:all</code> 只出了 dist 就停</td>
+<td><code>make-standalone.mjs</code> 里 <code>fs.cpSync</code> 崩了</td>
+<td>确认脚本是手写 <code>copyDir</code> 版本（已修）</td>
+</tr>
+<tr>
+<td>白屏</td>
+<td>产物被手改坏，或 <code>#root</code> 缺失</td>
+<td>重新 <code>build:all</code>；不要手改 bundle</td>
+</tr>
+<tr>
+<td>点识别没反应</td>
+<td>未配置 OCR（按钮显示「配置 OCR」）</td>
+<td>卡片标题右侧按钮 → 填三项 → 保存</td>
+</tr>
+<tr>
+<td>识别报 401/403</td>
+<td>Key 错或过期</td>
+<td>重填；确认 Base URL 带 <code>/v1</code></td>
+</tr>
+<tr>
+<td>识别报 404</td>
+<td>Base URL 多写/少写路径</td>
+<td>只填到版本号，如 <code>https://api.openai.com/v1</code></td>
+</tr>
+<tr>
+<td>识别超时</td>
+<td>45 秒无响应（v1.2 起有明确提示）</td>
+<td>换网络/换中转；模型不支持图像时也会慢</td>
+</tr>
+<tr>
+<td>刷新后配置丢失</td>
+<td>隐私模式禁用 localStorage；或换了源（<code>file://</code> 与 <code>localhost</code> 是不同的库）</td>
+<td>允许本地存储；固定同一种打开方式</td>
+</tr>
+<tr>
+<td>APK 覆盖安装失败</td>
+<td>签名不一致</td>
+<td>卸载旧版再装，或使用同一 keystore</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dev-h12">8. 附录：没有源码时的应急手段</h2>
+<p>（现在用不上，保留给"只拿到产物"的场景。）</p>
+<ol>
+<li><strong>把 <code>\uXXXX</code> 还原成明文再搜</strong>：</li>
+</ol>
+<p><code>python
+   import re
+   src = open("线性代数计算器.html", encoding="utf-8").read()
+   dst = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), src)
+   open("_debug/unescaped.js", "w", encoding="utf-8", errors="backslashreplace").write(dst)</code></p>
+<p><code>errors="backslashreplace"</code> 不能省：bundle 里有孤立代理对（emoji 被截断）。</p>
+<ol start="2">
+<li>
+<p><strong>按中文文案定位</strong>（不要依赖压缩函数名，每次构建都变）：<code>单矩阵运算</code>、<code>符号行列式最多支持 3 阶矩阵</code>、<code>高斯消元过程</code>、<code>/chat/completions</code>、<code>__app_linalg_ocr_config</code>。</p>
+</li>
+<li>
+<p><strong>改产物必须字节级</strong>：用 <code>read_bytes</code> / <code>write_bytes</code>，不要用文本模式——文本模式会把 LF 全转成 CRLF，文件凭空多出上百字节。</p>
+</li>
+<li>
+<p><strong>改完做三件事</strong>：抽出的脚本 <code>node --check</code>、断言补丁片段唯一命中、浏览器实测。</p>
+</li>
+</ol>
+<h2 id="dev-h13">9. 文档维护</h2>
+<p>Markdown 是唯一事实来源，HTML 手册由脚本生成：</p>
+<pre><code class="language-bash">pip install markdown
+python docs/build_docs.py     # → docs/手册.html
+</code></pre>
+<p>改文档的约定：</p>
+<ul>
+<li>界面文案、报错文案必须与源码逐字一致；</li>
+<li>算法描述与代码冲突时以源码为准，并同步修订；</li>
+<li>新增功能同时更新：README 能力表、用户手册对应章节、技术手册算法节、测试手册用例；</li>
+<li><strong>不要再新增"按压缩产物反推"的结论</strong>——源码在手，直接读。</li>
+</ul>
+<hr />
+<p><em>文档版本 v1.2 · 2026-10-19 · 与 <code>source/</code> 中源码同步</em></p></section><section class="doc-sec" id="doc-test"><h1 id="_1">线性代数计算器 · 测试手册</h1>
+<p>用途：验收新版本、回归改动、给算法层补自动化测试时提供<strong>可判定</strong>的用例。
+每个用例给出「输入 → 期望输出」，期望值均已独立核算（非从程序反推）。</p>
+<hr />
+<h2 id="test-h1">目录</h2>
+<ol>
+<li><a href="#test-h2">测试范围与环境</a></li>
+<li><a href="#test-h3">用例分级</a></li>
+<li><a href="#test-h4">矩阵运算用例</a></li>
+<li><a href="#test-h7">线性方程组用例</a></li>
+<li><a href="#test-h10">向量运算用例</a></li>
+<li><a href="#test-h11">符号运算用例</a></li>
+<li><a href="#test-h12">OCR 用例</a></li>
+<li><a href="#test-h13">界面与交互用例</a></li>
+<li><a href="#test-h14">性能观测</a></li>
+<li><a href="#test-h15">发版回归清单</a></li>
+<li><a href="#test-h16">缺陷记录模板</a></li>
+</ol>
+<hr />
+<h2 id="test-h2">1. 测试范围与环境</h2>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>被测对象</td>
+<td><code>线性代数计算器.html</code>（桌面 Chrome/Edge）、<code>线性代数计算器.apk</code>（Android WebView）</td>
+</tr>
+<tr>
+<td>测试类型</td>
+<td>手工功能测试为主；方程组求解器有可复跑的自动回归（附录 A）；其余算法用独立实现交叉核对（附录 B）</td>
+</tr>
+<tr>
+<td>不做</td>
+<td>安全渗透、并发、多用户（无后端、无账号）</td>
+</tr>
+<tr>
+<td>环境矩阵</td>
+<td>桌面 Chrome 最新版 / Edge 最新版 / 手机 Chrome；窗口宽度 375px、768px、1440px 三档</td>
+</tr>
+</tbody>
+</table>
+<p><strong>判定原则</strong></p>
+<ul>
+<li>数值类：分数模式下必须<strong>完全相等</strong>；小数模式下允许最后一位舍入差（≤1e-6）。</li>
+<li>文本类：报错文案与《用户手册》第 9 节逐字一致（文案是用户可感知的行为）。</li>
+<li>布局类：无横向溢出、按钮不重叠、结果不被裁切。</li>
+</ul>
+<h2 id="test-h3">2. 用例分级</h2>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>含义</th>
+<th>执行时机</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>核心链路，坏了等于不可用</td>
+<td>每次发版必跑</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>主要功能与常见错误路径</td>
+<td>每次发版必跑</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>边界、极限规模、体验细节</td>
+<td>大版本或改动相关模块时跑</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-h4">3. 矩阵运算用例</h2>
+<h3 id="test-h5">3.1 单矩阵（P0/P1）</h3>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>级别</th>
+<th>输入</th>
+<th>操作</th>
+<th>期望结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SM-01</td>
+<td>P0</td>
+<td><code>1 2 3 / 4 5 6 / 7 8 10</code></td>
+<td>行列式 det</td>
+<td><code>-3</code>；秩 <code>3</code>；迹 <code>16</code></td>
+</tr>
+<tr>
+<td>SM-02</td>
+<td>P0</td>
+<td><code>1 2 / 2 4</code></td>
+<td>逆矩阵</td>
+<td>提示「该矩阵不可逆（奇异矩阵），行列式为 0」；det 为 <code>0</code>；rank 为 <code>1</code></td>
+</tr>
+<tr>
+<td>SM-03</td>
+<td>P0</td>
+<td><code>1/2 1/3 / 1/4 1/5</code></td>
+<td>行列式（分数模式开）</td>
+<td><code>1/60</code>；小数模式为 <code>0.016667</code></td>
+</tr>
+<tr>
+<td>SM-04</td>
+<td>P0</td>
+<td><code>1 2 / 3 4</code></td>
+<td>逆矩阵（分数模式）</td>
+<td><code>-2  1 / 3/2  -1/2</code></td>
+</tr>
+<tr>
+<td>SM-05</td>
+<td>P1</td>
+<td><code>1 2 3 / 4 5 6 / 7 8 9</code></td>
+<td>RREF</td>
+<td><code>1 0 -1 / 0 1 2 / 0 0 0</code>；rank <code>2</code>；主元列「第 1 列、第 2 列」</td>
+</tr>
+<tr>
+<td>SM-06</td>
+<td>P1</td>
+<td><code>1 1 / 0 1</code></td>
+<td>幂 Aⁿ=5</td>
+<td><code>1 5 / 0 1</code></td>
+</tr>
+<tr>
+<td>SM-07</td>
+<td>P1</td>
+<td><code>1 1 / 0 1</code></td>
+<td>幂 Aⁿ=0</td>
+<td>单位阵 <code>1 0 / 0 1</code></td>
+</tr>
+<tr>
+<td>SM-08</td>
+<td>P1</td>
+<td><code>1 1 / 0 1</code></td>
+<td>幂 Aⁿ=−1</td>
+<td><code>1 -1 / 0 1</code></td>
+</tr>
+<tr>
+<td>SM-09</td>
+<td>P1</td>
+<td><code>1 1 / 1 1</code></td>
+<td>幂 Aⁿ=−1</td>
+<td>报错「负指数要求矩阵可逆」</td>
+</tr>
+<tr>
+<td>SM-10</td>
+<td>P1</td>
+<td><code>1 1 / 0 1</code></td>
+<td>幂 Aⁿ=1.5</td>
+<td>报错「请输入有效的整数指数」</td>
+</tr>
+<tr>
+<td>SM-11</td>
+<td>P1</td>
+<td><code>4 1 / 2 3</code></td>
+<td>特征值/向量</td>
+<td>特征值 <code>5</code>、<code>2</code>；对应特征向量方向约 <code>(1,1)</code>、<code>(1,-2)</code>（归一化后约为 ±(0.7071, 0.7071) 与 ±(0.4472, −0.8944)，正负号由迭代初值决定）</td>
+</tr>
+<tr>
+<td>SM-12</td>
+<td>P1</td>
+<td><code>0 -1 / 1 0</code></td>
+<td>特征值</td>
+<td>识别为<strong>复特征值</strong> <code>0 ± 1i</code>（实部 0、虚部 ±1），不输出实数特征值列表</td>
+</tr>
+<tr>
+<td>SM-13</td>
+<td>P1</td>
+<td><code>2 0 0 / 0 3 0 / 0 0 5</code></td>
+<td>特征值</td>
+<td><code>5, 3, 2</code>（降序）；特征向量近似为三个坐标轴方向</td>
+</tr>
+<tr>
+<td>SM-13b</td>
+<td>P1</td>
+<td>6×6 单位阵</td>
+<td>特征值</td>
+<td>报错「特征值计算最多支持 5 阶矩阵」</td>
+</tr>
+<tr>
+<td>SM-14</td>
+<td>P1</td>
+<td><code>1 2 3 / 4 5 6</code>（2×3）</td>
+<td>观察按钮状态</td>
+<td>det、逆矩阵、迹、幂、特征值按钮为<strong>禁用</strong>；rank、转置、RREF 可点</td>
+</tr>
+<tr>
+<td>SM-15</td>
+<td>P1</td>
+<td><code>1 2 3 / 4 5 6</code></td>
+<td>转置</td>
+<td><code>1 4 / 2 5 / 3 6</code>（3×2）</td>
+</tr>
+<tr>
+<td>SM-16</td>
+<td>P2</td>
+<td>10×10 单位阵</td>
+<td>det / 逆 / rank</td>
+<td><code>1</code> / 单位阵 / <code>10</code></td>
+</tr>
+<tr>
+<td>SM-17</td>
+<td>P2</td>
+<td><code>1/2 0 0 / 0 1/3 0 / 0 0 1/5</code></td>
+<td>行列式（分数模式）</td>
+<td><code>1/30</code>；小数模式 <code>0.033333</code></td>
+</tr>
+<tr>
+<td>SM-18</td>
+<td>P2</td>
+<td>3×3 矩阵</td>
+<td>行列式 → 展开「计算步骤」</td>
+<td>每步形如 <code>R3 ← R3 − 2R1</code>，末步矩阵为上三角，与 det 值自洽</td>
+</tr>
+</tbody>
+</table>
+<h3 id="test-h6">3.2 双矩阵（P0）</h3>
+<p>A = <code>1 2 3 / 4 5 6</code>，B = <code>7 8 / 9 10 / 11 12</code></p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>级别</th>
+<th>操作</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DM-01</td>
+<td>P0</td>
+<td>A × B</td>
+<td><code>58 64 / 139 154</code>；说明行显示 <code>2×3 × 3×2 = 2×2</code></td>
+</tr>
+<tr>
+<td>DM-02</td>
+<td>P1</td>
+<td>A + B</td>
+<td>报错「矩阵加法要求同型矩阵。A 为 2×3，B 为 3×2」</td>
+</tr>
+<tr>
+<td>DM-03</td>
+<td>P1</td>
+<td>维度徽标</td>
+<td>「加减法 ✗ 维度不匹配」「乘法 ✓ 维度匹配」同时出现</td>
+</tr>
+<tr>
+<td>DM-04</td>
+<td>P1</td>
+<td>把 B 改成 <code>1 2 3 / 4 5 6</code> 后 A + B</td>
+<td><code>2 4 6 / 8 10 12</code></td>
+</tr>
+<tr>
+<td>DM-05</td>
+<td>P1</td>
+<td>同上 A − B</td>
+<td><code>0 0 0 / 0 0 0</code></td>
+</tr>
+<tr>
+<td>DM-06</td>
+<td>P2</td>
+<td>10×3 与 3×10 相乘</td>
+<td>结果 10×10，横向可滚动，不撑破布局</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-h7">4. 线性方程组用例</h2>
+<h3 id="test-h8">4.1 三种结论</h3>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>级别</th>
+<th>增广矩阵</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EQ-01</td>
+<td>P0</td>
+<td><code>2 1 -1 ∣ 8</code>、<code>-3 -1 2 ∣ -11</code>、<code>-2 1 2 ∣ -3</code></td>
+<td><strong>唯一解</strong>：x1=2，x2=3，x3=−1；附「系数矩阵秩 = 增广矩阵秩 = 3 = 未知数个数 3」</td>
+</tr>
+<tr>
+<td>EQ-02</td>
+<td>P1</td>
+<td><code>2 3 ∣ 7</code>、<code>1 -1 ∣ 1</code></td>
+<td><strong>唯一解</strong>：x1=2，x2=1</td>
+</tr>
+<tr>
+<td>EQ-03</td>
+<td>P0</td>
+<td><code>1 2 3 ∣ 1</code>、<code>2 4 6 ∣ 2</code>、<code>3 6 9 ∣ 3</code></td>
+<td><strong>无穷多解</strong>：自由变量 x2、x3；特解 (1,0,0)；η₁=(−2,1,0)，η₂=(−3,0,1)</td>
+</tr>
+<tr>
+<td>EQ-04</td>
+<td>P0</td>
+<td><code>1 1 ∣ 1</code>、<code>2 2 ∣ 3</code></td>
+<td><strong>无解</strong>：出现「方程组存在矛盾方程，没有解。」；附注显示「系数矩阵秩 = 1，增广矩阵秩 = 2，秩不相等故无解」（v1.1 起两个数不再相同）</td>
+</tr>
+<tr>
+<td>EQ-05</td>
+<td>P2</td>
+<td><code>1 1 ∣ 0</code>、<code>2 2 ∣ 0</code>（齐次）</td>
+<td><strong>无穷多解</strong>：自由变量 x2；特解 (0,0)；η₁=(−1,1)</td>
+</tr>
+<tr>
+<td>EQ-06</td>
+<td>P1</td>
+<td>任意矩阵</td>
+<td>点「求解」前</td>
+</tr>
+<tr>
+<td>EQ-07</td>
+<td>P1</td>
+<td>任意有解的方程组</td>
+<td>展开「高斯消元过程」</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>EQ-04 记录</strong>：旧版（v1.0）会打印「系数矩阵秩 = 1，增广矩阵秩 = 1，秩不相等故无解」，两个数字相等，属缺陷 L13。v1.2 起由源码修复，应显示 1 与 2；若仍看到 <code>1 与 1</code>，说明用的是旧产物。</p>
+</blockquote>
+<h3 id="test-h9">4.2 尺寸与录入</h3>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>级别</th>
+<th>操作</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EQ-08</td>
+<td>P1</td>
+<td>方程数 +/−</td>
+<td>行数 1–10 变化，超出范围按钮禁用</td>
+</tr>
+<tr>
+<td>EQ-09</td>
+<td>P1</td>
+<td>未知数 +</td>
+<td>列数 = 未知数 + 1，<code>b</code> 列始终在最后，原有数据保留在左侧</td>
+</tr>
+<tr>
+<td>EQ-10</td>
+<td>P1</td>
+<td>点「唯一解」「无穷多解」「无解」「示例」</td>
+<td>分别载入对应示例并清空旧结果，弹出「已加载…示例」提示</td>
+</tr>
+<tr>
+<td>EQ-11</td>
+<td>P2</td>
+<td>增广矩阵识别（OCR）</td>
+<td>识别后列数 = 原图列数，常数列在最后</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-h10">5. 向量运算用例</h2>
+<p>v=(1,2,3)，w=(4,5,6)</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>级别</th>
+<th>操作</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VEC-01</td>
+<td>P0</td>
+<td>点积</td>
+<td><code>32</code></td>
+</tr>
+<tr>
+<td>VEC-02</td>
+<td>P0</td>
+<td>叉积</td>
+<td><code>(-3, 6, -3)</code></td>
+</tr>
+<tr>
+<td>VEC-03</td>
+<td>P1</td>
+<td>长度/模</td>
+<td>‖v‖≈<code>3.741657</code>，‖w‖≈<code>8.774964</code></td>
+</tr>
+<tr>
+<td>VEC-04</td>
+<td>P1</td>
+<td>单位化</td>
+<td>v̂≈(0.267261, 0.534522, 0.801784)，ŵ≈(0.455842, 0.569803, 0.683763)</td>
+</tr>
+<tr>
+<td>VEC-05</td>
+<td>P1</td>
+<td>夹角</td>
+<td><code>0.225726 rad</code> / <code>12.9332°</code></td>
+</tr>
+<tr>
+<td>VEC-06</td>
+<td>P1</td>
+<td>线性组合，系数 α=2、β=−1/2</td>
+<td><code>(0, 1.5, 3)</code>；标题显示 <code>线性组合 2·v + -1/2·w</code></td>
+</tr>
+<tr>
+<td>VEC-07</td>
+<td>P1</td>
+<td>维度调到 2</td>
+<td>叉积按钮禁用，悬停提示「仅三维向量可用」</td>
+</tr>
+<tr>
+<td>VEC-08</td>
+<td>P1</td>
+<td>把 v 设为 (0,0,0)</td>
+<td>单位化报「零向量不能单位化」；夹角报「零向量无法计算夹角」</td>
+</tr>
+<tr>
+<td>VEC-09</td>
+<td>P2</td>
+<td>维度调到 5，v=(1,1,1,1,1) w=(1,1,1,1,1)</td>
+<td>点积 <code>5</code>；夹角 <code>0 rad</code>；模 ≈2.236068</td>
+</tr>
+<tr>
+<td>VEC-10</td>
+<td>P2</td>
+<td>维度 2→5→2 往返</td>
+<td>已填分量保留，缺位补 0，结果区清空</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>说明：两个向量的维度由<strong>同一个</strong>维度控件控制，因此「点积要求向量维度相同」这条错误在实际 UI 中不可达（属防御性代码）。</p>
+</blockquote>
+<h2 id="test-h11">6. 符号运算用例</h2>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>级别</th>
+<th>输入</th>
+<th>操作</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SY-01</td>
+<td>P0</td>
+<td><code>a b / c d</code></td>
+<td>行列式</td>
+<td><code>a*d - b*c</code>（顺序可能等价变形）</td>
+</tr>
+<tr>
+<td>SY-02</td>
+<td>P1</td>
+<td><code>a b / c d</code></td>
+<td>逆矩阵</td>
+<td>元素以 <code>a*d - b*c</code>（或 <code>ad-bc</code>）为分母，形如 <code>d/(a*d-b*c)</code>、<code>-b/(a*d-b*c)</code>…</td>
+</tr>
+<tr>
+<td>SY-03</td>
+<td>P1</td>
+<td><code>a b c / d e f / g h i</code></td>
+<td>行列式</td>
+<td><code>a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g)</code> 的等价形式</td>
+</tr>
+<tr>
+<td>SY-04</td>
+<td>P1</td>
+<td>4×4 字母矩阵</td>
+<td>行列式</td>
+<td>报错「符号行列式最多支持 3 阶矩阵」</td>
+</tr>
+<tr>
+<td>SY-05</td>
+<td>P1</td>
+<td>4×4 字母矩阵</td>
+<td>逆矩阵</td>
+<td>报错「符号逆矩阵最多支持 3 阶矩阵」</td>
+</tr>
+<tr>
+<td>SY-06</td>
+<td>P1</td>
+<td>4×4 字母矩阵</td>
+<td>RREF</td>
+<td>正常出结果（≤4×4）</td>
+</tr>
+<tr>
+<td>SY-07</td>
+<td>P1</td>
+<td>5×5 字母矩阵</td>
+<td>RREF</td>
+<td>报错「符号行最简形最多支持 4×4 矩阵」</td>
+</tr>
+<tr>
+<td>SY-08</td>
+<td>P1</td>
+<td><code>a b / c d</code></td>
+<td>迹</td>
+<td><code>a + d</code></td>
+</tr>
+<tr>
+<td>SY-09</td>
+<td>P2</td>
+<td><code>pi 0 / 0 1</code></td>
+<td>行列式</td>
+<td>结果含 <code>pi</code></td>
+</tr>
+<tr>
+<td>SY-10</td>
+<td>P1</td>
+<td><code>a+</code></td>
+<td>计算</td>
+<td>报错（「表达式意外结束」类）</td>
+</tr>
+<tr>
+<td>SY-11</td>
+<td>P1</td>
+<td><code>(a+b</code></td>
+<td>计算</td>
+<td>报错（「缺少右括号」类）</td>
+</tr>
+<tr>
+<td>SY-12</td>
+<td>P1</td>
+<td><code>a$</code></td>
+<td>计算</td>
+<td>报错「无法识别字符: $」</td>
+</tr>
+<tr>
+<td>SY-13</td>
+<td>P2</td>
+<td><code>2*a+3</code>、<code>x^2</code>、<code>a/b</code></td>
+<td>计算（任一带该格的行列式）</td>
+<td>正常解析，结果保留结构</td>
+</tr>
+<tr>
+<td>SY-14</td>
+<td>P2</td>
+<td><code>2a</code>（不写乘号）</td>
+<td>计算</td>
+<td>被当作一个变量名（已知行为，不是 Bug）；文档已说明需写 <code>2*a</code></td>
+</tr>
+<tr>
+<td>SY-15</td>
+<td>P1</td>
+<td>点「示例」「单位阵」「清零」</td>
+<td>—</td>
+<td>载入 a..i 示例 / 生成单位阵（仅方阵可点）/ 全 0</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-h12">7. OCR 用例</h2>
+<p>前置：准备一张清晰的 3×3 手写/打印矩阵截图；一个可用的 OpenAI 兼容视觉模型 Key。</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>级别</th>
+<th>场景</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OCR-01</td>
+<td>P0</td>
+<td>全新浏览器，未配置</td>
+<td>各矩阵卡片标题右侧的按钮显示「配置 OCR」；点开弹窗，默认 Base URL <code>https://api.openai.com/v1</code>、模型 <code>gpt-4o-mini</code>、Key 为空</td>
+</tr>
+<tr>
+<td>OCR-02</td>
+<td>P0</td>
+<td>保存时留空任一项</td>
+<td>依次提示「请输入 Base URL」「请输入 API Key」「请输入模型名」</td>
+</tr>
+<tr>
+<td>OCR-03</td>
+<td>P0</td>
+<td>三项填好后保存</td>
+<td>提示「配置已保存」；卡片上的按钮变为上传入口，悬停提示「上传图片识别矩阵」</td>
+</tr>
+<tr>
+<td>OCR-04</td>
+<td>P1</td>
+<td>刷新页面</td>
+<td>配置仍在（读 <code>localStorage</code>），无需重填</td>
+</tr>
+<tr>
+<td>OCR-05</td>
+<td>P1</td>
+<td>点「清除配置」</td>
+<td>提示「配置已清除」；卡片按钮回到「配置 OCR」；Key 输入框清空</td>
+</tr>
+<tr>
+<td>OCR-06</td>
+<td>P0</td>
+<td>上传清晰 3×3 图片</td>
+<td>矩阵被正确回填；提示「识别成功」；右上角维度显示 <code>3×3</code></td>
+</tr>
+<tr>
+<td>OCR-07</td>
+<td>P1</td>
+<td>上传含 1 处涂鸦的图片</td>
+<td>提示「有 N 个单元格识别失败，已置为 0，请核对」；N≥1；其余格子正确</td>
+</tr>
+<tr>
+<td>OCR-08</td>
+<td>P1</td>
+<td>Key 填错（如 <code>sk-invalid</code>）</td>
+<td>报错含状态码，如「API 请求失败 (401): …」；原有矩阵不被清空</td>
+</tr>
+<tr>
+<td>OCR-09</td>
+<td>P1</td>
+<td>Base URL 漏 <code>/v1</code> 或多写路径</td>
+<td>报错含 404 或 JSON 解析错误，提示中保留原始响应片段</td>
+</tr>
+<tr>
+<td>OCR-10</td>
+<td>P1</td>
+<td>断网后点识别</td>
+<td>报错「识别失败：网络错误或 API 调用异常」</td>
+</tr>
+<tr>
+<td>OCR-11</td>
+<td>P1</td>
+<td>图片编辑：左转→右转→水平翻转→垂直翻转→重置</td>
+<td>预览方向逐步变化，重置后回到初始；确认后回填的矩阵方向与预览一致</td>
+</tr>
+<tr>
+<td>OCR-12</td>
+<td>P1</td>
+<td>拖裁剪框只留矩阵区域</td>
+<td>裁剪生效，上传的图片内容为裁剪后的区域（Network 面板可见 dataURL 变化）</td>
+</tr>
+<tr>
+<td>OCR-13</td>
+<td>P2</td>
+<td>方程组模块识别</td>
+<td>图片为增广矩阵时，回填后列数含常数列，<code>b</code> 在最后</td>
+</tr>
+<tr>
+<td>OCR-14</td>
+<td>P2</td>
+<td>符号矩阵识别</td>
+<td>字母与 π 被识别为可解析表达式（回填后计算不报「无效数值」）</td>
+</tr>
+<tr>
+<td>OCR-15</td>
+<td>P2</td>
+<td>超大图片（&gt;5 MB）</td>
+<td>允许上传；请求体明显变大但能返回（无尺寸保护，属已知限制）</td>
+</tr>
+<tr>
+<td>OCR-16</td>
+<td>P2</td>
+<td>Base URL 填一个只吞请求不回包的地址（如 <code>http://10.255.255.1/v1</code>）</td>
+<td><strong>约 45 秒</strong>后结束等待，提示「识别超时（45 秒无响应），请检查网络或更换模型接口」（v1.2 源码）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-h13">8. 界面与交互用例</h2>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>级别</th>
+<th>场景</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UI-01</td>
+<td>P0</td>
+<td>切换顶栏模式开关（小数模式 ↔ 分数模式）</td>
+<td>所有结果在同一视图内立即切换格式；刷新后保持</td>
+</tr>
+<tr>
+<td>UI-02</td>
+<td>P0</td>
+<td>375px 宽度</td>
+<td>无横向滚动；Tab 可横向滑动；按钮换行不重叠</td>
+</tr>
+<tr>
+<td>UI-03</td>
+<td>P1</td>
+<td>10×10 矩阵</td>
+<td>矩阵区域自身横向滚动，页面不溢出</td>
+</tr>
+<tr>
+<td>UI-04</td>
+<td>P1</td>
+<td>在单元格输入 <code>abc</code> 后失焦</td>
+<td>保留原值，不弹错、不崩溃</td>
+</tr>
+<tr>
+<td>UI-05</td>
+<td>P1</td>
+<td>在单元格输入 <code>1/0</code> 后失焦</td>
+<td>保留原值（不会被写成 0）</td>
+</tr>
+<tr>
+<td>UI-06</td>
+<td>P1</td>
+<td>三个一级 Tab 来回切换</td>
+<td>各模块状态保留（矩阵不被清空），结果不被串台</td>
+</tr>
+<tr>
+<td>UI-07</td>
+<td>P1</td>
+<td>矩阵子 Tab 切换</td>
+<td>单矩阵/双矩阵/符号矩阵各自数据互不影响</td>
+</tr>
+<tr>
+<td>UI-08</td>
+<td>P2</td>
+<td>步骤面板「全部展开 / 全部折叠」</td>
+<td>所有步骤同步展开/收起；长内容可滚动</td>
+</tr>
+<tr>
+<td>UI-09</td>
+<td>P2</td>
+<td>连续快速点击同一运算按钮 10 次</td>
+<td>无报错、无重复结果叠加、无卡死</td>
+</tr>
+<tr>
+<td>UI-10</td>
+<td>P2</td>
+<td>系统深色模式</td>
+<td>文字与背景对比度正常，结果可读</td>
+</tr>
+<tr>
+<td>UI-11</td>
+<td>P1</td>
+<td>有结果时点结果卡右上角「复制」，粘到记事本</td>
+<td>得到制表符分列的多行文本；按钮变「已复制」1.6 秒后恢复</td>
+</tr>
+<tr>
+<td>UI-12</td>
+<td>P1</td>
+<td>复制标量结果（如 rank、det）</td>
+<td>只复制数值，不带标签</td>
+</tr>
+<tr>
+<td>UI-13</td>
+<td>P2</td>
+<td>双击 <code>file://</code> 打开单文件版后点「复制」</td>
+<td>走兜底复制，仍成功；失败时提示「长按选择文本手动复制」，不静默</td>
+</tr>
+<tr>
+<td>UI-14</td>
+<td>P0</td>
+<td>用 iPhone Safari 打开在线版（标签页内）</td>
+<td>底部出现「添加到主屏，OCR 配置不会丢」引导条；点「知道了」后本次及以后不再出现</td>
+</tr>
+<tr>
+<td>UI-15</td>
+<td>P1</td>
+<td>从主屏图标启动</td>
+<td>引导条不出现（已独立窗口）；OCR 设置里显示「从主屏幕启动…不会被清理」</td>
+</tr>
+<tr>
+<td>UI-16</td>
+<td>P1</td>
+<td>iOS 上打开 OCR 设置</td>
+<td>API Key 下方出现琥珀色提示：标签页 7 天清理、建议加主屏</td>
+</tr>
+<tr>
+<td>UI-17</td>
+<td>P2</td>
+<td>iOS 上的 Chrome / Edge 打开</td>
+<td><strong>不</strong>出现引导条（这些浏览器不能加主屏）</td>
+</tr>
+<tr>
+<td>UI-18</td>
+<td>P2</td>
+<td>桌面 Chrome 首次打开</td>
+<td>不出现引导条；DevTools → Application → Storage 显示「持久化」已授予</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-h14">9. 性能观测</h2>
+<p>以下为<strong>目标值</strong>，首次执行时请记录实测值（同机型对比才有意义）。</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>场景</th>
+<th>目标</th>
+<th>实测（填写）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PF-01</td>
+<td>10×10 整数矩阵 det</td>
+<td>&lt; 200 ms</td>
+<td></td>
+</tr>
+<tr>
+<td>PF-02</td>
+<td>10×10 整数矩阵 RREF</td>
+<td>&lt; 500 ms</td>
+<td></td>
+</tr>
+<tr>
+<td>PF-03</td>
+<td>10×10 分数矩阵 RREF</td>
+<td>&lt; 1.5 s</td>
+<td></td>
+</tr>
+<tr>
+<td>PF-04</td>
+<td>10×10 矩阵求逆</td>
+<td>&lt; 1.5 s</td>
+<td></td>
+</tr>
+<tr>
+<td>PF-05</td>
+<td>5×5 特征值（QR 100 次，UI 上限即 5 阶）</td>
+<td>&lt; 1 s</td>
+<td></td>
+</tr>
+<tr>
+<td>PF-06</td>
+<td>符号 4×4 RREF</td>
+<td>&lt; 3 s</td>
+<td></td>
+</tr>
+<tr>
+<td>PF-07</td>
+<td>页面首屏渲染（本地文件）</td>
+<td>&lt; 2 s</td>
+<td></td>
+</tr>
+<tr>
+<td>PF-08</td>
+<td>手机端首屏渲染（APK 冷启动）</td>
+<td>&lt; 3 s</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-h15">10. 发版回归清单</h2>
+<p>按顺序执行，全部通过才可发布：</p>
+<ol>
+<li><strong>P0 数值</strong>：SM-01、SM-02、SM-04、DM-01、EQ-01、EQ-04、VEC-01、VEC-02、SY-01</li>
+<li><strong>P0 链路</strong>：OCR-01 → OCR-03 → OCR-06（配置到识别的完整闭环）</li>
+<li><strong>P0 界面</strong>：UI-01、UI-02</li>
+<li><strong>P1 错误路径</strong>：SM-09、SM-10、SM-14、DM-02、SY-04、SY-07、OCR-02、OCR-08</li>
+<li><strong>P2 抽查</strong>：SM-16、EQ-05、VEC-09、UI-04</li>
+<li><strong>产物一致性</strong>：HTML 与 APK 两个包各跑一遍第 1–3 项</li>
+</ol>
+<h2 id="test-h16">11. 缺陷记录模板</h2>
+<pre><code>编号：BUG-YYYYMMDD-NN
+级别：P0/P1/P2
+模块：单矩阵 / 双矩阵 / 方程组 / 向量 / 符号 / OCR / 界面
+环境：产物 + 浏览器版本 + 窗口宽度
+复现步骤：
+  1.
+  2.
+实际结果：
+期望结果：
+影响面：（是否影响结论正确性 / 仅显示问题 / 体验问题）
+关联用例：
+证据：（截图、控制台报错、Network 请求）
+</code></pre>
+<p>已归档缺陷见《技术手册》第 11 节 L1–L13。</p>
+<hr />
+<h2 id="test-h17">附录 A：可直接运行的自动回归（方程组求解器）</h2>
+<p>源码到位后，测试直接跑 <code>src/lib/matrix-ops.ts</code>，不再依赖压缩产物：</p>
+<pre><code class="language-bash">node tests/build-and-test.mjs
+</code></pre>
+<p>机制：用 esbuild 把 <code>matrix-ops.ts</code>、<code>fraction.ts</code>、<code>base-path.ts</code>、<code>pwa.ts</code>、<code>copy-text.ts</code> 打成一个 CJS 包（<strong>必须同一次打包</strong>，否则两份 <code>Fraction</code> 类身份不同，<code>instanceof</code> 会失效），再跑断言。</p>
+<p>覆盖 48 项：</p>
+<table>
+<thead>
+<tr>
+<th>用例</th>
+<th>断言要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EQ-01</td>
+<td>3 元唯一解 <code>(2, 3, −1)</code>，rankA = rankAb = 3</td>
+</tr>
+<tr>
+<td>EQ-02</td>
+<td>2 元唯一解 <code>(2, 1)</code></td>
+</tr>
+<tr>
+<td>EQ-03</td>
+<td>无穷多解：自由变量 x2/x3、特解 (1,0,0)、基础解系 (−2,1,0)、(−3,0,1)</td>
+</tr>
+<tr>
+<td>EQ-04</td>
+<td>无解：rankA = 1、<strong>rankAb = 2</strong>（L13 的关键）</td>
+</tr>
+<tr>
+<td>EQ-05</td>
+<td>齐次无穷多解，基础解系 (−1,1)</td>
+</tr>
+<tr>
+<td>EQ-06</td>
+<td>分数系数 <code>1/2, 1/3, …</code> 得 <code>(6, −6)</code></td>
+</tr>
+<tr>
+<td>EQ-07</td>
+<td>4 元欠定，两个自由变量 x3/x4，特解 (2,3,0,0)</td>
+</tr>
+<tr>
+<td>BASE-01</td>
+<td>7 种 URL 形态的 basename 推断，平台注入优先</td>
+</tr>
+<tr>
+<td>PWA-01</td>
+<td>7 种 UA / 独立窗口组合：iPhone、iPadOS 桌面 UA、Android、iOS 版 Chrome、<code>navigator.standalone</code>、<code>display-mode</code>、非 HTTPS</td>
+</tr>
+<tr>
+<td>COPY-01</td>
+<td>制表符分列、分数/小数两种输出、单行矩阵无多余换行</td>
+</tr>
+</tbody>
+</table>
+<p>预期输出：<code>结果：48 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
+<h2 id="test-h18">附录 B：用 Python 交叉核对期望值</h2>
+<p>自动化校验的核心是用独立实现复算，避免「从程序输出反推期望值」。</p>
+<pre><code class="language-python">from fractions import Fraction as F
+
+def rref(M):
+    M = [[F(x) for x in r] for r in M]
+    rows, cols, r, piv = len(M), len(M[0]), 0, []
+    for c in range(cols):
+        p = next((k for k in range(r, rows) if M[k][c] != 0), None)
+        if p is None: continue
+        M[r], M[p] = M[p], M[r]
+        pv = M[r][c]
+        M[r] = [x / pv for x in M[r]]
+        for k in range(rows):
+            if k != r and M[k][c] != 0:
+                f = M[k][c]
+                M[k] = [a - f * b for a, b in zip(M[k], M[r])]
+        piv.append(c); r += 1
+        if r == rows: break
+    return M, piv
+
+print(rref([[1,2,3],[4,5,6],[7,8,9]]))
+# 期望: [[1,0,-1],[0,1,2],[0,0,0]], 主元列 [0,1]
+</code></pre>
+<p>其余公式（det、逆、特征值、通解）按教材定义实现即可；若与本文用例冲突，<strong>以教材手算为准</strong>，并回写本文。</p>
+<hr />
+<p><em>文档版本 v1.0 · 对应产物构建日期 2026-10-18</em></p></section><section class="doc-sec" id="doc-src"><h1 id="_1">源码解析</h1>
+<p>拿到源码后，这份文档取代此前"只能从压缩产物反推"的推断，作为架构与实现的<strong>权威描述</strong>。
+其余文档（技术手册、开发者指南）中与本文冲突的地方，以本文为准，并已在对应位置标注修正。</p>
+<hr />
+<h2 id="src-h1">目录</h2>
+<ol>
+<li><a href="#src-h2">一句话结论</a></li>
+<li><a href="#src-h3">源码包构成</a></li>
+<li><a href="#src-h4">技术栈（真实版本）</a></li>
+<li><a href="#src-h5">目录与模块职责</a></li>
+<li><a href="#src-h9">三条数据流</a></li>
+<li><a href="#src-h10">构建链路：一份源码，三种产物</a></li>
+<li><a href="#src-h11">读源码纠正的五个误判</a></li>
+<li><a href="#src-h12">已做的源码级修复</a></li>
+<li><a href="#src-h16">本地构建与验证</a></li>
+<li><a href="#src-h17">遗留问题与建议</a></li>
+</ol>
+<hr />
+<h2 id="src-h2">1. 一句话结论</h2>
+<p>这是一个<strong>标准 Vite + React 19 + TypeScript 单页应用</strong>，业务代码只有 6 个库文件 + 5 个页面区块，约 3000 行；
+所谓"妙搭外壳"并不是什么黑盒，它来自两个 npm 依赖：<code>@lark-apaas/client-toolkit-lite</code>（存储、日志、错误边界、polyfill）和 <code>@lark-apaas/coding-preset-vite-react</code>（构建预设）。</p>
+<p><strong>源码可读、可改、可本地构建</strong>，此前"必须回平台改"的结论已作废。</p>
+<h2 id="src-h3">2. 源码包构成</h2>
+<p>压缩包内三块，各司其职：</p>
+<table>
+<thead>
+<tr>
+<th>目录</th>
+<th>内容</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>web-source/</code></td>
+<td>前端工程（Vite + TS + React）</td>
+<td>唯一需要维护的源代码</td>
+</tr>
+<tr>
+<td><code>android/</code></td>
+<td>Capacitor 6 工程 + <code>build-apk.sh</code></td>
+<td>已生成的原生壳，<code>www/</code> 里放网页产物</td>
+</tr>
+<tr>
+<td><code>single-file/</code></td>
+<td><code>线性代数计算器.html</code></td>
+<td>单文件产物（与仓库根目录同名文件一致）</td>
+</tr>
+</tbody>
+</table>
+<p><code>web-source/</code> 关键文件：</p>
+<pre><code>web-source/
+├── AGENTS.md              # 需求拆解 + UI 设计规范（平台生成时的原始 PRD）
+├── README.md              # 团队技术规范（目录约定、导入别名、禁止修改项）
+├── package.json           # 依赖与构建脚本
+├── vite.config.ts         # base:'./' + @ 与 @shared 别名
+├── index.html             # 开发入口
+├── scripts/
+│   ├── make-standalone.mjs  # dist/client → dist-standalone（挑出业务 chunk）
+│   └── make-single-file.mjs # dist-standalone → 单文件 HTML（esbuild 再压一遍）
+├── public/                # favicon.svg、icons.svg
+├── shared/                # 静态资源约定目录
+└── src/
+    ├── index.tsx          # 入口：StrictMode + Router + AppContainer + ErrorBoundary
+    ├── app.tsx            # 路由：/ → HomePage，* → NotFoundPage
+    ├── index.css          # Tailwind v4 + 主题变量
+    ├── lib/               # 业务核心（下面详述）
+    ├── components/        # 业务组件 + ui/（shadcn 内置）
+    ├── hooks/use-mobile.ts
+    └── pages/HomePage/    # 主页面 + 5 个功能区块
+</code></pre>
+<h2 id="src-h4">3. 技术栈（真实版本）</h2>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>选型</th>
+<th>版本（来自 package.json / 实装）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>框架</td>
+<td>React + ReactDOM</td>
+<td><code>^19.2.4</code>（产物内 reconciler 为 19.2.8）</td>
+</tr>
+<tr>
+<td>语言</td>
+<td>TypeScript</td>
+<td><code>~5.9</code>，<code>npm run typecheck</code> 用 <code>tsc -p tsconfig.app.json</code></td>
+</tr>
+<tr>
+<td>构建</td>
+<td>Vite</td>
+<td><code>^8</code>（底层 rolldown 1.2.7）</td>
+</tr>
+<tr>
+<td>样式</td>
+<td>Tailwind CSS</td>
+<td><code>^4.2.2</code> + <code>@tailwindcss/typography</code>，<code>tw-animate-css</code></td>
+</tr>
+<tr>
+<td>组件</td>
+<td>shadcn/ui（Radix 原语）</td>
+<td>30+ <code>@radix-ui/react-*</code> 包</td>
+</tr>
+<tr>
+<td>图标</td>
+<td>lucide-react</td>
+<td><code>0.577.0</code>（锁定版本）</td>
+</tr>
+<tr>
+<td>提示</td>
+<td>sonner</td>
+<td><code>^2.0.7</code>（<code>toast.success/error/loading</code>）</td>
+</tr>
+<tr>
+<td>路由</td>
+<td>react-router-dom</td>
+<td><code>^7.13.2</code></td>
+</tr>
+<tr>
+<td>平台能力</td>
+<td><code>@lark-apaas/client-toolkit-lite</code></td>
+<td><code>^1.1.33</code>：<code>scopedStorage</code>、<code>logger</code>、<code>AppContainer</code>、<code>ErrorRender</code>、polyfill</td>
+</tr>
+<tr>
+<td>构建预设</td>
+<td><code>@lark-apaas/coding-preset-vite-react</code></td>
+<td><code>^1.0.25</code>：字体 CDN 重写、polyfill 注入等</td>
+</tr>
+<tr>
+<td>其它已装未用</td>
+<td>echarts、recharts、framer-motion、gsap、react-hook-form、zod、embla、vaul…</td>
+<td>模板自带，业务代码未引用（见 §10）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>依赖装了 874 个包，但业务只用到其中很小一部分；<code>npm run build</code> 时 Vite 已按引用关系摇树，产物不含 echarts 等。</p>
+</blockquote>
+<h2 id="src-h5">4. 目录与模块职责</h2>
+<h3 id="src-h6">4.1 业务核心 <code>src/lib/</code></h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>行数</th>
+<th>职责</th>
+<th>关键导出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fraction.ts</code></td>
+<td>262</td>
+<td>精确有理数：约分、符号归一、<code>fromString</code>（整数/分数/小数）、显示格式化、矩阵工具</td>
+<td><code>Fraction</code>、<code>toFMatrix</code>、<code>zeroMatrix</code>、<code>identityMatrix</code>、<code>transpose</code></td>
+</tr>
+<tr>
+<td><code>matrix-ops.ts</code></td>
+<td>796</td>
+<td>全部数值线性代数：行变换与步骤记录、RREF、det、逆、秩、迹、加减乘、快速幂、特征值、方程组求解、示例数据</td>
+<td><code>rref</code>、<code>determinant</code>、<code>inverse</code>、<code>eigenvalues</code>、<code>solveLinearSystem</code>、<code>matrixPower</code></td>
+</tr>
+<tr>
+<td><code>symbolic.ts</code></td>
+<td>783</td>
+<td>符号运算：词法/语法分析、表达式化简、符号矩阵的 det/inv/rref/rank/trace</td>
+<td>解析与符号运算函数（供 <code>SymbolicMatrixSection</code> 使用）</td>
+</tr>
+<tr>
+<td><code>vector-ops.ts</code></td>
+<td>88</td>
+<td>向量：点积、叉积、模、单位化、夹角、线性组合</td>
+<td>对应函数</td>
+</tr>
+<tr>
+<td><code>ocr-service.ts</code></td>
+<td>201</td>
+<td>OCR：配置读写（<code>scopedStorage</code>）、三段提示词、请求、JSON 校验、45s 超时</td>
+<td><code>recognizeMatrixFromImage</code>、<code>getOCRConfig</code> 等</td>
+</tr>
+<tr>
+<td><code>utils.ts</code></td>
+<td>6</td>
+<td><code>cn()</code>（clsx + tailwind-merge）</td>
+<td><code>cn</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="src-h7">4.2 页面与组件</h3>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>行数</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pages/HomePage/HomePage.tsx</code></td>
+<td>163</td>
+<td>顶栏（标题 + 分数/小数开关）、一级 Tab、二级 Tab、区块挂载</td>
+</tr>
+<tr>
+<td><code>sections/SingleMatrixSection.tsx</code></td>
+<td>488</td>
+<td>单矩阵：8 个运算 + 幂指数弹窗 + 结果/步骤</td>
+</tr>
+<tr>
+<td><code>sections/DoubleMatrixSection.tsx</code></td>
+<td>326</td>
+<td>双矩阵：A/B 输入、维度徽标、A±B、A×B</td>
+</tr>
+<tr>
+<td><code>sections/LinearSystemSection.tsx</code></td>
+<td>419</td>
+<td>方程组：方程数/未知数调节、增广矩阵、三态结果渲染</td>
+</tr>
+<tr>
+<td><code>sections/VectorSection.tsx</code></td>
+<td>542</td>
+<td>向量：维度 2–5、6 个运算、线性组合系数弹窗</td>
+</tr>
+<tr>
+<td><code>sections/SymbolicMatrixSection.tsx</code></td>
+<td>522</td>
+<td>符号矩阵：2–6 阶、自建输入格、6 个运算</td>
+</tr>
+<tr>
+<td><code>components/MatrixGrid.tsx</code></td>
+<td>392</td>
+<td>数值矩阵输入网格：增删行列、零矩阵/单位阵/随机/转置填充、单元格编辑（非法输入红框）</td>
+</tr>
+<tr>
+<td><code>components/MatrixDisplay.tsx</code></td>
+<td>187</td>
+<td>结果矩阵渲染（括号、增广竖线、分数/小数切换）</td>
+</tr>
+<tr>
+<td><code>components/StepsAccordion.tsx</code></td>
+<td>125</td>
+<td>行变换步骤折叠面板</td>
+</tr>
+<tr>
+<td><code>components/OCRUploadButton.tsx</code></td>
+<td>184</td>
+<td>识别入口：未配置显示「配置 OCR」，已配置显示「图片识别」+ 齿轮「OCR 设置」</td>
+</tr>
+<tr>
+<td><code>components/OCRSettingsDialog.tsx</code></td>
+<td>169</td>
+<td>三项配置表单 + 清除</td>
+</tr>
+<tr>
+<td><code>components/ImageEditorDialog.tsx</code></td>
+<td>359</td>
+<td>裁剪框（拖拽/8 个控制点）、±90° 旋转、水平/垂直翻转、重置、导出 JPEG</td>
+</tr>
+<tr>
+<td><code>components/ui/*</code></td>
+<td>—</td>
+<td>shadcn 内置组件，按规范不改</td>
+</tr>
+</tbody>
+</table>
+<p>合计 <code>src/**/*.ts(x)</code> 80 个文件、约 3657 行（含 ui 组件）。</p>
+<h3 id="src-h8">4.3 状态管理</h3>
+<p>没有 Redux/Zustand，也没有全局 store：</p>
+<ul>
+<li>页面级状态在 <code>HomePage</code>（当前 Tab、分数模式）；</li>
+<li>各区块自己 <code>useState</code> 管理矩阵/结果，切 Tab 不卸载（<code>TabsContent</code> 保持挂载），所以数据不会丢；</li>
+<li>唯一持久化：<code>scopedStorage</code>（平台封装的 localStorage），键 <code>__app_linalg_fraction_mode</code> 与 <code>__app_linalg_ocr_config</code>。</li>
+</ul>
+<h2 id="src-h9">5. 三条数据流</h2>
+<p><strong>① 数值矩阵运算</strong></p>
+<pre><code>MatrixGrid（输入字符串）
+  └─ Fraction.safeParse → FMatrix（Fraction[][]）
+       └─ SingleMatrixSection 的事件处理 → matrix-ops
+            ├─ rref / determinant / inverse / eigenvalues / matrixPower
+            └─ 返回 { 结果, steps }
+                 └─ MatrixDisplay / StepsAccordion（按 fractionMode 渲染）
+</code></pre>
+<p><strong>② 符号运算</strong>：<code>SymbolicMatrixSection</code> 自己维护字符串矩阵 → <code>symbolic.ts</code> 解析成表达式树 → 化简 → <code>SymbolicMatrixDisplay</code> 渲染。</p>
+<p><strong>③ OCR</strong></p>
+<pre><code>OCRUploadButton（未配置→弹设置；已配置→选文件）
+  └─ ImageEditorDialog（旋转/翻转/裁剪 → canvas → JPEG）
+       └─ ocr-service.recognizeMatrixFromImage(file, mode)
+            ├─ getOCRConfig()：scopedStorage 读取
+            ├─ POST {baseUrl}/chat/completions（temperature 0，45s 超时）
+            └─ 校验 rows/cols/data → OCRMatrixResult
+                 └─ safeOcrResultToFMatrix：逐格 safeParse，失败置 0 并回报 failedCells
+                      └─ 回填输入网格 + toast 提示
+</code></pre>
+<h2 id="src-h10">6. 构建链路：一份源码，三种产物</h2>
+<pre><code>npm run build            → dist/client          （平台部署用，含 routes.json / polyfills / 字体重写）
+node scripts/make-standalone.mjs → dist-standalone（纯净离线站，只保留 4 类业务 chunk）
+node scripts/make-single-file.mjs → 线性代数计算器.html（单文件，双击可用）
+</code></pre>
+<p>三者关系与差异：</p>
+<table>
+<thead>
+<tr>
+<th>产物</th>
+<th>入口</th>
+<th>资源形态</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dist/client</code></td>
+<td><code>index.html</code></td>
+<td>多 chunk + polyfills + <code>routes.json</code></td>
+<td>上传到平台/静态托管</td>
+</tr>
+<tr>
+<td><code>dist-standalone</code></td>
+<td><code>index.html</code>（脚本重写）</td>
+<td>只保留 <code>rolldown-runtime / radix / toolkit / index-</code> 四类 chunk</td>
+<td>直接当 Capacitor 的 <code>webDir</code>，或任意静态服务器</td>
+</tr>
+<tr>
+<td>单文件 HTML</td>
+<td>内联 <code>&lt;style&gt;</code> + 内联 <code>&lt;script type="module"&gt;</code></td>
+<td>esbuild 把 standalone 的入口再 bundle 一次，与 CSS/favicon 一起内联</td>
+<td>发文件、离线、U 盘</td>
+</tr>
+</tbody>
+</table>
+<p><strong>"妙搭"痕迹来源</strong>（此前误判为黑盒）：</p>
+<ul>
+<li><code>make-single-file.mjs</code> 往 HTML 注入 <code>window.appId / userId / tenantId / __BASENAME__ / _appInfo</code>；</li>
+<li><code>@lark-apaas/client-toolkit-lite</code> 提供 <code>AppContainer</code>、<code>scopedStorage</code>（键前缀 <code>__miaoda_&lt;appId&gt;__:</code>）、<code>logger</code>、埋点；</li>
+<li><code>@lark-apaas/coding-preset-vite-react</code> 把字体 <code>@import</code> 重写指向 <code>https://miaoda.feishu.cn/fonts</code>。</li>
+</ul>
+<p>所以"品牌页脚/埋点"不是业务代码写的，是平台依赖带来的。若要彻底去平台化，需要替换这两个依赖（<code>scopedStorage</code> → 原生 <code>localStorage</code>，<code>logger</code> → <code>console</code>，<code>AppContainer</code> → 空壳），属于可选改造。</p>
+<h2 id="src-h11">7. 读源码纠正的五个误判</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>此前的结论（基于产物反推）</th>
+<th>源码事实</th>
+<th>影响</th>
+<th>处置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>RREF 取"该列第一个非零行"作主元，只有 det 用整数友好启发式</td>
+<td><strong>两者用同一套 <code>pivotFriendliness</code></strong>：整数优先（0），否则 <code>分母 + 0.1×|分子|</code>，评分 <code>friendliness×1000 − |值|</code></td>
+<td>步骤形态和"为什么 RREF 后分数不难看"的解释完全不同</td>
+<td>技术手册 5.1 已改写</td>
+</tr>
+<tr>
+<td>2</td>
+<td>方程组未知数上限 1–9</td>
+<td><code>maxCols=11</code>、未知数按钮上限 <strong>10</strong></td>
+<td>用户手册/技术手册的"1–9"是错的</td>
+<td>已改为 1–10</td>
+</tr>
+<tr>
+<td>3</td>
+<td>L7：非法输入静默保留旧值，用户以为改成功</td>
+<td><code>MatrixCell</code> 有 <code>isInvalid</code> 状态：解析失败时输入框变红、保持编辑态、不提交</td>
+<td>这不是缺陷，而是<strong>符合 PRD 的设计</strong></td>
+<td>L7 从缺陷表移除，并说明原因</td>
+</tr>
+<tr>
+<td>4</td>
+<td>L8：<code>copyToClipboard</code> 是业务里的死代码</td>
+<td>业务代码完全没有 clipboard；该函数来自 <code>@lark-apaas/client-toolkit-lite</code></td>
+<td>责任归属不同，且无法通过改业务代码"用上"它</td>
+<td>L8 改为"平台库提供、业务未接复制按钮"</td>
+</tr>
+<tr>
+<td>5</td>
+<td>改功能"必须回妙搭改"，产物只能字节级打补丁</td>
+<td>源码齐全，<code>npm i &amp;&amp; npm run build:all</code> 即可重出全部产物</td>
+<td>开发流程完全变了；字节补丁只作为历史归档</td>
+<td>开发者指南已重写；v1.2 改用源码构建</td>
+</tr>
+</tbody>
+</table>
+<p>另外两处小修正：</p>
+<ul>
+<li>单矩阵/双矩阵最小行数实际是 <strong>1</strong>（PRD 写 2），以代码为准；</li>
+<li>符号矩阵子 Tab、OCR 模块都不在原始 PRD 里，是后续迭代加的。</li>
+</ul>
+<h2 id="src-h12">8. 已做的源码级修复</h2>
+<p>v1.1 的两处缺陷当时只能在压缩产物上做字节替换，现在改成正式源码修改：</p>
+<h3 id="src-h13">8.1 无解时增广矩阵秩错误（原 L13）</h3>
+<p><code>matrix-ops.ts</code> 原实现：</p>
+<pre><code class="language-ts">const { rref: rrefMat, rank: rankAb, pivotCols, steps } = rref(augmented, 1);
+const rankA = pivotCols.length;
+</code></pre>
+<p><code>rref(augmented, 1)</code> 只在系数列选主元，返回的 <code>rank</code> 恒等于 <code>rankA</code>，于是无解分支打印「系数矩阵秩 = 1，增广矩阵秩 = 1，秩不相等」。</p>
+<p>修复：</p>
+<pre><code class="language-ts">const { rref: rrefMat, pivotCols, steps } = rref(augmented, 1);
+const rankA = pivotCols.length;
+// 增广矩阵的秩 = 行最简形中非零行的行数（行变换不改变行空间维数）
+const rankAb = rrefMat.reduce((acc, row) =&gt; acc + (row.some((v) =&gt; !v.isZero()) ? 1 : 0), 0);
+</code></pre>
+<p>比"用 <code>rankA + 1</code>"更稳：不依赖"无解 ⇒ 秩恰好多 1"的推理，直接算出来。</p>
+<h3 id="src-h14">8.2 OCR 无超时（原 L4）</h3>
+<p><code>ocr-service.ts</code> 原实现直接 <code>await fetch(...)</code>，接口挂起就永远转圈。修复：</p>
+<ul>
+<li>新增常量 <code>OCR_TIMEOUT_MS = 45_000</code>；</li>
+<li>用 <code>AbortController</code> + <code>setTimeout</code> 控制 <code>signal</code>，在 <code>finally</code> 里 <code>clearTimeout</code>；</li>
+<li>捕获 <code>DOMException</code> 且 <code>name === "AbortError"</code> 时抛出「识别超时（45 秒无响应），请检查网络或更换模型接口」。</li>
+</ul>
+<h3 id="src-h15">8.3 构建脚本的 Windows 兼容</h3>
+<p><code>make-standalone.mjs</code> 原本用 <code>fs.cpSync</code>。在这台 Windows + Node 22 的环境里，<code>cpSync</code> 会<strong>静默崩溃</strong>（进程退出码 127，无任何报错，甚至 <code>try/catch</code> 都抓不到）。已改为手写递归复制（<code>readdirSync</code> + <code>copyFileSync</code>），并加注释说明原因。</p>
+<h2 id="src-h16">9. 本地构建与验证</h2>
+<pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
+npm install                     # 874 个包，约 2–3 分钟（npmmirror）
+npm run typecheck               # tsc 类型检查，必须 0 错误
+npm run build:all               # vite build → standalone → 单文件
+node ../../../tests/build-and-test.mjs   # 18 项求解器断言（直接测源码）
+</code></pre>
+<p><strong>三个必须知道的坑</strong>（都已在本次构建中踩过并解决）：</p>
+<ol>
+<li><strong>三个原生可选依赖可能缺失</strong>。<code>package-lock.json</code> 在别的平台生成，npm 不会补装 Windows 二进制，表现为 <code>Cannot find module ...binding-win32-x64-msvc</code>：</li>
+</ol>
+<p><code>bash
+   npm install --no-save \
+     @rolldown/binding-win32-x64-msvc@1.2.7 \
+     lightningcss-win32-x64-msvc@1.32.0 \
+     @tailwindcss/oxide-win32-x64-msvc@4.3.3</code></p>
+<p>⚠️ 必须<strong>一条命令装齐</strong>：<code>--no-save</code> 装的东西在下次 <code>npm install</code> 时会被当"多余包"删掉。</p>
+<ol start="2">
+<li>
+<p><strong><code>fs.cpSync</code> 在本机会崩</strong>（见 8.3），已修脚本。</p>
+</li>
+<li>
+<p><strong>路径含中文 + OneDrive</strong> 不影响 Vite，但会让部分脚本行为异常（本次 cpSync 崩溃与此无直接证据，但同类环境建议把仓库放到 <code>D:\</code> 等纯 ASCII 路径，可少踩坑）。</p>
+</li>
+</ol>
+<p><strong>本次构建结果</strong>（2026-10-19）：</p>
+<table>
+<thead>
+<tr>
+<th>产物</th>
+<th>大小</th>
+<th>校验</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dist/client</code></td>
+<td>2029 modules，3.81s</td>
+<td>含 <code>index-BF0G9RKH.js</code>、<code>toolkit-DzyLbpaK.js</code></td>
+</tr>
+<tr>
+<td><code>dist-standalone</code></td>
+<td>1.3 MB</td>
+<td>只保留 1 个 JS + 1 个 CSS 入口</td>
+</tr>
+<tr>
+<td>单文件 HTML</td>
+<td>1,237,144 字节</td>
+<td><code>node --check</code> 通过；界面文案、存储键、OCR 超时、<code>rankAb</code> 修复均已确认存在</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>单文件从 1.29 MB 降到 1.24 MB：新构建的 CSS 233 KB（原 248 KB），且不再带旧的 map/冗余 chunk。</p>
+</blockquote>
+<h2 id="src-h17">10. 遗留问题与建议</h2>
+<p>按"改动成本 / 收益"排序：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>说明</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>无单元测试框架</td>
+<td>目前只有 <code>tests/build-and-test.mjs</code>（自建断言）</td>
+<td>引入 Vitest，把 <code>lib/*</code> 全量覆盖；matrix-ops 是纯函数，成本很低</td>
+</tr>
+<tr>
+<td>2</td>
+<td>依赖装了 874 个包，业务用不到 10 个</td>
+<td>echarts、recharts、framer-motion、gsap、react-hook-form、zod…都没引用</td>
+<td>清理 <code>package.json</code>，安装体积和审计面都会降下来</td>
+</tr>
+<tr>
+<td>3</td>
+<td>平台依赖不易替换</td>
+<td><code>AppContainer</code> / <code>scopedStorage</code> / <code>logger</code> / polyfill 来自 <code>@lark-apaas/*</code></td>
+<td>若要去平台化：写 20 行的 storage/logger 适配层替换即可</td>
+</tr>
+<tr>
+<td>4</td>
+<td>三阶以上特征值仅实根，且不报"未收敛"</td>
+<td>QR 迭代固定 100 次，收敛与否都以对角线返回</td>
+<td>增加收敛标志；或实现 real Schur 提取 2×2 块处理复根</td>
+</tr>
+<tr>
+<td>5</td>
+<td>重特征值的特征向量可能重复</td>
+<td>反幂法对重根收敛到同一方向</td>
+<td>改用 <code>rref(A−λI)</code> 的零空间基</td>
+</tr>
+<tr>
+<td>6</td>
+<td>死代码</td>
+<td><code>determinant</code> 的 <code>detScale</code> 恒为 1；<code>rref</code> 的 <code>maxAbsScore</code> 未使用；<code>fraction.pow</code> 的负指数分支走浮点</td>
+<td>清理；<code>pow</code> 若不使用可删</td>
+</tr>
+<tr>
+<td>7</td>
+<td>无 PWA manifest / Service Worker</td>
+<td>单文件版靠内联离线，但无法"添加到主屏幕"</td>
+<td>若走 iOS PWA 路线需补（见《可行性-iOS端》）</td>
+</tr>
+<tr>
+<td>8</td>
+<td>OCR 配置无导出/导入</td>
+<td>换设备要重填 Key</td>
+<td>见《可行性-视觉模型配置存储》P0 项</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>文档版本 v1.0 · 2026-10-19 · 对应源码：web-source @ 0.1.0</em></p></section><section class="doc-sec" id="doc-pages"><h1 id="github-pages-iphone">部署到 GitHub Pages（让 iPhone 用户直接用）</h1>
+<p><strong>结论：可以，而且已经改好并本地验证过了。</strong>
+但有两处需要纠正/注意：</p>
+<ol>
+<li><strong>API Key 不要放 cookie</strong>，应该继续放 <code>localStorage</code>（代码本来就这么做的）。理由见第 1 节。</li>
+<li><strong>不能直接把现有的 HTML 丢到 <code>/&lt;repo&gt;/</code> 下</strong>——原来的构建在子路径会渲染成「页面不存在」。这个已在源码里修好（第 3 节），本文的产物已经带上修复。</li>
+</ol>
+<hr />
+<h2 id="pages-h1">1. 关于"把 API Key 存在本地"：cookie 是错的工具</h2>
+<p>你的意图是对的——Key 只存在用户自己的设备上，不上传。但实现手段不该是 cookie：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Cookie</th>
+<th>localStorage（当前实现）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>会被发送到服务器</td>
+<td><strong>每一次同源请求都会带上</strong></td>
+<td>不会</td>
+</tr>
+<tr>
+<td>托管在 GitHub Pages 时</td>
+<td>你的 Key 会被塞进发往 <code>*.github.io</code> 的每个请求头，进入 CDN 日志</td>
+<td>完全不发出去</td>
+</tr>
+<tr>
+<td>能否 HttpOnly / 防脚本读</td>
+<td>前端写不了 HttpOnly；能被 JS 读，防不住 XSS</td>
+<td>同样能被 JS 读，但至少不外发</td>
+</tr>
+<tr>
+<td>容量</td>
+<td>4 KB</td>
+<td>5 MB 级</td>
+</tr>
+<tr>
+<td>iOS Safari 生命周期</td>
+<td>ITP 对 JS 写入的 cookie 有 7 天上限</td>
+<td>普通标签页同样有 7 天规则；<strong>添加到主屏幕后不受限</strong></td>
+</tr>
+<tr>
+<td>适用语义</td>
+<td>会话/鉴权状态（服务端需要读）</td>
+<td>纯客户端配置</td>
+</tr>
+</tbody>
+</table>
+<p>所以现在这套存储方案就是对的：<code>scopedStorage</code>（底层 <code>localStorage</code>），键名带应用前缀，密钥只在本机、不外发。</p>
+<p><strong>iOS 上的关键事实</strong>（WebKit 官方文档）：</p>
+<ul>
+<li>Safari 标签页里的脚本存储，7 个"使用日"无交互就被清空 → 用户一周不用就要重填 Key；</li>
+<li><strong>添加到主屏幕的 Web App 使用独立存储桶，且豁免这个 7 天清理</strong>；</li>
+<li>主屏 Web App 的存储与 Safari 相互隔离（不共享）。</li>
+</ul>
+<blockquote>
+<p>结论：<strong>引导用户"添加到主屏幕"不只是为了图标好看，它直接决定配置会不会丢。</strong></p>
+</blockquote>
+<p>如果以后要更强的保护，正确方向不是换 cookie，而是：可选口令加密（PBKDF2 + AES-GCM）→ 系统钥匙串（原生壳）→ 服务端代理（Key 不下发）。详见《可行性-视觉模型配置存储》。</p>
+<h2 id="pages-h2">2. 部署前必须知道的三件事</h2>
+<h3 id="pages-h3">2.1 子路径问题（已修）</h3>
+<p>GitHub Pages 的项目站点地址是 <code>https://&lt;user&gt;.github.io/&lt;repo&gt;/</code>。原构建里 <code>BrowserRouter</code> 的 basename 固定为 <code>/</code>，react-router 收到 <code>/repo/</code> 匹配不到 <code>/</code>，直接落到 <code>*</code> 路由 → 显示「页面不存在」。</p>
+<p>已做：</p>
+<ul>
+<li>新增 <code>src/lib/base-path.ts</code>：<code>resolveBasename(pathname, injected)</code> 按 URL 目录推断 basename（<code>/repo/</code>、<code>/repo/index.html</code>、<code>/repo</code>、<code>file:///.../app.html</code> 都能正确落到 <code>/</code> 或 <code>/repo</code>）；</li>
+<li><code>src/index.tsx</code> 用它替代写死的 <code>process.env.CLIENT_BASE_PATH || "/"</code>；</li>
+<li>平台注入的 <code>window.__BASENAME__</code> 仍然优先，不影响原有部署；</li>
+<li>单测覆盖 7 个 URL 形态（<code>tests/build-and-test.mjs</code> 的 BASE-01）。</li>
+</ul>
+<h3 id="pages-h4">2.2 CORS：浏览器直连模型接口必须被允许</h3>
+<p>页面是纯前端，OCR 时浏览器会直接 POST 到 <code>{baseUrl}/chat/completions</code>。<strong>跨域必须由服务端放行</strong>，否则请求发不出去（控制台报 CORS）。</p>
+<p>本机实测（2026-10-19，<code>Origin: https://example.github.io</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>接口</th>
+<th>预检结果</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>https://api.deepseek.com/chat/completions</code></td>
+<td><code>200</code>，<code>access-control-allow-origin</code> 回显来源，允许 <code>authorization,content-type</code></td>
+<td><strong>可用</strong></td>
+</tr>
+<tr>
+<td><code>https://api.openai.com/v1/chat/completions</code></td>
+<td>本机网络不可达（连接超时，<code>000</code>）</td>
+<td>国内直连基本不可用</td>
+</tr>
+</tbody>
+</table>
+<p>所以给国内用户的建议是：默认引导填 DeepSeek 兼容中转，而不是 OpenAI。若某个中转不带 CORS 头，可以让它加，或用你自己的 Cloudflare Worker 转发（顺带把 Key 藏到服务端）。</p>
+<p>另外：<strong>接口必须是 HTTPS</strong>。HTTPS 页面调用 <code>http://</code> 接口会被浏览器按混合内容拦掉。</p>
+<h3 id="pages-h5">2.3 可达性</h3>
+<p>本机实测：<code>pages.github.com</code> 200（0.29s）、<code>octocat.github.io</code> 200（0.86s）。GitHub Pages 在国内不是稳定可达的服务，不同地区/运营商差异大，<strong>发给别人前请先在目标网络实测</strong>。</p>
+<p>如果目标用户主要在国内且访问不稳，备选：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>优点</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cloudflare Pages</td>
+<td>国内可达性通常好于 GitHub Pages</td>
+<td>需要 Cloudflare 账号</td>
+</tr>
+<tr>
+<td>腾讯云 COS / 静态网站托管</td>
+<td>国内快</td>
+<td>域名需备案</td>
+</tr>
+<tr>
+<td>自己的服务器 / 对象存储</td>
+<td>完全可控</td>
+<td>有成本</td>
+</tr>
+</tbody>
+</table>
+<p>产物是纯静态的，换托管方只需要重新上传 <code>dist-pages</code> 内容，不必改代码。</p>
+<h2 id="pages-h6">3. 部署方式 A：GitHub Actions 自动部署（推荐）</h2>
+<p>仓库里已放好 <code>.github/workflows/deploy-pages.yml</code>：push 到 <code>main</code> 就构建、跑测试、发布。</p>
+<h3 id="pages-h7">步骤</h3>
+<ol>
+<li>在 GitHub 新建<strong>空仓库</strong>（不要勾 README / .gitignore / license），把<strong>整个项目目录</strong>推上去（包含 <code>source/</code>、<code>tests/</code>、<code>.github/</code>）。</li>
+</ol>
+<p>⚠️ 先做这一步的原因：<code>C:\Users\hp</code> 下有一个零提交的 <code>.git</code>，Git 会向上查找仓库——不在项目根 <code>git init</code>，后面 <code>git add .</code> 会把<strong>整个用户目录</strong>（<code>Cookies/</code>、<code>.ssh/</code>、工具凭据）一起纳入。</p>
+<p><code>bash
+   cd "C:/Users/hp/OneDrive/Desktop/线性代数计算器"
+   git init
+   git rev-parse --show-toplevel        # 必须输出项目目录，不是 C:/Users/hp；不是就停下
+   git status --short | head            # 只应看到项目文件，出现大段上级目录就是 toplevel 错了
+   git add .
+   git commit -m "feat: 线性代数计算器 v1.5（PWA + iOS 主屏引导 + 结果复制）"
+   git branch -M main
+   git remote add origin https://github.com/&lt;你的账号&gt;/&lt;仓库名&gt;.git
+   git push -u origin main</code></p>
+<blockquote>
+<p>提交前自查：<code>node_modules/</code> 与 <code>dist*/</code> 不要进仓（<code>.gitignore</code> 已覆盖）；根目录 <code>线性代数计算器.apk</code>（4.3 MB）与两份 <code>线性代数计算器.html</code>（各 1.3 MB）会进仓——它们是发布产物，想瘦身可另加 ignore，但要在 README 里说明产物靠本地构建。</p>
+</blockquote>
+<ol start="2">
+<li>
+<p>仓库 <strong>Settings → Pages → Build and deployment → Source 选择 "GitHub Actions"</strong>。</p>
+</li>
+<li>
+<p>等 Actions 跑完，地址是 <code>https://&lt;账号&gt;.github.io/&lt;仓库名&gt;/</code>。</p>
+</li>
+<li>
+<p>手机打开该地址 → 分享 → 添加到主屏幕。</p>
+</li>
+</ol>
+<h3 id="pages-h8">工作流做了什么</h3>
+<pre><code>checkout → setup-node 22 → npm ci → npm run typecheck
+→ node tests/build-and-test.mjs（48 项断言）
+→ npm run build:pages（vite build → standalone → dist-pages）
+→ 上传 dist-pages → deploy-pages
+</code></pre>
+<p>只要测试挂了就不会发布，避免把算错的版本推上线。</p>
+<h2 id="pages-h9">4. 部署方式 B：手动推 gh-pages 分支</h2>
+<p>不想用 Actions（或仓库是私有仓库、没有 Pages 权限）时：</p>
+<pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
+npm ci
+# Windows 先补原生依赖，见第 6 节
+npm run build:pages
+
+cd ../../..
+git subtree push --prefix source/linear-algebra-calculator/web-source/dist-pages origin gh-pages
+</code></pre>
+<p>然后在 Settings → Pages 选择 <code>gh-pages</code> 分支根目录。</p>
+<blockquote>
+<p>注意：GitHub Pages 对<strong>私有仓库</strong>通常需要付费计划；免费账号用公开仓库最省事。产物里没有密钥，公开仓库不会泄露你的 Key（Key 只在用户浏览器里）。</p>
+</blockquote>
+<h2 id="pages-h10">5. iOS 用户怎么用</h2>
+<ol>
+<li>Safari 打开 <code>https://&lt;账号&gt;.github.io/&lt;仓库名&gt;/</code>（<strong>必须 Safari</strong>，微信/QQ 内置浏览器不能添加主屏）；</li>
+<li>页面底部会自动弹出「添加到主屏，OCR 配置不会丢」的引导条（v1.5 起，只在 iOS Safari 标签页里出现，点「知道了」后不再提示）；</li>
+<li>点底部「分享」→「添加到主屏幕」→ 右上角「添加」；</li>
+<li>从主屏图标启动（全屏、无地址栏）；</li>
+<li>首次用 OCR：点任意矩阵卡片标题右侧的「配置 OCR」→ 填 Base URL / API Key / 模型名 → 保存；</li>
+<li>之后每次进来都是已登录状态——<strong>主屏 Web App 的存储不会被 7 天规则清掉</strong>。</li>
+</ol>
+<blockquote>
+<p>如果发现配置"自己丢了"，八成是还在 Safari 标签页里用。重新加一次主屏即可。
+桌面 Chrome / Edge 会走 <code>navigator.storage.persist()</code> 申请持久化存储，不受 7 天规则影响（也不弹这个条）。</p>
+</blockquote>
+<p>离线能力：Service Worker 会缓存页面外壳，断网也能打开并做本地计算；OCR 仍需联网。</p>
+<h2 id="pages-h11">6. Windows 上本地构建的两个坑</h2>
+<pre><code class="language-bash"># 1) 原生可选依赖（每次 npm install 之后都要重跑，必须一条命令）
+npm install --no-save \
+  @rolldown/binding-win32-x64-msvc@1.2.7 \
+  lightningcss-win32-x64-msvc@1.32.0 \
+  @tailwindcss/oxide-win32-x64-msvc@4.3.3
+
+# 2) 构建前检查（已接入 prebuild，缺依赖会直接给修复命令）
+npm run build:pages
+</code></pre>
+<p>CI 用 Ubuntu，不存在这两个问题。</p>
+<h2 id="pages-h12">7. 安全须知</h2>
+<table>
+<thead>
+<tr>
+<th>事项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key 在谁的浏览器里</td>
+<td>每个用户填自己的 Key，仓库里没有密钥</td>
+</tr>
+<tr>
+<td>不要把 Key 写进代码/仓库</td>
+<td>公开仓库等于公开密钥</td>
+</tr>
+<tr>
+<td>不要共用 Key</td>
+<td>一个人泄露，所有人一起被刷额度；服务商条款通常也不允许转借</td>
+</tr>
+<tr>
+<td>建议设置额度上限</td>
+<td>在服务商后台限制日消费，出问题损失可控</td>
+</tr>
+<tr>
+<td>清缓存 / 换浏览器</td>
+<td>配置会丢，需要重填（这也是建议做「导出/导入」的原因）</td>
+</tr>
+<tr>
+<td>共享设备</td>
+<td>Key 明文存 <code>localStorage</code>，同机他人按 F12 就能看到；公用电脑请用完清除配置</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pages-h13">8. 本次为部署做的代码改动</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>改动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/lib/base-path.ts</code></td>
+<td>新增：basename 推断（兼容子路径/本地文件）</td>
+</tr>
+<tr>
+<td><code>src/index.tsx</code></td>
+<td>用 <code>resolveBasename</code>；HTTPS 下注册 Service Worker（失败静默）</td>
+</tr>
+<tr>
+<td><code>index.html</code></td>
+<td>加 manifest、apple-touch-icon、theme-color、iOS 主屏 meta</td>
+</tr>
+<tr>
+<td><code>public/manifest.webmanifest</code></td>
+<td>新增：PWA 清单（standalone、图标、主题色）</td>
+</tr>
+<tr>
+<td><code>public/sw.js</code></td>
+<td>新增：导航 network-first、静态资源 cache-first、跨域不接管</td>
+</tr>
+<tr>
+<td><code>public/icons/*.png</code></td>
+<td>新增：192 / 512 / maskable 512 / apple-touch 180（<code>tools/make-icons.py</code> 生成）</td>
+</tr>
+<tr>
+<td><code>scripts/make-pages.mjs</code></td>
+<td>新增：产出 <code>dist-pages</code>（注入 SW 版本、<code>.nojekyll</code>、404 兜底、资源自检）</td>
+</tr>
+<tr>
+<td><code>scripts/make-standalone.mjs</code></td>
+<td>模板补 PWA 标签；排除 source map；<code>cpSync</code> → 手写递归复制</td>
+</tr>
+<tr>
+<td><code>scripts/make-single-file.mjs</code></td>
+<td>入口 hash 唯一性校验，防止取到历史构建文件</td>
+</tr>
+<tr>
+<td><code>scripts/check-native-deps.mjs</code></td>
+<td>新增：构建前检查原生依赖，缺了给出可复制的修复命令</td>
+</tr>
+<tr>
+<td><code>package.json</code></td>
+<td>新增 <code>build:pages</code>、<code>prebuild*</code>；<code>vite build --emptyOutDir</code></td>
+</tr>
+<tr>
+<td><code>.github/workflows/deploy-pages.yml</code></td>
+<td>新增：自动构建 + 测试 + 发布</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pages-h14">9. 验收清单</h2>
+<ul>
+<li>[ ] 地址根路径（<code>/</code>）与子路径（<code>/&lt;repo&gt;/</code>）都能打开并显示「矩阵运算 / 线性方程组 / 向量运算」三个 Tab</li>
+<li>[ ] 刷新页面不出现「页面不存在」</li>
+<li>[ ] iOS Safari 添加到主屏后，图标是紫色矩阵（不是网页截图）</li>
+<li>[ ] 主屏启动为全屏、无地址栏</li>
+<li>[ ] 配置 OCR 后刷新仍在；隔天再打开仍在</li>
+<li>[ ] 断网后仍能打开页面并做矩阵计算</li>
+<li>[ ] OCR 填 DeepSeek 兼容接口能识别成功；填错 Key 有 401 提示；接口挂起约 45 秒后报超时</li>
+<li>[ ] 任意未知路径（如 <code>/foo/bar</code>）会被 404 兜底带回首页</li>
+</ul>
+<h2 id="pages-h15">10. 常见问题</h2>
+<p><strong>Q：打开是白屏？</strong>
+先看地址是不是漏了结尾的 <code>/</code>（<code>/repo</code> 与 <code>/repo/</code> 都能用，但 <code>/repo/index.html</code> 之外拼错路径会 404）；再按 F12 看 Console 有没有 404 的资源，确认 <code>assets/</code> 是否一起上传了。</p>
+<p><strong>Q：iOS 上没有「添加到主屏幕」？</strong>
+必须在 Safari 里；微信/QQ/钉钉内置浏览器都没有这个入口。另外 iOS 16.4 起第三方浏览器（Chrome/Edge）也可以通过分享菜单添加。</p>
+<p><strong>Q：配置好了，换台设备还要再配？</strong>
+是的，<code>localStorage</code> 不跨设备、不随浏览器账号同步。可行的做法是把 Base URL 与模型名记住，Key 重新申请/粘贴一次（不建议把 Key 发给别人）。</p>
+<p><strong>Q：能不能让朋友不用配 Key 就能用？</strong>
+只能上服务端代理：Key 放在你的云函数里，前端只带一个短期票据，并在服务端做限额。纯静态托管做不到。</p>
+<p><strong>Q：GitHub Pages 有流量限制吗？</strong>
+有软限制（站点约 1 GB、每月约 100 GB 带宽、每小时约 10 次构建）。个人/小范围使用够用；量大时换 Cloudflare Pages 或对象存储。</p>
+<hr />
+<p><em>文档版本 v1.0 · 2026-10-19 · 与 <code>source/</code> 源码同步</em></p></section><section class="doc-sec" id="doc-ios"><h1 id="windows-ios">可行性分析：在 Windows 本机开发并交付 iOS 端</h1>
+<blockquote>
+<p><strong>更新（2026-10-19）</strong>：路线 A（PWA）已经落地——工程里补了 manifest、Service Worker、iOS 主屏图标，并加了 GitHub Pages 自动部署。具体步骤见《部署-GitHub-Pages》；本文保留为四条路线的对比与决策依据。</p>
+</blockquote>
+<p>结论先行：<strong>能，但要绕开"编译必须 macOS"这一道墙。</strong>
+按投入从低到高有四条可行路线，推荐顺序是 <strong>PWA（今天就能用）→ 云 CI 出未签名 IPA + Sideloadly 自签（免费，周维护）→ 付费开发者账号（年费，免维护）→ 买/租 Mac（完整能力）</strong>。</p>
+<p>本文所有判断基于 2026 年 10 月的公开资料与项目现状（React 静态站 + Capacitor 安卓壳），不含推测性定价，标"参考"的数字请以官方页面为准。</p>
+<hr />
+<h2 id="ios-h1">1. 硬约束：到底卡在哪一步</h2>
+<p>iOS 的"开发"其实是四件事，只有第三件被 macOS 锁死：</p>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>能否在 Windows 完成</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>写代码 / 改网页 / 构建 Web 产物</td>
+<td>✅</td>
+<td>这个项目本来就是 Vite 式静态产物，Windows 完全够用</td>
+</tr>
+<tr>
+<td>生成 <code>ios/</code> 原生工程</td>
+<td>⚠️ 部分</td>
+<td><code>npx cap add ios</code> 需要 CocoaPods（macOS 工具链），Windows 上跑不通；但可以在 CI 的 macOS runner 里生成</td>
+</tr>
+<tr>
+<td>编译出 <code>.app/.ipa</code></td>
+<td>❌</td>
+<td>iOS SDK、<code>xcodebuild</code>、<code>codesign</code> 只随 Xcode 发布，且授权绑定 Apple 硬件；Linux/Windows 上的交叉编译产物无法通过 App Store Connect 校验</td>
+</tr>
+<tr>
+<td>签名</td>
+<td>⚠️ 分情况</td>
+<td>证书本身可以用 OpenSSL 在 Windows 上生成 CSR 换取；把签名"贴"到 IPA 上，Windows 有 <code>zsign</code>、Sideloadly 等实现；但正式分发签名仍需 Apple 账号</td>
+</tr>
+<tr>
+<td>上传 App Store / TestFlight</td>
+<td>⚠️</td>
+<td>Transporter 只有 macOS 版；替代是 App Store Connect API（任意系统可调）或第三方上传工具</td>
+</tr>
+</tbody>
+</table>
+<p>补充两条 2026 年的现实约束：</p>
+<ul>
+<li><strong>Xcode 版本门槛</strong>：截至 2026 年 4 月，App Store 要求使用 <strong>Xcode 26 及以上</strong>构建。自己维护 Mac 意味着每年跟着升 macOS + Xcode；用云构建则把这件事外包给服务商。</li>
+<li><strong>免费 Apple ID 的限制</strong>：证书 <strong>7 天过期</strong>、同时最多 <strong>3 个</strong>自签应用、每周有 App ID 数量上限、<strong>不能推送</strong>、不能内购。iOS 16+ 安装自签应用还必须先在「设置 → 隐私与安全性 → 开发者模式」里打开开发者模式。</li>
+</ul>
+<h2 id="ios-h2">2. 四条路线对比</h2>
+<table>
+<thead>
+<tr>
+<th>路线</th>
+<th>需要什么</th>
+<th>成本</th>
+<th>首次上手</th>
+<th>维护</th>
+<th>能力</th>
+<th>推荐度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. PWA（添加到主屏幕）</td>
+<td>一个 HTTPS 静态托管（GitHub Pages / 对象存储 / Vercel 均可）+ 一个 manifest + 图标</td>
+<td>0 元</td>
+<td>30 分钟</td>
+<td>无</td>
+<td>全屏运行、离线可用、可加到桌面；无原生 API、无推送（除非装到主屏后另配）</td>
+<td>★★★★★</td>
+</tr>
+<tr>
+<td>B. 云 CI 出未签名 IPA + Windows 自签</td>
+<td>GitHub 账号 + 本机 iTunes/iCloud + Sideloadly + 免费 Apple ID</td>
+<td>0 元（公开仓库）；私有仓库按 macOS 分钟计费</td>
+<td>半天</td>
+<td><strong>每 7 天重签一次</strong></td>
+<td>真正的原生壳，可离线、可拍照</td>
+<td>★★★★</td>
+</tr>
+<tr>
+<td>C. 付费开发者账号</td>
+<td>Apple Developer Program（约 $99/年）+ 路线 B 的构建链</td>
+<td>年费</td>
+<td>半天</td>
+<td>一年一签</td>
+<td>去掉 3 应用限制、可 TestFlight 内测、可上架</td>
+<td>★★★☆</td>
+</tr>
+<tr>
+<td>D. 买 / 租 Mac</td>
+<td>Mac mini 或云 Mac（参考：云 Mac 约 $20/天、$100/月量级）</td>
+<td>硬件或租金</td>
+<td>1 天</td>
+<td>跟 Xcode 版本跑</td>
+<td>完整（模拟器、调试器、证书 UI、Xcode Cloud）</td>
+<td>★★（本项目体量不需要）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ios-h3">2.1 为什么 A 排第一</h3>
+<p>这个应用是<strong>纯前端、零后端、单页</strong>，正好是 PWA 的最佳场景：</p>
+<ul>
+<li>计算全部本地完成，离线只是"缓存一份 HTML/JS"，没有同步难题；</li>
+<li>没有账号体系，不需要原生能力（相机通过 <code>&lt;input capture&gt;</code> 调系统相机，PWA 同样可用）；</li>
+<li>iOS 26 起，添加到主屏幕的站点<strong>默认以 Web App 形式打开</strong>（可关闭），体验接近原生；</li>
+<li>关键利好：<strong>主屏幕 Web App 的一级域名豁免 ITP 的 7 天清理</strong>，数据（包括你的 OCR 配置）不会被 Safari 定期抹掉——而"直接放书签里用"就会被抹。这一条直接决定了本项目在 iOS 上应该走 PWA 而不是"用 Safari 打开一个 HTML"。</li>
+</ul>
+<p>PWA 的代价：必须有 HTTPS 托管（Service Worker 只在 HTTPS 或 localhost 下注册），也就是<strong>不能靠"发个 HTML 文件给对方"</strong>在 iPhone 上用。这与安卓 APK 的分发习惯不同。</p>
+<h3 id="ios-h4">2.2 路线 B 的具体做法（零成本、真原生）</h3>
+<p>关键认知：<strong>Sideloadly 这类 Windows 工具能"签名"，但不能"编译"。</strong> 所以要把编译放到云上、把签名留在本机。</p>
+<pre><code>GitHub Actions (macos-14/15 runner)
+  ├─ npm ci / 构建 web 产物
+  ├─ npx cap add ios        # 在 macOS 上生成 ios/ 工程
+  ├─ npx cap sync ios
+  ├─ xcodebuild archive ... CODE_SIGNING_ALLOWED=NO
+  └─ 打包成 Payload/App.app → 未签名 .ipa 作为 artifact
+
+Windows 本机
+  ├─ 下载未签名 .ipa
+  ├─ Sideloadly 用免费 Apple ID 签名并安装（USB）
+  ├─ iPhone：设置 → 通用 → VPN 与设备管理 → 信任
+  └─ 每 7 天重签一次（或让 AltServer 在同 Wi-Fi 下自动续签）
+</code></pre>
+<p>要点与坑：</p>
+<ol>
+<li><strong>必须在 CI 里生成 <code>ios/</code></strong>：Windows 上 <code>cap add ios</code> 因缺 CocoaPods 失败。要么把 <code>ios/</code> 提交进仓库（CI 直接 <code>cap sync</code>），要么每次构建都重新 <code>cap add ios</code>（慢但不用维护原生工程）。</li>
+<li><strong>不要提交签名材料</strong>：<code>.p12</code>、<code>.mobileprovision</code> 放 GitHub Secrets，或干脆不签（走 Sideloadly 本机签）。本项目没有复杂原生依赖，未签名构建足够。</li>
+<li><strong><code>Info.plist</code> 补相机用途说明</strong>：<code>NSCameraUsageDescription</code>。用 <code>&lt;input type="file" capture&gt;</code> 调系统相机通常不弹权限框，但一旦后续改用 <code>getUserMedia</code> 就会崩，提前写好更稳。</li>
+<li><strong>免费证书 7 天到期</strong>是硬限制，不是配置问题。要么接受每周插一次线，要么上付费账号。</li>
+<li>私有仓库的 macOS runner 按分钟计费（参考 $0.062/分钟，一次 iOS 构建约 8–15 分钟）；公开仓库免费，但<strong>代码会公开</strong>。</li>
+</ol>
+<h3 id="ios-h5">2.3 路线 C / D 什么时候才值得</h3>
+<ul>
+<li>要给<strong>别人</strong>用（TestFlight 内测、上架）：必须付费账号，且需要走 App Store Connect；内部测试可免 Beta 审核，但仍要账号与构建上传。</li>
+<li>要做<strong>原生能力</strong>（钥匙串、后台任务、推送、性能调优）或需要<strong>调试器</strong>看崩溃：租 Mac 按天最划算，不必买。</li>
+</ul>
+<h2 id="ios-h6">3. 针对本项目的具体建议</h2>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>建议路线</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自己手机上用，越省事越好</td>
+<td><strong>A（PWA）</strong></td>
+<td>零成本、零维护、配置不会被 7 天清理；缺点是需要托管</td>
+</tr>
+<tr>
+<td>不想托管、要能拍照识别、接受每周重签</td>
+<td><strong>B</strong></td>
+<td>与现有 APK 体验一致，原生壳更接近"应用"</td>
+</tr>
+<tr>
+<td>想给同学/老师用</td>
+<td>A 分享链接（最省事）或 C 的 TestFlight</td>
+<td>B 的免费证书没法分发</td>
+</tr>
+<tr>
+<td>想长期维护、持续加功能</td>
+<td>C + 云 CI</td>
+<td>一年一签，不用管证书</td>
+</tr>
+</tbody>
+</table>
+<p><strong>如果只做一件事</strong>：给单文件产物补一个 <code>manifest.webmanifest</code> + 图标 + Service Worker，部署到任意 HTTPS 静态站，然后 iPhone 用 Safari 打开 → 分享 → 添加到主屏幕。这条路的收益率远高于折腾 IPA。</p>
+<h2 id="ios-h7">4. 与现有产物的差距清单（走 PWA 路线时）</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>现状</th>
+<th>需要补</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Web App Manifest</td>
+<td>无</td>
+<td><code>name</code>、<code>short_name</code>、<code>start_url</code>、<code>display: standalone</code>、<code>theme_color</code>、192/512 图标</td>
+</tr>
+<tr>
+<td>图标</td>
+<td>内联 SVG favicon</td>
+<td>追加 <code>apple-touch-icon</code>（180×180 PNG），iOS 优先用它</td>
+</tr>
+<tr>
+<td>Service Worker</td>
+<td>无（离线靠内联）</td>
+<td>注册一个缓存外壳的 SW；注意每次发版改版本号</td>
+</tr>
+<tr>
+<td>启动画面 / 状态栏</td>
+<td>无</td>
+<td>可选 <code>apple-mobile-web-app-status-bar-style</code></td>
+</tr>
+<tr>
+<td>视口</td>
+<td>已含 <code>viewport-fit=cover</code></td>
+<td>已够用，可补 <code>user-scalable=no</code> 视需求</td>
+</tr>
+<tr>
+<td>安装引导</td>
+<td>无</td>
+<td>iOS 无自动安装弹窗，需要在页面上教用户「分享 → 添加到主屏幕」</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ios-h8">5. 风险与未决项</h2>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>影响</th>
+<th>应对</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>托管在境外 CDN，国内访问不稳定</td>
+<td>PWA 打不开</td>
+<td>用国内对象存储 + 备案域名，或走 GitHub Pages 的镜像</td>
+</tr>
+<tr>
+<td>免费证书 7 天到期忘记续签</td>
+<td>应用打不开</td>
+<td>AltServer 常驻同一 Wi-Fi 自动续签；或改用付费账号</td>
+</tr>
+<tr>
+<td>Xcode 门槛逐年提高</td>
+<td>旧 CI 镜像构建失败</td>
+<td>用 <code>macos-latest</code>，或选托管构建服务替你升级</td>
+</tr>
+<tr>
+<td>未签名 IPA 来源不明</td>
+<td>植入恶意代码</td>
+<td>只用自己的 CI 产物；签名前核对 artifact 的提交哈希</td>
+</tr>
+<tr>
+<td>iOS 版本差异（26 之后的主屏策略变化）</td>
+<td>行为不一致</td>
+<td>上线前在目标机型实测安装与离线启动</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>文档版本 v1.0 · 2026-10-19 · 本文为可行性判断，不含承诺性的上架/审核结论</em></p></section><section class="doc-sec" id="doc-cfg"><h1 id="_1">可行性分析：网页端保存视觉模型配置</h1>
+<p>结论先行：<strong>技术上完全可行，而且已经实现了</strong>——配置写在 <code>localStorage</code>，键名带应用前缀，读写全程 try/catch 包裹。
+真正需要判断的不是"能不能存"，而是<strong>"存成什么样、在哪些场景会丢、被谁看到"</strong>。本文给出选型对比、威胁模型和一份分优先级的改造清单。</p>
+<hr />
+<h2 id="cfg-h1">1. 现状：现在是怎么存的</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>实现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>存储介质</td>
+<td><code>localStorage</code>（同步、字符串键值）</td>
+</tr>
+<tr>
+<td>键名</td>
+<td><code>__miaoda_&lt;appId&gt;__:</code> + <code>__app_linalg_ocr_config</code></td>
+</tr>
+<tr>
+<td>值</td>
+<td>JSON：<code>{"baseUrl":"…","apiKey":"sk-…","model":"gpt-4o-mini"}</code> <strong>明文</strong></td>
+</tr>
+<tr>
+<td>写入</td>
+<td>点「保存配置」时整体覆盖；三项 trim 后存</td>
+</tr>
+<tr>
+<td>读取</td>
+<td>弹窗打开时回填；识别前再读一次，缺字段直接报「OCR 配置不完整」</td>
+</tr>
+<tr>
+<td>清除</td>
+<td>「清除配置」立即执行，无二次确认</td>
+</tr>
+<tr>
+<td>异常处理</td>
+<td>读写失败只 <code>console.error</code>，界面无提示（满配额/隐私模式时可能"看起来保存了，其实没存"）</td>
+</tr>
+<tr>
+<td>隔离粒度</td>
+<td>同源 + 同浏览器 profile + 同设备；<strong>不随浏览器账号同步</strong></td>
+</tr>
+</tbody>
+</table>
+<p>顺带确认两件已做的事：API Key 输入框是 <code>type="password"</code>（不明文回显）、界面明确写了"仅保存在浏览器本地，不会上传到任何第三方"。</p>
+<h2 id="cfg-h2">2. 技术可行性的四条硬约束</h2>
+<table>
+<thead>
+<tr>
+<th>约束</th>
+<th>具体表现</th>
+<th>对本项目的影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>同源隔离</strong></td>
+<td><code>file://</code>、<code>http://127.0.0.1</code>、<code>https://你的域名</code> 是三个不同的源</td>
+<td>把 HTML 换个路径/换个打开方式，配置就"消失"（不是丢了，是读不到另一个源的库）</td>
+</tr>
+<tr>
+<td><strong>容量</strong></td>
+<td>通常 5 MB 级/源，够存几十万条这样的配置</td>
+<td>不是问题</td>
+</tr>
+<tr>
+<td><strong>生命周期</strong></td>
+<td>用户清缓存、隐私模式、浏览器重装、Safari 的 7 天规则都会清掉</td>
+<td>需要"配置可迁移"（导出/导入），否则每次重配 Key</td>
+</tr>
+<tr>
+<td><strong>不跨设备</strong></td>
+<td>浏览器不同步 <code>localStorage</code></td>
+<td>换手机/换电脑必须重填</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cfg-h3">2.1 Safari / iOS 的关键细节（容易踩）</h3>
+<ul>
+<li>Safari 的 ITP 会删除<strong>脚本可写存储</strong>（<code>localStorage</code>、<code>IndexedDB</code>、Service Worker 缓存等）在「7 个 Safari 使用日无交互」之后；</li>
+<li><strong>豁免</strong>：添加到主屏幕的 Web App 使用独立存储桶，其一级域名不受这个 7 天上限约束；</li>
+<li>结论：<strong>在 iPhone 上用 Safari 标签页打开网页版 → 一周不用就要重配 Key；添加到主屏幕后不会。</strong> 这条直接影响 iOS 端的形态选择（见《可行性-iOS端.md》）。</li>
+</ul>
+<h3 id="cfg-h4">2.2 <code>file://</code> 的两个不确定性</h3>
+<ul>
+<li>有的浏览器把每个本地文件当独立源，有的把整个 <code>file://</code> 当一个源——跨浏览器不一致，<strong>同一份 HTML 换个文件名可能就读不到旧配置</strong>；</li>
+<li><code>crypto.subtle</code>（Web Crypto）在部分浏览器的非安全上下文里不可用。所以<strong>任何加密方案都必须先判断 <code>window.isSecureContext</code></strong>，不能假设 <code>file://</code> 一定有。</li>
+</ul>
+<h2 id="cfg-h5">3. 存储方案对比</h2>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>容量</th>
+<th>持久性</th>
+<th>加密</th>
+<th>跨设备</th>
+<th>实现成本</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>localStorage（现状）</strong></td>
+<td>~5 MB</td>
+<td>中（可被清）</td>
+<td>无</td>
+<td>❌</td>
+<td>已实现</td>
+<td>个人机、单人使用</td>
+</tr>
+<tr>
+<td>sessionStorage</td>
+<td>~5 MB</td>
+<td>关标签即失</td>
+<td>无</td>
+<td>❌</td>
+<td>低</td>
+<td>公用电脑、临时演示</td>
+</tr>
+<tr>
+<td>IndexedDB</td>
+<td>大（按磁盘配额）</td>
+<td>中</td>
+<td>无</td>
+<td>❌</td>
+<td>中</td>
+<td>需要存多套配置/历史</td>
+</tr>
+<tr>
+<td>Cookie（<code>document.cookie</code>）</td>
+<td>4 KB</td>
+<td>中；ITP 对其也有 7 天限制</td>
+<td>无；<strong>不能设 HttpOnly</strong></td>
+<td>❌</td>
+<td>低</td>
+<td>无优势，不推荐</td>
+</tr>
+<tr>
+<td><strong>Web Crypto + 口令加密后存 localStorage</strong></td>
+<td>~5 MB</td>
+<td>中</td>
+<td>✅ AES-GCM（口令派生）</td>
+<td>❌</td>
+<td>中</td>
+<td>有他人共用设备的风险</td>
+</tr>
+<tr>
+<td>Credential Management API（存进浏览器密码管理器）</td>
+<td>—</td>
+<td>由密码管理器决定</td>
+<td>✅ 系统级</td>
+<td>随浏览器账号同步（若开启）</td>
+<td>中</td>
+<td>Chrome/Edge；Safari 支持有限</td>
+</tr>
+<tr>
+<td>Capacitor Keychain / Keystore（原生壳）</td>
+<td>—</td>
+<td>高</td>
+<td>✅ 系统钥匙串</td>
+<td>❌</td>
+<td>中（需原生插件）</td>
+<td>APK / 未来的 iOS 壳</td>
+</tr>
+<tr>
+<td>服务端代理（云函数持有 Key）</td>
+<td>—</td>
+<td>高</td>
+<td>✅（Key 不下发）</td>
+<td>✅</td>
+<td>高（要后端 + 限额 + 鉴权）</td>
+<td>要给别人用、或要求"打开即用"</td>
+</tr>
+</tbody>
+</table>
+<p>一句话：<strong>明文 <code>localStorage</code> 是"够用且诚实"的方案</strong>；要更强只有两条路——本机加密（提高门槛，不解决"同机他人已登录"）或服务端代理（真正把 Key 从客户端拿掉）。</p>
+<h2 id="cfg-h6">4. 威胁模型：谁可能看到这个 Key</h2>
+<table>
+<thead>
+<tr>
+<th>威胁</th>
+<th>现实可行性</th>
+<th>现状</th>
+<th>缓解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同一台电脑的其他人打开浏览器</td>
+<td><strong>高</strong>（F12 → Application → Local Storage，5 秒）</td>
+<td>无防护</td>
+<td>口令加密 / 系统钥匙串 / 用独立浏览器 profile</td>
+</tr>
+<tr>
+<td>恶意浏览器扩展读所有站点存储</td>
+<td>中</td>
+<td>无防护</td>
+<td>减少装扩展；或用独立 profile</td>
+</tr>
+<tr>
+<td>页面被注入脚本（XSS）</td>
+<td>低（无用户 HTML 注入、无第三方脚本；仅字体 CSS 从 CDN 加载）</td>
+<td>无防护</td>
+<td>保持不引入外部脚本；CSP 可选</td>
+</tr>
+<tr>
+<td>屏幕共享/录屏时打开配置弹窗</td>
+<td>中</td>
+<td>Key 是 password 框，默认打码</td>
+<td>演示时别打开弹窗；或加"显示/隐藏"控制</td>
+</tr>
+<tr>
+<td>把 HTML 文件发给别人</td>
+<td>低</td>
+<td>Key 不在文件里</td>
+<td>保持"配置不入包"</td>
+</tr>
+<tr>
+<td>浏览器备份/迁移工具</td>
+<td>低-中</td>
+<td>随 profile 一起被复制</td>
+<td>口令加密</td>
+</tr>
+<tr>
+<td>服务商侧日志</td>
+<td>取决于服务商</td>
+<td>Key 随请求头发给对方</td>
+<td>选可信服务商；定期轮换；设置额度上限</td>
+</tr>
+<tr>
+<td>Key 泄露后的损失</td>
+<td>—</td>
+<td>无限额</td>
+<td>在服务商后台<strong>设消费上限</strong>、定期轮换；泄露后立即吊销</td>
+</tr>
+</tbody>
+</table>
+<p><strong>要明确的一点</strong>：把 Key 硬编码进 HTML 再分发，等于公开。任何"下载即用、不用配置"的方案，都必须是<strong>服务端代理 + 鉴权 + 限额</strong>，不存在纯前端的优雅解。</p>
+<h2 id="cfg-h7">5. 建议方案（按投入分级）</h2>
+<h3 id="cfg-h8">P0：不改架构，只补三个缺口（半天）</h3>
+<ol>
+<li><strong>保存失败要能看见</strong>：<code>localStorage</code> 抛异常（配额满、隐私模式）时，现在只写 console。改成界面提示「配置未能保存（浏览器禁止本地存储）」。</li>
+<li><strong>清除配置加二次确认</strong>：误点一次就要重填 Key，成本不对等。</li>
+<li><strong>导出 / 导入配置</strong>：一段 JSON 文本（或二维码），换设备时不用重新申请。
+   <code>js
+   // 导出（不含提示信息，纯配置）
+   const cfg = JSON.parse(localStorage.getItem(KEY) || '{}');
+   const text = JSON.stringify(cfg, null, 2);
+   // 导入：校验字段齐全 + 类型正确后再写，避免写进脏数据</code></li>
+</ol>
+<h3 id="cfg-h9">P1：加一层口令加密（1 天）</h3>
+<p>适用：电脑可能被他人使用，但不想上后端。</p>
+<pre><code class="language-js">// 概念示意：PBKDF2 派生密钥 → AES-GCM 加密 → 存密文
+async function seal(plain, pass) {
+  if (!window.isSecureContext) throw new Error('当前环境不支持加密存储');
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv   = crypto.getRandomValues(new Uint8Array(12));
+  const base = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+  const key  = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt']
+  );
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plain));
+  return { v: 1, salt: [...salt], iv: [...iv], ct: [...new Uint8Array(ct)] };
+}
+</code></pre>
+<p>要点：</p>
+<ul>
+<li>口令<strong>不落盘</strong>，只在解锁时输入；忘记口令 = 配置作废（要能接受）；</li>
+<li>每次唤醒需解密（弹窗打开时），别把明文缓存在内存全局变量里长期驻留；</li>
+<li><code>file://</code> 下若 <code>crypto.subtle</code> 不可用，退化为要么不加密、要么要求用 https/localhost 打开。</li>
+</ul>
+<h3 id="cfg-h10">P2：把 Key 移出客户端（1–2 天，需后端）</h3>
+<pre><code>
+前端 → 你的云函数（带一次性/短期 token） → 模型服务商（Key 在服务端环境变量）
+</code></pre>
+<ul>
+<li>前端只存"会话票据"，泄露也只能用很短时间；</li>
+<li>可在服务端加<strong>每日次数/额度上限</strong>、按用户限流；</li>
+<li>适合"要发给同学用"的场景——否则每个人都得自己申请 Key，这是当前最大的使用门槛。</li>
+</ul>
+<h3 id="cfg-h11">不建议做的</h3>
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>为什么不做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base64 / 自定义异或"混淆"后存</td>
+<td>只是拖延 10 秒，反而给人"已加密"的错觉</td>
+</tr>
+<tr>
+<td>把 Key 写进 HTML</td>
+<td>等于公开分发密钥</td>
+</tr>
+<tr>
+<td>把 Key 存 Cookie</td>
+<td>4 KB 限制、无 HttpOnly、仍受 ITP，越改越差</td>
+</tr>
+<tr>
+<td>存到 URL 参数里</td>
+<td>会进历史记录、Referer、截图，泄露面更大</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cfg-h12">6. 结论</h2>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>回答</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>网页端能保存视觉模型配置吗？</td>
+<td><strong>能</strong>，且已在用；<code>localStorage</code> 是本场景的合理选择</td>
+</tr>
+<tr>
+<td>安全吗？</td>
+<td>对"个人设备、单人使用"够用；对"共用设备/多人分发"不够</td>
+</tr>
+<tr>
+<td>会丢吗？</td>
+<td>会。清缓存、隐私模式、换源、换设备、Safari 7 天规则都会导致丢失</td>
+</tr>
+<tr>
+<td>最该先补什么？</td>
+<td><strong>导出/导入</strong>（解决"丢一次就要重新申请 Key"的痛点）+ 保存失败提示</td>
+</tr>
+<tr>
+<td>想彻底解决分发问题？</td>
+<td>上服务端代理，Key 不下发；纯前端做不到</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>文档版本 v1.0 · 2026-10-19 · 现状描述对应产物 v1.1</em></p></section>
+  <footer>本文档由 docs/build_docs.py 从 README.md、用户手册.md、技术手册.md、开发者指南.md、测试手册.md、源码解析.md、部署-GitHub-Pages.md、可行性-iOS端.md、可行性-视觉模型配置存储.md 生成；请修改 Markdown 后重新构建，不要直接编辑本文件。</footer>
+</main>
+</div>
+<a class="top" href="#" title="回到顶部">↑</a>
+</body>
+</html>

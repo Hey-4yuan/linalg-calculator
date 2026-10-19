@@ -1,0 +1,32 @@
+# 依赖
+node_modules/
+source/**/node_modules/
+
+# 构建产物（由 npm run build:* 生成）
+source/**/dist/
+source/**/dist-standalone/
+source/**/dist-pages/
+tests/.build/
+
+# 本地归档（体积大，且是历史快照）
+_backup/
+
+# 安装包：体积大、二进制、且由安卓工程构建得到；需要时挂到 GitHub Releases
+*.apk
+
+# 本地产物快照（单文件版与离线站由 npm run build 生成）
+source/linear-algebra-calculator/web-source/dist-standalone/
+source/linear-algebra-calculator/web-source/dist-pages/
+# 单文件的构建副本：根目录那份保留给人下载，源码目录里的不入库
+source/**/线性代数计算器.html
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# 环境变量
+.env
+.env.local

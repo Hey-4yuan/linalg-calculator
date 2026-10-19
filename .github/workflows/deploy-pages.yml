@@ -1,0 +1,65 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: source/linear-algebra-calculator/web-source/package-lock.json
+
+      - name: Install deps
+        working-directory: source/linear-algebra-calculator/web-source
+        # lock 里 907 个 resolved 指向 registry.npmmirror.com（国内本地安装快）。
+        # 海外 runner 拉这个源偶尔抖动，所以把重试次数调高，失败也能自愈。
+        env:
+          npm_config_fetch_retries: "5"
+          npm_config_fetch_retry_maxtimeout: "120000"
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: source/linear-algebra-calculator/web-source
+        run: npm run typecheck
+
+      - name: Algorithm regression
+        run: node tests/build-and-test.mjs
+
+      - name: Build Pages site
+        working-directory: source/linear-algebra-calculator/web-source
+        run: npm run build:pages
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: source/linear-algebra-calculator/web-source/dist-pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
