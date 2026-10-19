@@ -225,6 +225,67 @@ try {
   await send("Runtime.enable");
   await sleep(2500);
 
+  console.log("E2E-00 服务商预设");
+  {
+    // 这个 profile 会跨次保留 localStorage，先清空再 reload，否则按钮文案是「图片识别」
+    await evaluate(`(() => { localStorage.clear(); return true; })()`);
+    await send("Page.reload");
+    await sleep(2500);
+
+    // 打开配置对话框
+    const opened = await evaluate(`(() => {
+      const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('配置 OCR'));
+      if (!btn) return false;
+      btn.click();
+      return true;
+    })()`);
+    check("能打开 OCR 配置对话框", opened === true);
+    await sleep(800);
+
+    const hasChips = await evaluate(`(() => {
+      const dlg = document.querySelector('[role="dialog"]');
+      if (!dlg) return null;
+      const text = dlg.textContent || '';
+      return {
+        label: text.includes('快速选择服务商'),
+        chips: [...dlg.querySelectorAll('button')].map(b => (b.textContent || '').trim()).filter(Boolean),
+      };
+    })()`);
+    check("有「快速选择服务商」区块", hasChips?.label === true);
+    check(
+      "预设按钮里有智谱/通义/豆包/DeepSeek",
+      ["智谱", "通义", "豆包", "DeepSeek"].every((k) => (hasChips?.chips ?? []).some((c) => c.includes(k))),
+      JSON.stringify(hasChips?.chips?.slice(0, 10))
+    );
+
+    // 点智谱：Base URL 与模型名应被一次填好
+    await evaluate(`(() => {
+      const dlg = document.querySelector('[role="dialog"]');
+      const btn = [...(dlg?.querySelectorAll('button') ?? [])].find(b => b.textContent.includes('智谱'));
+      if (btn) btn.click();
+      return true;
+    })()`);
+    await sleep(500);
+
+    const filled = await evaluate(`(() => ({
+      base: document.querySelector('#ocr-base-url')?.value ?? '',
+      model: document.querySelector('#ocr-model')?.value ?? '',
+      note: (document.querySelector('[role="dialog"]')?.textContent ?? '').includes('bigmodel.cn'),
+    }))()`);
+    check("点预设后 Base URL 自动填好", filled.base.toLowerCase().includes("bigmodel.cn"), filled.base);
+    check("点预设后模型名自动填好", filled.model.length > 0, filled.model);
+    check("显示该服务商的申请说明", filled.note === true);
+
+    // 关掉对话框（不保存），避免影响后续
+    await evaluate(`(() => {
+      const dlg = document.querySelector('[role="dialog"]');
+      const btn = [...(dlg?.querySelectorAll('button') ?? [])].find(b => (b.textContent || '').trim() === '取消');
+      if (btn) btn.click();
+      return true;
+    })()`);
+    await sleep(600);
+  }
+
   console.log("E2E-01 配置与入口");
   // 借「分数模式」开关探出 scopedStorage 的真实前缀，再写 OCR 配置
   const prefix = await evaluate(`(() => {

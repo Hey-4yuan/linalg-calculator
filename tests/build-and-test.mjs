@@ -33,6 +33,9 @@ export { joinRows, matrixToText } from ${JSON.stringify(
 export { parseOcrResponse, parseDimensionProbe, extractJsonFromReasoning, auditCellInk } from ${JSON.stringify(
     path.join(SRC, "src/lib/ocr-parse.ts").replace(/\\/g, "/")
   )};
+export { OCR_PRESETS, matchPreset } from ${JSON.stringify(
+    path.join(SRC, "src/lib/ocr-presets.ts").replace(/\\/g, "/")
+  )};
 export { buildOcrPrompt, buildDimensionProbePrompt } from ${JSON.stringify(
     path.join(SRC, "src/lib/ocr-prompt.ts").replace(/\\/g, "/")
   )};
@@ -517,6 +520,32 @@ function run() {
     // 数字读对了但有墨 —— 不该报
     const d = auditCellInk(inkFull, inkFull.map(() => ["1", "2", "3", "4", "5", "6"]));
     check("读数非 0 时不报", d.suspicious.length === 0);
+  }
+
+  console.log("PRESET-01 服务商预设（Base URL 不能写错 /chat/completions）");
+  {
+    const presets = require(OUT).OCR_PRESETS;
+    check("预设非空", Array.isArray(presets) && presets.length >= 5, String(presets?.length));
+
+    const bad = presets.filter(
+      (p) => /\/chat\/completions\/?$/.test(p.baseUrl) || !/^https:///////.test(p.baseUrl),
+    );
+    check("所有 baseUrl 合法且不含 /chat/completions", bad.length === 0, JSON.stringify(bad.map((p) => p.baseUrl)));
+
+    const missing = presets.filter((p) => !p.model || !p.note);
+    check("每个预设都有模型名与说明", missing.length === 0, JSON.stringify(missing.map((p) => p.id)));
+
+    const ids = presets.map((p) => p.id);
+    check("id 不重复", new Set(ids).size === ids.length);
+
+    const urls = presets.map((p) => p.baseUrl.replace(/\/+$/, ""));
+    check("同一家的 baseUrl 复用一致（通义两条同址）", urls.filter((u) => u.includes("dashscope")).length === 2);
+
+    check(
+      "matchPreset 能认出来（忽略尾部斜杠）",
+      require(OUT).matchPreset("https://open.bigmodel.cn/api/paas/v4/")?.id === "zhipu-flash",
+    );
+    check("未知地址返回 undefined", require(OUT).matchPreset("https://example.com/v1") === undefined);
   }
 
   console.log(`\n结果：${pass} 通过，${fail} 失败`);

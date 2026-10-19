@@ -252,7 +252,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
   <div class="meta">
     <span class="pill">文档版本 v1.0</span>
     <span class="pill">产物构建 2026-10-18</span>
-    <span class="pill">生成于 2026-10-19 22:29</span>
+    <span class="pill">生成于 2026-10-19 22:50</span>
     <span class="pill">Ctrl/⌘ + P 可打印为 PDF</span>
   </div>
   <section class="doc-sec" id="doc-overview"><h1 id="_1">线性代数计算器</h1>
@@ -375,7 +375,7 @@ API Key:  自行申请（见附图手册）
 │       │   └── scripts/         #   make-standalone / make-single-file
 │       ├── android/             # Capacitor 6 工程 + build-apk.sh
 │       └── single-file/         # 单文件产物副本
-├── tests/build-and-test.mjs     # 96 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检）+ 13 项 OCR 端到端 + 9 项折叠端到端
+├── tests/build-and-test.mjs     # 103 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检 + 服务商预设）+ 19 项 OCR 端到端 + 9 项折叠端到端
 ├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
 ├── .github/workflows/           # GitHub Pages 自动部署
 ├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）
@@ -3950,7 +3950,7 @@ python docs/build_docs.py     # → docs/手册.html
 <pre><code class="language-bash">node tests/build-and-test.mjs
 </code></pre>
 <p>机制：用 esbuild 把 <code>matrix-ops.ts</code>、<code>fraction.ts</code>、<code>base-path.ts</code>、<code>pwa.ts</code>、<code>copy-text.ts</code>、<code>ocr-parse.ts</code>、<code>ocr-prompt.ts</code> 打成一个 CJS 包（<strong>必须同一次打包</strong>，否则两份 <code>Fraction</code> 类身份不同，<code>instanceof</code> 会失效），再跑断言。</p>
-<p>覆盖 96 项：</p>
+<p>覆盖 103 项：</p>
 <table>
 <thead>
 <tr>
@@ -4042,11 +4042,11 @@ python docs/build_docs.py     # → docs/手册.html
 </tbody>
 </table>
 <blockquote>
-<p>另有<strong>端到端</strong>冒烟：<code>node tests/ocr-e2e.mjs</code>（13 项）。假接口故意模仿<strong>推理模型</strong>的返回形态（<code>content</code> 为空、<code>reasoning_content</code> 塞满猜测、<code>finish_reason=length</code>），验证「默认整图 / detail=high / 尺寸提示 / 定位裁剪 / 5×5 回填」。
+<p>另有<strong>端到端</strong>冒烟：<code>node tests/ocr-e2e.mjs</code>（19 项）。假接口故意模仿<strong>推理模型</strong>的返回形态（<code>content</code> 为空、<code>reasoning_content</code> 塞满猜测、<code>finish_reason=length</code>），验证「默认整图 / detail=high / 尺寸提示 / 定位裁剪 / 5×5 回填」。
 步骤面板另有 <code>node tests/steps-accordion-e2e.mjs</code>（9 项）：真点「全部展开」，验证展开数、按钮文案、矩阵行数、收回、单步独立切换。
 两者都<strong>不需要真实 API Key</strong>，但需要本机有 Chrome。</p>
 </blockquote>
-<p>预期输出：<code>结果：96 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
+<p>预期输出：<code>结果：103 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
 <h2 id="test-h18">附录 B：用 Python 交叉核对期望值</h2>
 <p>自动化校验的核心是用独立实现复算，避免「从程序输出反推期望值」。</p>
 <pre><code class="language-python">from fractions import Fraction as F

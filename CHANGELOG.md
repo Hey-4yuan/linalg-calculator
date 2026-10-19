@@ -4,6 +4,38 @@
 
 ---
 
+## v1.10 — 2026-10-19
+
+### 新增：OCR 服务商预设
+
+Base URL 是整个配置里最容易填错的一项（少 `/v1`、多写 `/chat/completions`、把智谱的 `/api/paas/v4` 记成 `/v1`），错了只会得到一个 404。设置对话框加了一排预设按钮，点一下自动填好 Base URL 与模型名，**Key 不动**。
+
+| 预设 | Base URL | 建议模型 | 定位 |
+|---|---|---|---|
+| 智谱 GLM-4V-Flash | `https://open.bigmodel.cn/api/paas/v4` | `glm-4v-flash` | 免费额度，先用起来 |
+| 通义 Qwen3-VL-Flash | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen3-vl-flash` | 单价最低，中文 OCR 准 |
+| 通义 Qwen-VL-Max | 同上 | `qwen-vl-max` | 精度优先，四阶以上推荐 |
+| 硅基流动 Qwen3-VL | `https://api.siliconflow.cn/v1` | `Qwen/Qwen3-VL-32B-Instruct` | 聚合平台，新用户送额度 |
+| 豆包 Vision | `https://ark.cn-beijing.volces.com/api/v3` | `ep-…` | **模型名要填推理接入点 ID** |
+| DeepSeek | `https://api.deepseek.com/v1` | `deepseek-chat` | 推理型，大矩阵会漏读 |
+
+每个预设带一句说明（申请入口、限速、坑），点中后显示在下方。新增 `src/lib/ocr-presets.ts`（纯数据 + `matchPreset`），`OCRSettingsDialog` 消费。
+
+同时把 Base URL 的提示改成「填到 `/v1` 或 `/v4` 为止，**不要带** `/chat/completions`」，模型名提示改成「推荐非推理模型」。
+
+### 测试
+
+- 源码级回归 96 → **103**（PRESET-01 七项：地址合法、无 `/chat/completions`、说明齐全、id 唯一、同家地址复用、`matchPreset` 容错）
+- OCR 端到端 13 → **19**（E2E-00 六项：区块存在、四家按钮齐全、点击后 Base/模型自动填入、说明切换）
+
+### 产物
+
+- 单文件 `线性代数计算器.html` 重建（1,276,833 B）
+- 安卓 `versionCode 6→7`、`versionName 1.9→1.10`，`www` / `assets/public` 同步并清理旧 hash
+- 安卓打包材料：`桌面/线性代数计算器-安卓打包-v1.10.zip`
+
+---
+
 ## v1.9 — 2026-10-19
 
 ### 修 bug：「全部展开」点了没反应

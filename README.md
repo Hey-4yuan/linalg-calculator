@@ -73,7 +73,7 @@ API Key:  自行申请（见附图手册）
 │       │   └── scripts/         #   make-standalone / make-single-file
 │       ├── android/             # Capacitor 6 工程 + build-apk.sh
 │       └── single-file/         # 单文件产物副本
-├── tests/build-and-test.mjs     # 96 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检）+ 13 项 OCR 端到端 + 9 项折叠端到端
+├── tests/build-and-test.mjs     # 103 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检 + 服务商预设）+ 19 项 OCR 端到端 + 9 项折叠端到端
 ├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
 ├── .github/workflows/           # GitHub Pages 自动部署
 ├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）

@@ -17,13 +17,21 @@ import {
   type OCRConfig,
 } from "@/lib/ocr-service";
 import { readPwaEnv, isIosDevice, isStandaloneDisplay } from "@/lib/pwa";
-import { Settings, Key, Globe, Cpu, Trash2, Info } from "lucide-react";
+import { OCR_PRESETS, matchPreset, type OcrPreset } from "@/lib/ocr-presets";
+import { Settings, Key, Globe, Cpu, Trash2, Info, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 interface OCRSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const TONE_CLASS: Record<NonNullable<OcrPreset["badgeTone"]>, string> = {
+  free: "bg-emerald-100 text-emerald-700",
+  cheap: "bg-sky-100 text-sky-700",
+  accurate: "bg-violet-100 text-violet-700",
+  warn: "bg-amber-100 text-amber-800",
+};
 
 export default function OCRSettingsDialog({
   open,
@@ -32,6 +40,8 @@ export default function OCRSettingsDialog({
   const [baseUrl, setBaseUrl] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("");
+  /** 当前 baseUrl 命中的预设（用于高亮与展示提示） */
+  const [picked, setPicked] = useState<string | undefined>();
   // iOS 上的存储风险提示：标签页会被 7 天清理，主屏 Web App 不会
   const [iosHint, setIosHint] = useState<"none" | "tab" | "home">("none");
 
@@ -48,13 +58,25 @@ export default function OCRSettingsDialog({
         setBaseUrl(cfg.baseUrl);
         setApiKey(cfg.apiKey);
         setModel(cfg.model);
+        setPicked(matchPreset(cfg.baseUrl)?.id);
       } else {
         setBaseUrl("https://api.openai.com/v1");
         setApiKey("");
         setModel("gpt-4o-mini");
+        setPicked(undefined);
       }
     }
   }, [open]);
+
+  /** 点预设：只覆盖 Base URL 与模型名，绝不动用户已填的 Key */
+  const applyPreset = (preset: OcrPreset) => {
+    setBaseUrl(preset.baseUrl);
+    setModel(preset.model);
+    setPicked(preset.id);
+    if (!apiKey.trim()) toast.info("再填入该服务商的 API Key 即可使用");
+  };
+
+  const activePreset = OCR_PRESETS.find((p) => p.id === picked);
 
   const handleSave = () => {
     if (!baseUrl.trim()) {
@@ -75,6 +97,7 @@ export default function OCRSettingsDialog({
       model: model.trim(),
     };
     saveOCRConfig(config);
+    setPicked(matchPreset(config.baseUrl)?.id);
     toast.success("配置已保存");
     onOpenChange(false);
   };
@@ -84,6 +107,7 @@ export default function OCRSettingsDialog({
     setBaseUrl("");
     setApiKey("");
     setModel("");
+    setPicked(undefined);
     toast.info("配置已清除");
   };
 
@@ -102,6 +126,51 @@ export default function OCRSettingsDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {/* 服务商预设：Base URL 最容易填错，点一下自动填好 */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Zap className="size-3.5 text-muted-foreground" />
+              快速选择服务商
+            </Label>
+            <div className="flex flex-wrap gap-1.5">
+              {OCR_PRESETS.map((preset) => {
+                const active = picked === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => applyPreset(preset)}
+                    className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ${
+                      active
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/60 hover:border-primary/50 hover:bg-muted/60"
+                    }`}
+                  >
+                    <span>{preset.name}</span>
+                    {preset.badge && (
+                      <span
+                        className={`rounded px-1 py-px text-[10px] leading-none ${
+                          TONE_CLASS[preset.badgeTone ?? "cheap"]
+                        }`}
+                      >
+                        {preset.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {activePreset ? (
+              <p className="rounded-md bg-muted/50 px-2.5 py-1.5 text-[11px] leading-relaxed text-muted-foreground">
+                {activePreset.note}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                选一个服务商会自动填好下面两项；也可以直接手填任意 OpenAI 兼容接口。
+              </p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="ocr-base-url" className="flex items-center gap-2">
               <Globe className="size-3.5 text-muted-foreground" />
@@ -110,12 +179,16 @@ export default function OCRSettingsDialog({
             <Input
               id="ocr-base-url"
               value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
+              onChange={(e) => {
+                setBaseUrl(e.target.value);
+                setPicked(undefined);
+              }}
               placeholder="https://api.openai.com/v1"
               className="font-mono text-sm"
             />
             <p className="text-xs text-muted-foreground">
-              API 基础地址，需兼容 OpenAI Chat Completions 协议
+              填到 <code className="font-mono">/v1</code> 或 <code className="font-mono">/v4</code> 为止，
+              <strong className="text-foreground">不要带</strong> <code className="font-mono">/chat/completions</code>
             </p>
           </div>
 
@@ -166,7 +239,9 @@ export default function OCRSettingsDialog({
               className="font-mono text-sm"
             />
             <p className="text-xs text-muted-foreground">
-              支持图像输入的模型，如 gpt-4o-mini、gpt-4o、claude-3-5-sonnet 等
+              必须支持图像输入。推荐非推理模型（如 <code className="font-mono">qwen-vl-max</code>、
+              <code className="font-mono">glm-4v-flash</code>）；推理模型（`-flash` 思考型、o 系列）
+              四阶以上容易漏读数字。
             </p>
           </div>
         </div>
