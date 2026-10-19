@@ -113,19 +113,24 @@ export default function OCRSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      {/*
+        三段式布局：标题固定 / 中间滚动 / 底部按钮固定。
+        安卓小屏上这个弹窗内容较高（预设组 + 3 个输入 + 说明），
+        旧版是整体居中且无高度上限，footer 直接被推到屏幕外点不到。
+      */}
+      <DialogContent className="sm:max-w-lg flex flex-col gap-0 p-0 overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="shrink-0 border-b px-5 pt-5 pb-3 pr-10 text-left">
           <DialogTitle className="flex items-center gap-2">
             <Settings className="size-5" />
             OCR 视觉识别配置
           </DialogTitle>
           <DialogDescription className="text-xs">
             配置兼容 OpenAI 协议的视觉模型 API，用于识别图片中的矩阵数字。
-            配置信息仅保存在浏览器本地，不会上传到任何第三方。
+            配置仅保存在浏览器本地，不会上传到任何第三方。
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-4 space-y-4">
           {/* 服务商预设：Base URL 最容易填错，点一下自动填好 */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
@@ -140,7 +145,7 @@ export default function OCRSettingsDialog({
                     key={preset.id}
                     type="button"
                     onClick={() => applyPreset(preset)}
-                    className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors ${
+                    className={`flex items-center gap-1 rounded-md border px-1.5 py-1 text-[11px] transition-colors ${
                       active
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/60 hover:border-primary/50 hover:bg-muted/60"
@@ -246,17 +251,18 @@ export default function OCRSettingsDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex justify-between sm:justify-between">
+        {/* 底部固定：不随内容滚动，安卓上留出系统手势区 */}
+        <DialogFooter className="shrink-0 border-t bg-background px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex flex-row items-center justify-between gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleClear}
-            className="text-muted-foreground"
+            className="text-muted-foreground shrink-0"
           >
             <Trash2 className="size-3.5 mr-1" />
             清除配置
           </Button>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               取消
             </Button>

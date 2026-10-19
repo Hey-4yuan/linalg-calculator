@@ -160,16 +160,17 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <li class="lv3"><a href="#tech-h24">7.3 提示词：统一返回数组（v1.6 起）</a></li>
 <li class="lv3"><a href="#tech-h25">7.4 校验与降级</a></li>
 <li class="lv3"><a href="#tech-h26">7.5 事故复盘：四阶行列式只认出 2×2（v1.6 修复）</a></li>
-<li class="lv2"><a href="#tech-h27">8. 存储与状态</a></li>
-<li class="lv2"><a href="#tech-h28">9. 网络行为与离线能力</a></li>
-<li class="lv2"><a href="#tech-h29">10. 复杂度与规模上限</a></li>
-<li class="lv2"><a href="#tech-h30">11. 已知限制与风险</a></li>
-<li class="lv2"><a href="#tech-h31">12. 安全与隐私</a></li>
-<li class="lv2"><a href="#tech-h32">13. 可扩展方向</a></li>
-<li class="lv2"><a href="#tech-h33">14. 构建与补丁历史</a></li>
-<li class="lv3"><a href="#tech-h34">14.1 当前构建方式（v1.2 起）</a></li>
-<li class="lv3"><a href="#tech-h35">14.2 历史：v1.1 的字节级补丁（已归档）</a></li>
-<li class="lv3"><a href="#tech-h36">14.3 三个必须知道的构建坑</a></li></ul></div><div class="doc"><a href="#doc-dev">开发者指南</a><ul><li class="lv2"><a href="#dev-h1">目录</a></li>
+<li class="lv3"><a href="#tech-h27">7.6 事故复盘：安卓端配置弹窗溢出屏幕 + 全站提示静默（v1.11 修复）</a></li>
+<li class="lv2"><a href="#tech-h28">8. 存储与状态</a></li>
+<li class="lv2"><a href="#tech-h29">9. 网络行为与离线能力</a></li>
+<li class="lv2"><a href="#tech-h30">10. 复杂度与规模上限</a></li>
+<li class="lv2"><a href="#tech-h31">11. 已知限制与风险</a></li>
+<li class="lv2"><a href="#tech-h32">12. 安全与隐私</a></li>
+<li class="lv2"><a href="#tech-h33">13. 可扩展方向</a></li>
+<li class="lv2"><a href="#tech-h34">14. 构建与补丁历史</a></li>
+<li class="lv3"><a href="#tech-h35">14.1 当前构建方式（v1.2 起）</a></li>
+<li class="lv3"><a href="#tech-h36">14.2 历史：v1.1 的字节级补丁（已归档）</a></li>
+<li class="lv3"><a href="#tech-h37">14.3 三个必须知道的构建坑</a></li></ul></div><div class="doc"><a href="#doc-dev">开发者指南</a><ul><li class="lv2"><a href="#dev-h1">目录</a></li>
 <li class="lv2"><a href="#dev-h2">1. 仓库里有什么</a></li>
 <li class="lv2"><a href="#dev-h3">2. 环境准备</a></li>
 <li class="lv2"><a href="#dev-h4">3. 日常开发</a></li>
@@ -198,7 +199,9 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <li class="lv2"><a href="#test-h15">10. 发版回归清单</a></li>
 <li class="lv2"><a href="#test-h16">11. 缺陷记录模板</a></li>
 <li class="lv2"><a href="#test-h17">附录 A：可直接运行的自动回归（方程组求解器）</a></li>
-<li class="lv2"><a href="#test-h18">附录 B：用 Python 交叉核对期望值</a></li></ul></div><div class="doc"><a href="#doc-src">源码解析</a><ul><li class="lv2"><a href="#src-h1">目录</a></li>
+<li class="lv2"><a href="#test-h18">附录 B：用 Python 交叉核对期望值</a></li>
+<li class="lv2"><a href="#test-h19">附录 C：四套自动化回归（合计 173 项断言）</a></li>
+<li class="lv3"><a href="#test-h20">写端到端测试的两条经验</a></li></ul></div><div class="doc"><a href="#doc-src">源码解析</a><ul><li class="lv2"><a href="#src-h1">目录</a></li>
 <li class="lv2"><a href="#src-h2">1. 一句话结论</a></li>
 <li class="lv2"><a href="#src-h3">2. 源码包构成</a></li>
 <li class="lv2"><a href="#src-h4">3. 技术栈（真实版本）</a></li>
@@ -252,7 +255,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
   <div class="meta">
     <span class="pill">文档版本 v1.0</span>
     <span class="pill">产物构建 2026-10-18</span>
-    <span class="pill">生成于 2026-10-19 22:50</span>
+    <span class="pill">生成于 2026-10-19 23:17</span>
     <span class="pill">Ctrl/⌘ + P 可打印为 PDF</span>
   </div>
   <section class="doc-sec" id="doc-overview"><h1 id="_1">线性代数计算器</h1>
@@ -375,7 +378,7 @@ API Key:  自行申请（见附图手册）
 │       │   └── scripts/         #   make-standalone / make-single-file
 │       ├── android/             # Capacitor 6 工程 + build-apk.sh
 │       └── single-file/         # 单文件产物副本
-├── tests/build-and-test.mjs     # 103 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检 + 服务商预设）+ 19 项 OCR 端到端 + 9 项折叠端到端
+├── tests/build-and-test.mjs     # 103 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检 + 服务商预设）+ 19 项 OCR 端到端 + 9 项折叠端到端 + 42 项弹窗小屏端到端
 ├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
 ├── .github/workflows/           # GitHub Pages 自动部署
 ├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）
@@ -1391,13 +1394,13 @@ A：计算逻辑完全一致，共用同一套存储键与配置格式。差别�
 <li><a href="#tech-h10">算法实现</a></li>
 <li><a href="#tech-h20">渲染与显示规则</a></li>
 <li><a href="#tech-h21">OCR 子系统</a></li>
-<li><a href="#tech-h27">存储与状态</a></li>
-<li><a href="#tech-h28">网络行为与离线能力</a></li>
-<li><a href="#tech-h29">复杂度与规模上限</a></li>
-<li><a href="#tech-h30">已知限制与风险</a></li>
-<li><a href="#tech-h31">安全与隐私</a></li>
-<li><a href="#tech-h32">可扩展方向</a></li>
-<li><a href="#tech-h33">构建与补丁历史</a></li>
+<li><a href="#tech-h28">存储与状态</a></li>
+<li><a href="#tech-h29">网络行为与离线能力</a></li>
+<li><a href="#tech-h30">复杂度与规模上限</a></li>
+<li><a href="#tech-h31">已知限制与风险</a></li>
+<li><a href="#tech-h32">安全与隐私</a></li>
+<li><a href="#tech-h33">可扩展方向</a></li>
+<li><a href="#tech-h34">构建与补丁历史</a></li>
 </ol>
 <hr />
 <h2 id="tech-h2">1. 产物形态</h2>
@@ -2283,7 +2286,105 @@ Content-Type: application/json
 </tbody>
 </table>
 <p><strong>教训（比前两轮更值得记）</strong>：用假模型做端到端测试时，假模型必须复刻<strong>真实响应的结构与失败模式</strong>（空 <code>content</code>、<code>finish_reason=length</code>、思维链塞满猜测），否则测试会给你虚假的安全感。</p>
-<h2 id="tech-h27">8. 存储与状态</h2>
+<h3 id="tech-h27">7.6 事故复盘：安卓端配置弹窗溢出屏幕 + 全站提示静默（v1.11 修复）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>现象</td>
+<td>安卓端点「配置 OCR」，弹窗上下都超出屏幕，底部「保存配置」在视口外，怎么点都点不到</td>
+</tr>
+<tr>
+<td>直接原因</td>
+<td><code>DialogContent</code> 是 <code>fixed top-[50%] translate-y-[-50%]</code> 的<strong>垂直居中</strong>布局，且<strong>没有高度上限、没有滚动</strong>。内容一旦高过视口，就会同时向上、向下溢出，两头都被裁掉且无法滚动</td>
+</tr>
+<tr>
+<td>触发点</td>
+<td>v1.10 加的「服务商预设」一排按钮把内容顶高了约 90px，正好越过小屏阈值</td>
+</tr>
+<tr>
+<td>为什么只有安卓中招</td>
+<td>桌面端视口高、且内容不足一屏；<code>vh</code> 在小屏上余量很小</td>
+</tr>
+</tbody>
+</table>
+<p>修复是三层的，缺一层都会复发：</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>做法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>组件兜底</td>
+<td><code>ui/dialog.tsx</code> 的 <code>DialogContent</code> 加 <code>max-h-[90vh] overflow-y-auto overscroll-contain</code>，并用内联 <code>style={{ maxHeight: "90dvh" }}</code> 覆盖</td>
+<td>任何弹窗内容过高都至少能滚；<code>dvh</code> 避开移动端地址栏收起时 <code>vh</code> 不更新的老问题</td>
+</tr>
+<tr>
+<td>局部结构</td>
+<td><code>OCRSettingsDialog</code> 改<strong>三段式</strong>：<code>shrink-0</code> 标题（不滚）+ <code>flex-1 min-h-0 overflow-y-auto</code> 正文（滚）+ <code>shrink-0</code> footer（不滚），footer 用 <code>pb-[calc(0.75rem+env(safe-area-inset-bottom))]</code> 避开手势区</td>
+<td>关键按钮<strong>永远固定在屏幕上</strong>，不需要用户先滚到底才能点保存</td>
+</tr>
+<tr>
+<td>空间优化</td>
+<td>预设按钮 <code>text-[11px]</code> / <code>px-1.5</code>，说明文案压缩</td>
+<td>让 412×915 这类大屏能一屏放下，不必滚</td>
+</tr>
+</tbody>
+</table>
+<p><strong>同轮发现的第二个、更隐蔽的 bug：全站 <code>toast()</code> 静默失效。</strong>
+<code>sonner</code> 的 <code>&lt;Toaster /&gt;</code> 组件在 <code>components/ui/sonner.tsx</code> 里定义好了，但<strong>从来没有被挂载</strong>。而全站 9 个文件在调 <code>toast.success/error/info</code>。也就是说：复制成功的提示、参数校验失败的提示、配置已保存的提示，<strong>一条都不会出现</strong>。在安卓小屏上表现为「点了保存配置，什么都没发生」——用户会直接判定应用卡死。</p>
+<p>修复：在 <code>app.tsx</code> 根部挂 <code>&lt;Toaster /&gt;</code>。这个 bug 之所以能活这么久，是因为桌面端用户通常能靠界面变化判断操作是否生效（配置保存后弹窗会关闭），而校验失败时<strong>唯一</strong>的反馈就是 toast。</p>
+<p>回归测试：<code>tests/ocr-settings-dialog-e2e.mjs</code>，在 headless Chrome 里用 <code>Emulation.setDeviceMetricsOverride</code> 切 <strong>360×640 / 320×480 / 412×915</strong> 三种视口，每种跑 14 项断言：</p>
+<table>
+<thead>
+<tr>
+<th>断言</th>
+<th>抓的是什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>弹窗 top ≥ 0 且 bottom ≤ vh</td>
+<td>溢出上下边界（本次 bug 的直接判据）</td>
+</tr>
+<tr>
+<td>「保存配置」rect 在视口内</td>
+<td>按钮被裁</td>
+</tr>
+<tr>
+<td><code>document.elementFromPoint(按钮中心)</code> 命中按钮本身</td>
+<td><strong>能看见但点不到</strong>的伪可见（被遮挡/被裁一半）——只看 rect 抓不到这类</td>
+</tr>
+<tr>
+<td>逐个 <code>scrollIntoView</code> 后必须完整落进视口</td>
+<td>"滚也滚不到"的死角</td>
+</tr>
+<tr>
+<td>每个控件必须属于滚动区或 footer</td>
+<td>控件被挪到两个区域之外</td>
+</tr>
+<tr>
+<td>滚到底后 footer 的 top 变化 ≤ 2px</td>
+<td>footer 被误放进滚动容器（会跟着滚走）</td>
+</tr>
+<tr>
+<td>点「保存配置」后必须出现含 "API Key" 的提示</td>
+<td>反证 <code>&lt;Toaster /&gt;</code> 已挂载、表单校验有反馈</td>
+</tr>
+</tbody>
+</table>
+<p><strong>教训一</strong>：<code>fixed + translate(-50%)</code> 居中是「无高度上限」的经典陷阱。凡是内容长度不可控的弹窗（表单、列表、说明），默认就该给 <code>max-height</code> + 内部滚动，而不是等出事再加。
+<strong>教训二</strong>：UI 库里"定义好了但没挂载"的全局组件（Toaster / Tooltip Provider / Theme Provider）是最难发现的一类 bug —— 代码调用点全对，类型检查全过，构建全绿，功能就是没有。检查方式：搜索组件定义处，再看它有没有被任何地方 import 渲染。</p>
+<h2 id="tech-h28">8. 存储与状态</h2>
 <p>全部状态在 <code>localStorage</code>，无后端、无账号体系（<code>window.userId</code> 为 <code>guest</code>）。</p>
 <p>存储键带宿主前缀，由 <code>__miaoda_${appId || "__global__"}__:</code> + 业务键拼接：</p>
 <table>
@@ -2322,7 +2423,7 @@ Object.keys(localStorage)
   .forEach(k =&gt; localStorage.removeItem(k));
 </code></pre>
 <p>此外宿主 SDK 会写一个 <code>x_sdk_device_id</code>（设备标识，随机生成并持久化），与业务无关。</p>
-<h2 id="tech-h28">9. 网络行为与离线能力</h2>
+<h2 id="tech-h29">9. 网络行为与离线能力</h2>
 <table>
 <thead>
 <tr>
@@ -2355,7 +2456,7 @@ Object.keys(localStorage)
 </tbody>
 </table>
 <p><strong>离线结论</strong>：矩阵、方程组、向量、符号四类计算完全离线；OCR 必须联网；HTML 版的字体与宿主请求在离线时会失败但不阻塞使用。产物<strong>没有 Service Worker</strong>，因此不是 PWA，离线能力来自「资源已内联/已打包」而不是缓存策略。</p>
-<h2 id="tech-h29">10. 复杂度与规模上限</h2>
+<h2 id="tech-h30">10. 复杂度与规模上限</h2>
 <table>
 <thead>
 <tr>
@@ -2428,7 +2529,7 @@ Object.keys(localStorage)
 </tr>
 </tbody>
 </table>
-<h2 id="tech-h30">11. 已知限制与风险</h2>
+<h2 id="tech-h31">11. 已知限制与风险</h2>
 <p>按影响程度排序。编号可在 issue / 测试用例中引用。</p>
 <table>
 <thead>
@@ -2524,7 +2625,7 @@ Object.keys(localStorage)
 <p><strong>状态说明</strong>：L4、L13 已在 v1.2 源码中修复；L7 经复核不成立，已移除；其余为待办项。
 v1.1 曾在压缩产物上做过等价的字节级补丁，现已由源码修复取代，补丁仅作历史归档（第 14 节）。</p>
 </blockquote>
-<h2 id="tech-h31">12. 安全与隐私</h2>
+<h2 id="tech-h32">12. 安全与隐私</h2>
 <ul>
 <li><strong>计算不出网</strong>：所有矩阵运算在本地完成，没有任何上传结果的路径；</li>
 <li><strong>唯一外发</strong>：OCR 时上传用户主动选择的图片（base64）到用户自己配置的服务商；</li>
@@ -2532,7 +2633,7 @@ v1.1 曾在压缩产物上做过等价的字节级补丁，现已由源码修复
 <li><strong>APK 权限</strong>：对外权限以 <code>INTERNET</code> 为主，未见存储/相机权限——拍照是通过系统文件选择器的 <code>capture</code> 属性完成的，因此不需要 <code>CAMERA</code>；</li>
 <li><strong>无账号体系</strong>：<code>userId</code> 固定为 <code>guest</code>，不存在登录态泄露面。</li>
 </ul>
-<h2 id="tech-h32">13. 可扩展方向</h2>
+<h2 id="tech-h33">13. 可扩展方向</h2>
 <table>
 <thead>
 <tr>
@@ -2567,8 +2668,8 @@ v1.1 曾在压缩产物上做过等价的字节级补丁，现已由源码修复
 </tr>
 </tbody>
 </table>
-<h2 id="tech-h33">14. 构建与补丁历史</h2>
-<h3 id="tech-h34">14.1 当前构建方式（v1.2 起）</h3>
+<h2 id="tech-h34">14. 构建与补丁历史</h2>
+<h3 id="tech-h35">14.1 当前构建方式（v1.2 起）</h3>
 <p>源码到位后，产物一律由源码构建，不再对压缩产物做任何手工修改：</p>
 <pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
 npm install
@@ -2604,7 +2705,7 @@ node ../../../tests/build-and-test.mjs   # 18 项求解器断言
 </tbody>
 </table>
 <p>本次（2026-10-19）的构建已把两个修复带进产物，并同步了安卓工程的网页资源。</p>
-<h3 id="tech-h35">14.2 历史：v1.1 的字节级补丁（已归档）</h3>
+<h3 id="tech-h36">14.2 历史：v1.1 的字节级补丁（已归档）</h3>
 <p>源码到手前，P1/P2 两处修复只能在压缩产物上做字节替换（全文净增 62 字节，其余字节不变）：</p>
 <table>
 <thead>
@@ -2634,7 +2735,7 @@ node ../../../tests/build-and-test.mjs   # 18 项求解器断言
 <li>备份：<code>_backup/线性代数计算器_v1.0_backup.html</code>（原始）、<code>_backup/线性代数计算器_v1.1_bytepatch.html</code>（补丁版）</li>
 <li>脚本：<code>_backup/legacy/</code>（<code>patch_v1_1_bytes.py</code>、<code>extract_check.py</code>）——<strong>仅作历史参考，不要再执行</strong>：它会覆盖当前已由源码构建的产物。</li>
 </ul>
-<h3 id="tech-h36">14.3 三个必须知道的构建坑</h3>
+<h3 id="tech-h37">14.3 三个必须知道的构建坑</h3>
 <ol>
 <li><strong>原生可选依赖缺失</strong>（<code>@rolldown/binding-win32-x64-msvc</code>、<code>lightningcss-win32-x64-msvc</code>、<code>@tailwindcss/oxide-win32-x64-msvc</code>）。<code>package-lock.json</code> 在他平台生成，npm 不会自动补 Windows 二进制，报 <code>Cannot find module …win32-x64-msvc</code>。必须<strong>一条命令装齐</strong>（<code>--no-save</code> 会被下一次 install 清理）：
    <code>bash
@@ -3855,8 +3956,29 @@ python docs/build_docs.py     # → docs/手册.html
 <td>桌面 Chrome 首次打开</td>
 <td>不出现引导条；DevTools → Application → Storage 显示「持久化」已授予</td>
 </tr>
+<tr>
+<td>UI-19</td>
+<td>P0</td>
+<td><strong>安卓小屏（360×640 或更窄）点「配置 OCR」</strong></td>
+<td>弹窗完整落在屏幕内；底部「保存配置 / 取消 / 清除配置」始终可见可点；正文可滚动</td>
+</tr>
+<tr>
+<td>UI-20</td>
+<td>P0</td>
+<td>小屏弹窗里不填 Key 直接点「保存配置」</td>
+<td>顶部弹出「请输入 API Key」提示（不是无反应）</td>
+</tr>
+<tr>
+<td>UI-21</td>
+<td>P2</td>
+<td>小屏弹窗滚到底</td>
+<td>底部按钮位置不变（不跟着滚走）；系统手势区不遮挡按钮</td>
+</tr>
 </tbody>
 </table>
+<blockquote>
+<p>UI-19 ～ UI-21 对应 v1.11 修的两个 bug（弹窗溢出、toast 未挂载）。可自动化执行：<code>node tests/ocr-settings-dialog-e2e.mjs</code>，会在 360×640 / 320×480 / 412×915 三种视口各跑 14 项断言。</p>
+</blockquote>
 <h2 id="test-h14">9. 性能观测</h2>
 <p>以下为<strong>目标值</strong>，首次执行时请记录实测值（同机型对比才有意义）。</p>
 <table>
@@ -4073,7 +4195,65 @@ print(rref([[1,2,3],[4,5,6],[7,8,9]]))
 </code></pre>
 <p>其余公式（det、逆、特征值、通解）按教材定义实现即可；若与本文用例冲突，<strong>以教材手算为准</strong>，并回写本文。</p>
 <hr />
-<p><em>文档版本 v1.0 · 对应产物构建日期 2026-10-18</em></p></section><section class="doc-sec" id="doc-src"><h1 id="_1">源码解析</h1>
+<h2 id="test-h19">附录 C：四套自动化回归（合计 173 项断言）</h2>
+<p>都在仓库根的 <code>tests/</code> 下，<code>node</code> 直接跑，前三套需要本机装有 Chrome（路径写死在脚本顶部的 <code>CHROME</code> 常量里）。</p>
+<table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>断言</th>
+<th>需要 Chrome</th>
+<th>覆盖</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tests/build-and-test.mjs</code></td>
+<td>103</td>
+<td>否</td>
+<td>分数/行列式/RREF/逆/特征值/方程组、basename 推断、iOS 判定、复制文本、OCR 解析与提示词、像素自检、服务商预设</td>
+</tr>
+<tr>
+<td><code>tests/ocr-e2e.mjs</code></td>
+<td>19</td>
+<td>是</td>
+<td>假模型 + 真界面点击：尺寸探测 → 裁剪 → 主识别；断言送的是裁块而不是整页原图</td>
+</tr>
+<tr>
+<td><code>tests/steps-accordion-e2e.mjs</code></td>
+<td>9</td>
+<td>是</td>
+<td>「全部展开 / 全部折叠」真的把每一步都展开了</td>
+</tr>
+<tr>
+<td><code>tests/ocr-settings-dialog-e2e.mjs</code></td>
+<td>42</td>
+<td>是</td>
+<td>三种小屏视口下 OCR 配置弹窗不溢出、按钮可点、滚动行为正确、toast 有反馈</td>
+</tr>
+</tbody>
+</table>
+<p>一次跑完：</p>
+<pre><code class="language-bash">cd 线性代数计算器
+node tests/build-and-test.mjs
+node tests/ocr-e2e.mjs
+node tests/steps-accordion-e2e.mjs
+node tests/ocr-settings-dialog-e2e.mjs
+</code></pre>
+<p><strong>四个都必须是 <code>0 失败</code> 且退出码 0。</strong></p>
+<p>注意：端到端测试加载的是<strong>仓库根目录</strong>的 <code>线性代数计算器.html</code>，不是 <code>web-source/</code> 里的那份。改完源码必须：</p>
+<pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
+npm run build:all
+cp 线性代数计算器.html ../../../线性代数计算器.html
+</code></pre>
+<p>否则测的是上一版产物。</p>
+<h3 id="test-h20">写端到端测试的两条经验</h3>
+<ol>
+<li><strong>假模型要复刻真实响应的失败形态</strong>。<code>ocr-e2e.mjs</code> 里的假服务端故意返回 <code>content: ""</code> + <code>reasoning_content</code> + <code>finish_reason: "length"</code>——这是推理模型的真实样子。早期版本返回正常的 <code>content</code>，导致整条链路「测试全绿、实际全崩」。</li>
+<li><strong>几何断言之外要做命中测试</strong>。「按钮 rect 在视口内」不等于「点得到」：它可能被别的元素盖住、可能只露出一半。用 <code>document.elementFromPoint(center)</code> 断言命中的就是按钮本身，才能抓住「看得见点不到」这类问题（v1.11 的安卓弹窗 bug 正是这一类）。</li>
+</ol>
+<hr />
+<p><em>文档版本 v1.1 · 对应产物 v1.11 · 2026-10-19</em></p></section><section class="doc-sec" id="doc-src"><h1 id="_1">源码解析</h1>
 <p>拿到源码后，这份文档取代此前"只能从压缩产物反推"的推断，作为架构与实现的<strong>权威描述</strong>。
 其余文档（技术手册、开发者指南）中与本文冲突的地方，以本文为准，并已在对应位置标注修正。</p>
 <hr />

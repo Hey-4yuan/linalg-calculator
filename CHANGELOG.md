@@ -4,6 +4,33 @@
 
 ---
 
+## v1.11 — 2026-10-19
+
+### 修复：安卓端 OCR 配置弹窗超出屏幕、按钮点不到
+
+`DialogContent` 是垂直居中的固定定位，且没有高度上限、不能滚动。内容一高就同时向上、向下溢出屏幕，底部「保存配置」直接被推到视口外——**看得见界面、点不到按钮**。
+
+- `ui/dialog.tsx`：所有弹窗加 `max-h-[90vh]` + `overflow-y-auto`，并用内联 `maxHeight: 90dvh` 兜住移动端 `vh` 不更新的问题
+- `OCRSettingsDialog`：改三段式布局——标题固定、正文滚动、底部按钮**永远固定在屏幕上**，footer 额外留 `env(safe-area-inset-bottom)` 避开安卓手势区
+- 预设按钮与说明文案压缩，412×915 这类大屏可一屏放下
+
+### 修复：全站提示（toast）一直没显示
+
+`sonner` 的 `<Toaster />` 组件早就写好了，但**从来没被挂载过**，而全站 9 个文件在调 `toast.success/error/info`。所有提示都是哑的：复制成功、参数校验失败、配置已保存，一条都不出现。在安卓小屏上表现为「点保存配置什么都没发生」，像卡死。
+
+- `app.tsx` 根部挂载 `<Toaster />`，全部提示恢复
+
+### 质量
+
+- 新增 `tests/ocr-settings-dialog-e2e.mjs`：headless Chrome 切 **360×640 / 320×480 / 412×915** 三种视口，每种 14 项断言。除了几何检查，还用 `elementFromPoint` 断言按钮中心命中的确实是按钮本身（能抓「可见但点不到」），并断言滚到底 footer 位置不动、点保存必须有 toast 反馈
+- 四套件合计 **173 条断言**全绿：`build-and-test` 103、`ocr-e2e` 19、`steps-accordion-e2e` 9、`ocr-settings-dialog-e2e` 42
+- 新增 `tools/make-android-package.py`：一键出安卓材料包，内置「两处网页资源必须字节一致 / `index.html` 引用的资源必须存在 / `build-apk.bat` 必须纯 ASCII 且 CRLF / zip 非 ASCII 名必须带 UTF-8 标志位 / 包内版本号必须与参数一致」五项前置校验，任一项不符直接失败，不出残包
+- `build-apk.bat` 纳入版本控制（此前只存在于 zip 里，仓库中没有）
+- 安卓 `versionCode 7→8`、`versionName 1.10→1.11`，`www` / `assets/public` 同步并清理旧 hash
+- 安卓打包材料：`桌面/线性代数计算器-安卓打包-v1.11.zip`（245 条目 / 1.21 MB）
+
+---
+
 ## v1.10 — 2026-10-19
 
 ### 新增：OCR 服务商预设

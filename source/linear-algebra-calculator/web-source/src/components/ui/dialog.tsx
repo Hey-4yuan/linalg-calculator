@@ -60,9 +60,13 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-sm:max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 max-w-lg",
+          // max-h + overflow 是必需的兜底：这个对话框是 fixed + translateY(-50%) 垂直居中，
+          // 内容一旦高过屏幕就会同时向上、向下溢出，顶部标题和底部按钮都被裁到视口外，
+          // 且无法滚动（安卓小屏上尤其明显）。加高度上限后至少能滚。
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-sm:max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 max-w-lg max-h-[90vh] overflow-y-auto overscroll-contain",
           className
         )}
+        style={{ maxHeight: "90dvh" }}
         {...props}
       >
         {children}
