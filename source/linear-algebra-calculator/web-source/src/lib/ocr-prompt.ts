@@ -52,11 +52,33 @@ const EXAMPLES_NUMERIC = `示例（注意尺寸各不相同，按图片实际行
 四阶行列式 →
 [{"kind":"determinant","rows":4,"cols":4,"data":[[2,1,0,3],[1,3,2,1],[0,2,1,4],[3,1,2,1]],"format":"numeric"}]
 
+五阶行列式（注意是 5 行 5 列，不要压缩成 3 阶或 4 阶） →
+[{"kind":"determinant","rows":5,"cols":5,"data":[[3,1,0,2,1],[1,4,2,0,3],[0,2,5,1,2],[2,0,1,3,4],[1,3,2,4,5]],"format":"numeric"}]
+
 含分数和变量 →
 [{"kind":"matrix","label":"C","rows":2,"cols":2,"data":[["1/2","-x"],["√2",3]],"format":"mixed","warnings":["含分数、根号和变量，按表达式字符串返回"]}]
 
 多矩阵 "A=..., B=..."（两个都输出） →
 [{"kind":"matrix","label":"A","rows":2,"cols":2,"data":[[1,0],[0,1]],"format":"numeric"},{"kind":"matrix","label":"B","rows":2,"cols":1,"data":[[2],[3]],"format":"numeric"}]`;
+
+/** 上一次探测得到的行列数，用来给主识别加约束 */
+export interface GridHint {
+  rows: number;
+  cols: number;
+}
+
+function buildHintSection(hints?: GridHint[]): string {
+  if (!hints || hints.length === 0) return "";
+  const list = hints
+    .map((h, i) => `第 ${i + 1} 个：${h.rows} 行 × ${h.cols} 列`)
+    .join("；");
+  const first = hints[0];
+  return `
+尺寸提示（来自上一轮专门的尺寸探测，优先级高）：
+本图共识别到 ${hints.length} 个矩阵/行列式，行列数依次为 —— ${list}。
+- 请严格按上述尺寸逐个输出，data 必须真的写成 ${first.rows} 行 × ${first.cols} 列（不是 2 行 2 列，也不是示例里的尺寸）
+- 若上述尺寸与图片明显不符，以图片为准，并在该对象的 warnings 里写明「尺寸提示与实际不符」`;
+}
 
 const MODE_MATRIX = `本模式处理数值矩阵与行列式：以数字为主，若某个元素确实含字母，也按原样返回字符串，不要猜成数字。
 行列式外框是竖线，矩阵外框通常是圆括号或方括号，注意区分，不要混淆。`;
@@ -68,9 +90,24 @@ const MODE_SYMBOLIC = `本模式处理符号矩阵：所有元素都按表达式
 写法约定：乘法用 "*"（2a 写成 "2*a"），幂用 "^"（x² 写成 "x^2"），分数用 "/"（a 分之 b 写成 "a/b"），π 写成 "pi"，下标 x₁ 写成 "x1"，括号保留。
 此时 format 一般为 "expression" 或 "mixed"。`;
 
-/** 拼出某一模式的完整提示词 */
-export function buildOcrPrompt(mode: OcrPromptMode): string {
+/** 拼出某一模式的完整提示词（hints 来自尺寸探测，可省略） */
+export function buildOcrPrompt(mode: OcrPromptMode, hints?: GridHint[]): string {
   const modeRule =
     mode === "system" ? MODE_SYSTEM : mode === "symbolic" ? MODE_SYMBOLIC : MODE_MATRIX;
-  return `${COMMON_RULES}\n\n${modeRule}\n\n${EXAMPLES_NUMERIC}`;
+  return `${COMMON_RULES}\n\n${modeRule}\n\n${EXAMPLES_NUMERIC}${buildHintSection(hints)}`;
+}
+
+/** 尺寸探测用的极简提示词：只问「有几个、各是几行几列」，输出极短，成本低 */
+export function buildDimensionProbePrompt(mode: OcrPromptMode): string {
+  const what =
+    mode === "system" ? "增广矩阵" : mode === "symbolic" ? "符号矩阵" : "矩阵或行列式";
+  return `看这张图片，只回答图中有几个${what}，以及每一个的行数和列数。
+只返回 JSON 数组，不要任何解释：
+[{"rows":5,"cols":5}]
+要求：
+- 按阅读顺序（从上到下、从左到右）排列
+- 行数、列数必须来自图片实际，先数一遍再回答；行列式一定是方阵
+- 看不出行列数时，返回你能确定的近似值并在对象里加 "uncertain": true
+- 一个都没有就返回 []
+只返回 JSON 数组。`;
 }

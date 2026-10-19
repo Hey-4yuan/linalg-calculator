@@ -252,7 +252,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
   <div class="meta">
     <span class="pill">文档版本 v1.0</span>
     <span class="pill">产物构建 2026-10-18</span>
-    <span class="pill">生成于 2026-10-19 17:28</span>
+    <span class="pill">生成于 2026-10-19 17:52</span>
     <span class="pill">Ctrl/⌘ + P 可打印为 PDF</span>
   </div>
   <section class="doc-sec" id="doc-overview"><h1 id="_1">线性代数计算器</h1>
@@ -294,7 +294,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <blockquote>
 <p>两种前端产物来自同一份源码：Web 版是「单文件内联」，APK 版是「分块资源 + Capacitor 壳」。功能一致，存储键同格式。</p>
 <p>v1.2 相比 v1.0 修了两个问题：方程组「无解」时增广矩阵秩显示错误（L13）、OCR 请求无超时（L4）。改动在源码里，不是对压缩产物的补丁。
-v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风险提示）和结果卡「复制」按钮；v1.6 修了 OCR 只能认出 2 阶（提示词与解析器都改成数组契约，支持行列式与一图多题）。</p>
+v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风险提示）和结果卡「复制」按钮；v1.6 修了 OCR 只能认出 2 阶（提示词与解析器都改成数组契约，支持行列式与一图多题）；v1.7 修了 5 阶仍出低阶（图片默认整图、裁剪坐标一致、detail=high、先探尺寸）。</p>
 </blockquote>
 <h2 id="overview-h2">二、功能总览</h2>
 <table>
@@ -375,7 +375,7 @@ API Key:  自行申请（见附图手册）
 │       │   └── scripts/         #   make-standalone / make-single-file
 │       ├── android/             # Capacitor 6 工程 + build-apk.sh
 │       └── single-file/         # 单文件产物副本
-├── tests/build-and-test.mjs     # 70 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析）
+├── tests/build-and-test.mjs     # 78 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析）+ 11 项 OCR 端到端
 ├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
 ├── .github/workflows/           # GitHub Pages 自动部署
 ├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）
@@ -1100,7 +1100,7 @@ API Key:  自行申请（见附图手册）
 <tbody>
 <tr>
 <td>拖动裁剪框 / 拖四角控制点</td>
-<td>只保留矩阵区域，能显著提升识别率</td>
+<td>只保留矩阵区域，能显著提升识别率。<strong>默认是整张图</strong>（v1.7 前默认只取中间 90%，会悄悄切掉最外一行/一列）</td>
 </tr>
 <tr>
 <td>左转 / 右转</td>
@@ -1116,7 +1116,7 @@ API Key:  自行申请（见附图手册）
 </tr>
 <tr>
 <td>确认并识别</td>
-<td>导出 JPEG 后上传识别</td>
+<td>导出 JPEG 后上传识别（会先后发两次请求：先问行列数，再逐格识别，比之前慢 1–3 秒）</td>
 </tr>
 </tbody>
 </table>
@@ -1998,9 +1998,13 @@ if rankA == n: x[i] = rref[i][n]
 <h3 id="tech-h22">7.1 数据流</h3>
 <pre><code>&lt;input type=file accept=&quot;image/*&quot; capture=environment&gt;
    ↓ FileReader → dataURL
-图片编辑对话框（canvas 旋转/翻转/裁剪 → toBlob(&quot;image/jpeg&quot;, 0.92)）
+图片编辑对话框（默认整张图；canvas 旋转/翻转/裁剪 → toBlob(&quot;image/jpeg&quot;, 0.92)）
    ↓ File → FileReader → base64 dataURL
-POST {baseUrl}/chat/completions        ← 提示词由 buildOcrPrompt(mode) 生成
+   ↓ toVisionDataUrl()：长边 &gt; 2048 先用高质量缩放压到 2048（否则服务端粗暴降采样，细线全糊）
+① 探测请求 POST {baseUrl}/chat/completions   ← buildDimensionProbePrompt()，只问「有几个、各几行几列」
+   ↓ parseDimensionProbe() → [{rows:5,cols:5}]（失败则 null，不影响主流程）
+② 主请求   POST {baseUrl}/chat/completions   ← buildOcrPrompt(mode, hints)，带尺寸约束
+   ↓ 两次请求都带 image_url.detail = &quot;high&quot;（不传会被部分服务端按 512px 低清处理）
    ↓ 取 choices[0].message.content
 ocr-parse.parseOcrResponse(raw)
    ├─ 剥 ```json 围栏 → 抠出第一段配对完整的 JSON
@@ -2034,7 +2038,9 @@ Content-Type: application/json
 <ul>
 <li><code>baseUrl</code> 结尾的 <code>/</code> 会被去掉再拼 <code>/chat/completions</code>；</li>
 <li><strong>没有</strong> <code>max_tokens</code>、<code>response_format</code>；超时由 <code>AbortController</code> 控制（45 秒，见 8.2 / 《源码解析》），超时后抛「识别超时（45 秒无响应）」；</li>
-<li><code>temperature: 0</code> 是为了让识别结果稳定。</li>
+<li><code>temperature: 0</code> 是为了让识别结果稳定；</li>
+<li><code>image_url.detail</code> 传 <code>"high"</code>（v1.7 起）。不传时 OpenAI 按图片尺寸自动判断，部分兼容服务直接按 512px 低清处理，5 阶行列式的细线会糊成一团。少数不认这个字段的兼容层会返回 400，代码会检测报文里的 <code>detail</code> 关键字并自动去掉该字段重试一次；</li>
+<li><strong>一次识别 = 两次请求</strong>（v1.7 起）：先探测尺寸（20 秒超时，失败忽略），再带尺寸约束做正式识别。成本约 1.2 倍，换来 5 阶以上不再少读行列。</li>
 </ul>
 <h3 id="tech-h24">7.3 提示词：统一返回数组（v1.6 起）</h3>
 <p>所有模式共用一套骨架（<code>src/lib/ocr-prompt.ts</code> 的 <code>COMMON_RULES</code>），只替换「模式段」：</p>
@@ -2180,6 +2186,44 @@ Content-Type: application/json
 </tr>
 </tbody>
 </table>
+<p><strong>第二轮（v1.7）：改成数组契约后，5 阶仍然只出低阶行列式。</strong> 说明格式层之外还有三个更靠前的原因，逐条查下来：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>原因</th>
+<th>证据</th>
+<th>修复</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>图片编辑器默认裁掉四周 5%</strong>（5%/90% 的框）</td>
+<td>代码里 <code>crop = {x:5,y:5,w:90,h:90}</code>；5 阶行列式占满画面时最外一行/一列正好被切</td>
+<td>默认改成 <code>{0,0,100,100}</code>（整张图），并在界面上写明</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>裁剪框坐标系与导出坐标系不一致</strong></td>
+<td>预览用 <code>object-contain</code> 的 4:3 容器，框按容器百分比画；导出按图片百分比切 → 看到的和切下来的不是一块</td>
+<td>预览框改成按原图比例计算（<code>box = 图片 aspect</code>），并让拖拽按图片框的 rect 换算</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>图片送进去时没有「高精度」标记，也没做尺寸控制</strong></td>
+<td>请求体 <code>image_url</code> 只有 <code>url</code>；原图 4000px 会被服务端降采样</td>
+<td>加 <code>detail: "high"</code>；长边 &gt; 2048 先本地高质量缩放</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>模型数不清行列</strong></td>
+<td>直接生成 data 时按 token 走，写错也没机会回头数</td>
+<td>先发一次极简「尺寸探测」，把 <code>[{rows:5,cols:5}]</code> 作为硬约束塞进主提示词</td>
+</tr>
+</tbody>
+</table>
+<p>验证方式：<code>node tests/ocr-e2e.mjs</code>（假模型 + headless Chrome 真点界面），11 项断言覆盖「默认整图 / detail=high / 尺寸提示注入 / 5×5 回填」。这套测试不需要真实 Key。</p>
 <h2 id="tech-h27">8. 存储与状态</h2>
 <p>全部状态在 <code>localStorage</code>，无后端、无账号体系（<code>window.userId</code> 为 <code>guest</code>）。</p>
 <p>存储键带宿主前缀，由 <code>__miaoda_${appId || "__global__"}__:</code> + 业务键拼接：</p>
@@ -3595,6 +3639,30 @@ python docs/build_docs.py     # → docs/手册.html
 <td>行列式被错识别成 3 行 2 列</td>
 <td>降级成普通矩阵并提示「不是方阵」，不崩</td>
 </tr>
+<tr>
+<td>OCR-24</td>
+<td><strong>P0</strong></td>
+<td>上传<strong>五阶行列式</strong>（或直接跑 <code>node tests/ocr-e2e.mjs</code>）</td>
+<td>回填 5 行 5 列，数值与原图一致。<strong>回归 v1.6 的「5 阶只出低阶」事故</strong></td>
+</tr>
+<tr>
+<td>OCR-25</td>
+<td>P0</td>
+<td>打开图片编辑对话框，不动任何东西</td>
+<td>裁剪框默认覆盖整张图（不是中间 90%），四角手柄在图片边缘可见</td>
+</tr>
+<tr>
+<td>OCR-26</td>
+<td>P1</td>
+<td>在对话框里拖动裁剪框后确认</td>
+<td>送出的图片内容 = 框内内容（Network 里 dataURL 的体积明显小于原图，且画面与预览一致）</td>
+</tr>
+<tr>
+<td>OCR-27</td>
+<td>P2</td>
+<td>用不支持 <code>image_url.detail</code> 的兼容接口</td>
+<td>首次 400 后自动去掉 detail 重试，仍能识别成功</td>
+</tr>
 </tbody>
 </table>
 <h2 id="test-h13">8. 界面与交互用例</h2>
@@ -3811,7 +3879,7 @@ python docs/build_docs.py     # → docs/手册.html
 <pre><code class="language-bash">node tests/build-and-test.mjs
 </code></pre>
 <p>机制：用 esbuild 把 <code>matrix-ops.ts</code>、<code>fraction.ts</code>、<code>base-path.ts</code>、<code>pwa.ts</code>、<code>copy-text.ts</code>、<code>ocr-parse.ts</code>、<code>ocr-prompt.ts</code> 打成一个 CJS 包（<strong>必须同一次打包</strong>，否则两份 <code>Fraction</code> 类身份不同，<code>instanceof</code> 会失效），再跑断言。</p>
-<p>覆盖 70 项：</p>
+<p>覆盖 78 项：</p>
 <table>
 <thead>
 <tr>
@@ -3884,9 +3952,16 @@ python docs/build_docs.py     # → docs/手册.html
 <td>OCR-05</td>
 <td>提示词契约：始终返回数组、含四阶示例、「不是尺寸模板」、竖线、增广列、符号写法</td>
 </tr>
+<tr>
+<td>OCR-06</td>
+<td>尺寸探测解析（5×5、单对象、items 包装、看不懂返回 null、越界过滤）+ 尺寸提示注入</td>
+</tr>
 </tbody>
 </table>
-<p>预期输出：<code>结果：70 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
+<blockquote>
+<p>另有<strong>端到端</strong>冒烟：<code>node tests/ocr-e2e.mjs</code>（11 项）。起一个假 OpenAI 接口 + headless Chrome 真点界面，验证「默认整图 / detail=high / 尺寸提示 / 5×5 回填」，<strong>不需要真实 API Key</strong>。</p>
+</blockquote>
+<p>预期输出：<code>结果：78 通过，0 失败</code>，退出码 0。CI 里可直接用它当门禁。</p>
 <h2 id="test-h18">附录 B：用 Python 交叉核对期望值</h2>
 <p>自动化校验的核心是用独立实现复算，避免「从程序输出反推期望值」。</p>
 <pre><code class="language-python">from fractions import Fraction as F

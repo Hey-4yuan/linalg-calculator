@@ -8,6 +8,7 @@
     "build": "vite build --emptyOutDir",
     "prebuild": "node scripts/check-native-deps.mjs",
     "typecheck": "tsc -p tsconfig.app.json",
+    "test:e2e": "node ../../../tests/ocr-e2e.mjs",
     "lint": "concurrently npm:typecheck npm:lint:eslint",
     "lint:eslint": "eslint src",
     "precommit": "npm run lint",

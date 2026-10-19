@@ -268,8 +268,7 @@ export function normalizeOcrItem(obj: Record<string, unknown>): OcrItem | null {
 /**
  * 解析模型输出。形状完全不可用时抛错（错误信息带原文片段，方便反馈给模型/服务商）。
  */
-export function parseOcrResponse(raw: string): OcrParseResult {
-  const text = stripCodeFence(raw || "");
+export function parseOcrResponse(raw: string): OcrParseResult {  const text = stripCodeFence(raw || "");
   if (!text) throw new Error("模型返回内容为空");
 
   const payload = extractJson(text);
@@ -289,4 +288,39 @@ export function parseOcrResponse(raw: string): OcrParseResult {
   }
 
   return { items, notes };
+}
+
+/**
+ * 解析「尺寸探测」的返回：[{"rows":5,"cols":5}, …]
+ *
+ * 为什么要单独探一次：模型在直接输出 data 时经常「少读一行/一列」——
+ * 生成 JSON 时按 token 走，写错了也没机会回头数。先让它只回答尺寸、
+ * 用这个结果去约束主识别，5 阶以上明显更稳。
+ * 解析失败返回 null（调用方退化为不带提示的直接识别）。
+ */
+export function parseDimensionProbe(raw: string): { rows: number; cols: number }[] | null {
+  const text = stripCodeFence(raw || "");
+  if (!text) return null;
+  const payload = extractJson(text);
+  if (payload === null) return null;
+
+  const list = Array.isArray(payload)
+    ? payload
+    : isRecord(payload) && Array.isArray(payload.items)
+      ? payload.items
+      : isRecord(payload) && typeof payload.rows === "number"
+        ? [payload]
+        : [];
+
+  const hints: { rows: number; cols: number }[] = [];
+  for (const entry of list) {
+    if (!isRecord(entry)) continue;
+    const rows = Number(entry.rows);
+    const cols = Number(entry.cols);
+    if (!Number.isFinite(rows) || !Number.isFinite(cols)) continue;
+    const r = Math.round(rows);
+    const c = Math.round(cols);
+    if (r >= 1 && r <= 20 && c >= 1 && c <= 20) hints.push({ rows: r, cols: c });
+  }
+  return hints.length > 0 ? hints : null;
 }

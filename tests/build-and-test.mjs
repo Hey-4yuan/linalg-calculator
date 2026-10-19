@@ -30,10 +30,10 @@ export { isIosDevice, isIosSafari, isStandaloneDisplay, shouldShowInstallHint } 
 export { joinRows, matrixToText } from ${JSON.stringify(
     path.join(SRC, "src/lib/copy-text.ts").replace(/\\/g, "/")
   )};
-export { parseOcrResponse } from ${JSON.stringify(
+export { parseOcrResponse, parseDimensionProbe } from ${JSON.stringify(
     path.join(SRC, "src/lib/ocr-parse.ts").replace(/\\/g, "/")
   )};
-export { buildOcrPrompt } from ${JSON.stringify(
+export { buildOcrPrompt, buildDimensionProbePrompt } from ${JSON.stringify(
     path.join(SRC, "src/lib/ocr-prompt.ts").replace(/\\/g, "/")
   )};
 `,
@@ -56,7 +56,8 @@ const {
   shouldShowInstallHint,
 } = require(OUT);
 const { joinRows, matrixToText } = require(OUT);
-const { parseOcrResponse, buildOcrPrompt } = require(OUT);
+const { parseOcrResponse, parseDimensionProbe, buildOcrPrompt, buildDimensionProbePrompt } =
+  require(OUT);
 
 const F = (o) =>
   Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v.toFractionString()]));
@@ -352,6 +353,35 @@ function run() {
     check("要求区分竖线/括号", p.includes("竖线"));
     check("system 模式提到 augmented_col", buildOcrPrompt("system").includes("augmented_col"));
     check("symbolic 模式给出写法约定", buildOcrPrompt("symbolic").includes('"*"'));
+  }
+
+  console.log("OCR-06 尺寸探测与尺寸提示（5 阶以上的关键）");
+  {
+    const probe = parseDimensionProbe('[{"rows":5,"cols":5}]');
+    check(
+      "探测结果解析为 5×5",
+      !!probe && probe.length === 1 && probe[0].rows === 5 && probe[0].cols === 5,
+      JSON.stringify(probe),
+    );
+    check(
+      "单对象形式也接受",
+      !!parseDimensionProbe('{"rows":4,"cols":4}') &&
+        parseDimensionProbe('{"rows":4,"cols":4}')[0].cols === 4,
+    );
+    check(
+      "带 items 包装也接受",
+      !!parseDimensionProbe('{"items":[{"rows":2,"cols":3}]}'),
+    );
+    check("看不懂就返回 null（不影响主流程）", parseDimensionProbe("抱歉，看不清") === null);
+    check(
+      "越界尺寸被过滤（0 行 / 99 列）",
+      parseDimensionProbe('[{"rows":0,"cols":5},{"rows":99,"cols":99}]') === null,
+    );
+
+    const withHint = buildOcrPrompt("matrix", [{ rows: 5, cols: 5 }]);
+    check("提示词带上尺寸约束", withHint.includes("5 行 × 5 列"), withHint.slice(-160));
+    check("提示词要求真的写成 5 行 5 列", withHint.includes("必须真的写成 5 行 × 5 列"));
+    check("探测提示词只问尺寸", buildDimensionProbePrompt("matrix").includes("只返回 JSON 数组"));
   }
 
   console.log(`\n结果：${pass} 通过，${fail} 失败`);
