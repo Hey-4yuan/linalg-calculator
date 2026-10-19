@@ -250,7 +250,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
   <div class="meta">
     <span class="pill">文档版本 v1.0</span>
     <span class="pill">产物构建 2026-10-18</span>
-    <span class="pill">生成于 2026-10-19 16:43</span>
+    <span class="pill">生成于 2026-10-19 16:59</span>
     <span class="pill">Ctrl/⌘ + P 可打印为 PDF</span>
   </div>
   <section class="doc-sec" id="doc-overview"><h1 id="_1">线性代数计算器</h1>
@@ -4376,33 +4376,60 @@ node ../../../tests/build-and-test.mjs   # 18 项求解器断言（直接测源�
 <p>仓库里已放好 <code>.github/workflows/deploy-pages.yml</code>：push 到 <code>main</code> 就构建、跑测试、发布。</p>
 <h3 id="pages-h7">步骤</h3>
 <ol>
-<li>在 GitHub 新建<strong>空仓库</strong>（不要勾 README / .gitignore / license），把<strong>整个项目目录</strong>推上去（包含 <code>source/</code>、<code>tests/</code>、<code>.github/</code>）。</li>
-</ol>
-<p>⚠️ 先做这一步的原因：<code>C:\Users\hp</code> 下有一个零提交的 <code>.git</code>，Git 会向上查找仓库——不在项目根 <code>git init</code>，后面 <code>git add .</code> 会把<strong>整个用户目录</strong>（<code>Cookies/</code>、<code>.ssh/</code>、工具凭据）一起纳入。</p>
-<p><code>bash
-   cd "C:/Users/hp/OneDrive/Desktop/线性代数计算器"
-   git init
-   git rev-parse --show-toplevel        # 必须输出项目目录，不是 C:/Users/hp；不是就停下
-   git status --short | head            # 只应看到项目文件，出现大段上级目录就是 toplevel 错了
-   git add .
-   git commit -m "feat: 线性代数计算器 v1.5（PWA + iOS 主屏引导 + 结果复制）"
-   git branch -M main
-   git remote add origin https://github.com/&lt;你的账号&gt;/&lt;仓库名&gt;.git
-   git push -u origin main</code></p>
-<blockquote>
-<p>提交前自查：<code>node_modules/</code> 与 <code>dist*/</code> 不要进仓（<code>.gitignore</code> 已覆盖）；根目录 <code>线性代数计算器.apk</code>（4.3 MB）与两份 <code>线性代数计算器.html</code>（各 1.3 MB）会进仓——它们是发布产物，想瘦身可另加 ignore，但要在 README 里说明产物靠本地构建。</p>
-</blockquote>
-<ol start="2">
 <li>
-<p>仓库 <strong>Settings → Pages → Build and deployment → Source 选择 "GitHub Actions"</strong>。</p>
+<p>在 GitHub 新建<strong>空仓库</strong>：<code>github.com/new</code>，名字建议 <code>linear-algebra-calculator</code>，<strong>不要勾</strong> README / .gitignore / license（勾了会和本地首次提交冲突，得先 <code>git pull --rebase</code>）。</p>
 </li>
 <li>
-<p>等 Actions 跑完，地址是 <code>https://&lt;账号&gt;.github.io/&lt;仓库名&gt;/</code>。</p>
+<p>本地仓库已就绪（<code>main</code> 分支、首次提交已完成），只需加远端并推：</p>
+</li>
+</ol>
+<p><code>bash
+   cd "C:/Users/hp/OneDrive/Desktop/线性代数计算器"
+   git remote add origin https://github.com/&lt;你的账号&gt;/&lt;仓库名&gt;.git
+   git push -u origin main</code></p>
+<p>⚠️ 历史坑：<code>C:\Users\hp</code> 下有一个零提交的 <code>.git</code>，Git 会向上查找仓库。本项目已在根目录 <code>git init</code> 过，就近原则生效；换机器/重装后<strong>必须先 <code>git init</code> 并确认 <code>git rev-parse --show-toplevel</code></strong>，否则 <code>git add .</code> 会把整个用户目录（<code>Cookies/</code>、<code>.ssh/</code>）纳入。</p>
+<ol start="3">
+<li><strong>推送时的认证</strong>（这步最容易卡住）：</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>填什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>用户名</td>
+<td>GitHub 用户名（不是邮箱）</td>
+</tr>
+<tr>
+<td>密码</td>
+<td><strong>PAT</strong>，不是账号密码 —— GitHub 早已关闭密码推送</td>
+</tr>
+</tbody>
+</table>
+<p>PAT 申请路径：<code>Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token</code>，勾选：
+   - <code>repo</code>（推送代码）
+   - <strong><code>workflow</code></strong>（必需！本次提交包含 <code>.github/workflows/deploy-pages.yml</code>，缺这个 scope 会被拒绝：
+     <code>refusing to allow a Personal Access Token to create or update workflow</code>）</p>
+<p>用 Fine-grained token 的话，需要 <code>Contents: Read and write</code> + <code>Workflows: Read and write</code>。</p>
+<ol start="4">
+<li>
+<p>仓库 <strong>Settings → Pages → Build and deployment → Source 选择 "GitHub Actions"</strong>（不选的话部署步骤会报 <code>Pages not enabled</code>）。</p>
+</li>
+<li>
+<p>等 Actions 跑完（首次约 3–6 分钟，主要耗在 <code>npm ci</code>），地址是 <code>https://&lt;账号&gt;.github.io/&lt;仓库名&gt;/</code>。</p>
 </li>
 <li>
 <p>手机打开该地址 → 分享 → 添加到主屏幕。</p>
 </li>
 </ol>
+<blockquote>
+<p>提交身份已设成本仓库局部配置 <code>Hey-4yuan@users.noreply.github.com</code>，公开仓库不会暴露你的 QQ 邮箱。若 GitHub 用户名不是 <code>Hey-4yuan</code>，跑一句
+<code>git config user.email "你的用户名@users.noreply.github.com"</code> 再 <code>git commit --amend --reset-author --no-edit</code>。</p>
+<p>入库范围：<code>node_modules/</code>、<code>dist*/</code>、<code>*.apk</code>、源码目录下的单文件副本都不入库（<code>.gitignore</code> 已覆盖）；根目录 <code>线性代数计算器.html</code> 保留，方便别人直接下载离线版。</p>
+</blockquote>
 <h3 id="pages-h8">工作流做了什么</h3>
 <pre><code>checkout → setup-node 22 → npm ci → npm run typecheck
 → node tests/build-and-test.mjs（48 项断言）

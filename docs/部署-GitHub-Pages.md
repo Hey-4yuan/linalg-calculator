@@ -81,29 +81,42 @@ GitHub Pages 的项目站点地址是 `https://<user>.github.io/<repo>/`。原�
 
 ### 步骤
 
-1. 在 GitHub 新建**空仓库**（不要勾 README / .gitignore / license），把**整个项目目录**推上去（包含 `source/`、`tests/`、`.github/`）。
+1. 在 GitHub 新建**空仓库**：`github.com/new`，名字建议 `linear-algebra-calculator`，**不要勾** README / .gitignore / license（勾了会和本地首次提交冲突，得先 `git pull --rebase`）。
 
-   ⚠️ 先做这一步的原因：`C:\Users\hp` 下有一个零提交的 `.git`，Git 会向上查找仓库——不在项目根 `git init`，后面 `git add .` 会把**整个用户目录**（`Cookies/`、`.ssh/`、工具凭据）一起纳入。
+2. 本地仓库已就绪（`main` 分支、首次提交已完成），只需加远端并推：
 
    ```bash
    cd "C:/Users/hp/OneDrive/Desktop/线性代数计算器"
-   git init
-   git rev-parse --show-toplevel        # 必须输出项目目录，不是 C:/Users/hp；不是就停下
-   git status --short | head            # 只应看到项目文件，出现大段上级目录就是 toplevel 错了
-   git add .
-   git commit -m "feat: 线性代数计算器 v1.5（PWA + iOS 主屏引导 + 结果复制）"
-   git branch -M main
    git remote add origin https://github.com/<你的账号>/<仓库名>.git
    git push -u origin main
    ```
 
-   > 提交前自查：`node_modules/` 与 `dist*/` 不要进仓（`.gitignore` 已覆盖）；根目录 `线性代数计算器.apk`（4.3 MB）与两份 `线性代数计算器.html`（各 1.3 MB）会进仓——它们是发布产物，想瘦身可另加 ignore，但要在 README 里说明产物靠本地构建。
+   ⚠️ 历史坑：`C:\Users\hp` 下有一个零提交的 `.git`，Git 会向上查找仓库。本项目已在根目录 `git init` 过，就近原则生效；换机器/重装后**必须先 `git init` 并确认 `git rev-parse --show-toplevel`**，否则 `git add .` 会把整个用户目录（`Cookies/`、`.ssh/`）纳入。
 
-2. 仓库 **Settings → Pages → Build and deployment → Source 选择 "GitHub Actions"**。
+3. **推送时的认证**（这步最容易卡住）：
 
-3. 等 Actions 跑完，地址是 `https://<账号>.github.io/<仓库名>/`。
+   | 项目 | 填什么 |
+   |---|---|
+   | 用户名 | GitHub 用户名（不是邮箱） |
+   | 密码 | **PAT**，不是账号密码 —— GitHub 早已关闭密码推送 |
 
-4. 手机打开该地址 → 分享 → 添加到主屏幕。
+   PAT 申请路径：`Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token`，勾选：
+   - `repo`（推送代码）
+   - **`workflow`**（必需！本次提交包含 `.github/workflows/deploy-pages.yml`，缺这个 scope 会被拒绝：
+     `refusing to allow a Personal Access Token to create or update workflow`）
+
+   用 Fine-grained token 的话，需要 `Contents: Read and write` + `Workflows: Read and write`。
+
+4. 仓库 **Settings → Pages → Build and deployment → Source 选择 "GitHub Actions"**（不选的话部署步骤会报 `Pages not enabled`）。
+
+5. 等 Actions 跑完（首次约 3–6 分钟，主要耗在 `npm ci`），地址是 `https://<账号>.github.io/<仓库名>/`。
+
+6. 手机打开该地址 → 分享 → 添加到主屏幕。
+
+> 提交身份已设成本仓库局部配置 `Hey-4yuan@users.noreply.github.com`，公开仓库不会暴露你的 QQ 邮箱。若 GitHub 用户名不是 `Hey-4yuan`，跑一句
+> `git config user.email "你的用户名@users.noreply.github.com"` 再 `git commit --amend --reset-author --no-edit`。
+
+> 入库范围：`node_modules/`、`dist*/`、`*.apk`、源码目录下的单文件副本都不入库（`.gitignore` 已覆盖）；根目录 `线性代数计算器.html` 保留，方便别人直接下载离线版。
 
 ### 工作流做了什么
 
