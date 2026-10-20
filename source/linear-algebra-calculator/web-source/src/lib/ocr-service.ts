@@ -7,7 +7,7 @@
 import { scopedStorage } from "@lark-apaas/client-toolkit-lite";
 import { logger } from "@lark-apaas/client-toolkit-lite";
 import { buildOcrPrompt, buildDimensionProbePrompt, type OcrPromptMode } from "./ocr-prompt";
-import { parseOcrResponse, parseDimensionProbe, auditCellInk, type OcrItem, type ProbeHint } from "./ocr-parse";
+import { parseOcrResponse, parseDimensionProbe, auditCellInk, parseMaxTokensLimit, type OcrItem, type ProbeHint } from "./ocr-parse";
 
 // 配置存储键
 const OCR_CONFIG_KEY = "__app_linalg_ocr_config";
@@ -92,6 +92,43 @@ const MAX_IMAGE_EDGE = 2048;
 const PROBE_IMAGE_EDGE = 768;
 /** 尺寸探测比主识别便宜得多，超时给短一点，失败也不拖住整体 */
 const PROBE_TIMEOUT_MS = 20_000;
+
+/**
+ * 默认输出预算。推理型模型（deepseek-flash 等）会先烧几千 token 思考，
+ * 给小了连正文都出不来，所以默认给足。
+ */
+const DEFAULT_MAX_TOKENS = 8192;
+
+/**
+ * 服务端拒绝、且报文里读不出上限时的保守值。
+ * 智谱 GLM-4V / GLM-4.6V 系列的硬上限就是 1024（实测报错 1210）。
+ */
+const CONSERVATIVE_MAX_TOKENS = 1024;
+
+/** key 里带上 baseUrl 与模型名：同一份浏览器配置可能切换服务商 */
+function maxTokensCacheKey(baseUrl: string, model: string): string {
+  return `__app_linalg_max_tokens::${baseUrl}::${model}`;
+}
+
+/** 读到过把成功的上限就记住，避免每次都要先撞一次 400 */
+function readRememberedMaxTokens(baseUrl: string, model: string): number | null {
+  try {
+    const raw = localStorage.getItem(maxTokensCacheKey(baseUrl, model));
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+function rememberMaxTokens(baseUrl: string, model: string, value: number): void {
+  try {
+    localStorage.setItem(maxTokensCacheKey(baseUrl, model), String(value));
+  } catch {
+    /* 隐私模式下 localStorage 可能不可写，忽略 */
+  }
+}
+
 
 function loadImageElement(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -227,6 +264,8 @@ interface ChatOptions {
   timeoutMs?: number;
   /** 默认 true：用 image_url.detail = "high"，不传的话部分服务端按 512px 低清处理 */
   highDetail?: boolean;
+  /** 输出预算。不给就用「上次成功记住的值」，再没有就 8192 */
+  maxTokens?: number;
 }
 
 /** 发一次 chat/completions，拿回模型原始文本 */
@@ -250,7 +289,7 @@ async function callVision(
     "Authorization": `Bearer ${config.apiKey}`,
   };
 
-  const buildBody = (withDetail: boolean) =>
+  const buildBody = (withDetail: boolean, maxTokens: number) =>
     JSON.stringify({
       model: config.model,
       messages: [
@@ -267,11 +306,12 @@ async function callVision(
       ],
       temperature: 0,
       // 推理型模型（deepseek-flash 等）会先花几千 token 思考，预算给小了连结果都出不来。
-      // 这里给足余量；不支持的接口会忽略该字段，不会报错。
-      max_tokens: 8192,
+      // 但各家的输出上限差得很远：智谱 GLM-4V 系列硬上限只有 1024，超过直接 400。
+      // 所以这里不写死，而是「能大就大，被拒就按对方给的上限降档」——见下面的重试。
+      max_tokens: maxTokens,
     });
 
-  const send = async (withDetail: boolean): Promise<Response> => {
+  const send = async (withDetail: boolean, maxTokens: number): Promise<Response> => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
     try {
@@ -279,7 +319,7 @@ async function callVision(
         method: "POST",
         signal: controller.signal,
         headers,
-        body: buildBody(withDetail),
+        body: buildBody(withDetail, maxTokens),
       });
     } catch (e) {
       logger.error("OCR 请求失败:", String(e));
@@ -295,20 +335,68 @@ async function callVision(
     }
   };
 
-  let response = await send(opts.highDetail !== false);
+  /**
+   * 发送，并在 400 时按报文自适应重试。最多三轮：
+   *   1) max_tokens 超了 → 按服务端给的上限降档（GLM-4V 只有 1024）
+   *   2) 兼容层不认 image_url.detail → 去掉该字段重发
+   * 两种情况可能先后出现，所以放在同一个循环里，不是 if-else。
+   */
+  let maxTokens = opts.maxTokens ?? readRememberedMaxTokens(config.baseUrl, config.model) ?? DEFAULT_MAX_TOKENS;
+  let withDetail = opts.highDetail !== false;
+  let response: Response | null = null;
+  let lastErrorText = "";
 
-  // 少数兼容层不认 image_url.detail，400 且报文提到 detail 时退回不带 detail 再试一次
-  if (!response.ok && response.status === 400 && opts.highDetail !== false) {
-    const firstErr = await response.text().catch(() => "");
-    if (!/detail/i.test(firstErr)) {
-      throw new Error(`API 请求失败 (400): ${firstErr}`);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    response = await send(withDetail, maxTokens);
+    if (response.ok) break;
+
+    const errText = await response.clone().text().catch(() => "");
+    lastErrorText = errText;
+    if (response.status !== 400) break;
+
+    // ① 输出预算被拒
+    const limit = parseMaxTokensLimit(errText);
+    if (limit !== null && limit < maxTokens) {
+      logger.warn(`服务端限制 max_tokens ≤ ${limit}（原 ${maxTokens}），降档重试`);
+      maxTokens = limit;
+      rememberMaxTokens(config.baseUrl, config.model, limit);
+      continue;
     }
-    response = await send(false);
+    if (limit === null && /max[_\s-]?tokens/i.test(errText)) {
+      // 报文提到 max_tokens 但读不出上限：按已知最小的上限试一次
+      if (maxTokens > CONSERVATIVE_MAX_TOKENS) {
+        logger.warn(`服务端拒绝 max_tokens=${maxTokens} 且未说明上限，降到 ${CONSERVATIVE_MAX_TOKENS} 重试`);
+        maxTokens = CONSERVATIVE_MAX_TOKENS;
+        rememberMaxTokens(config.baseUrl, config.model, maxTokens);
+        continue;
+      }
+    }
+
+    // ② detail 字段不被支持
+    if (withDetail && /detail/i.test(errText)) {
+      logger.warn("服务端不认 image_url.detail，去掉该字段重试");
+      withDetail = false;
+      continue;
+    }
+
+    break;
   }
 
-  if (!response.ok) {
-    const errText = await response.text().catch(() => "");
-    throw new Error(`API 请求失败 (${response.status}): ${errText || response.statusText}`);
+  if (!response || !response.ok) {
+    const status = response?.status ?? 0;
+    if (parseMaxTokensLimit(lastErrorText) !== null || /max[_\s-]?tokens/i.test(lastErrorText)) {
+      throw new Error(
+        `模型「${config.model}」不接受当前的输出长度设置（max_tokens=${maxTokens}）。` +
+          `服务端原文：${lastErrorText || "无"}。` +
+          `已在设置里切换模型的，可以再试一次；仍失败请换用输出上限更大的模型。`
+      );
+    }
+    if (status === 400) {
+      throw new Error(`API 请求失败 (400): ${lastErrorText}`);
+    }
+    throw new Error(
+      `API 请求失败 (${status}): ${lastErrorText || response?.statusText || "未知错误"}`
+    );
   }
 
   const result = await response.json();

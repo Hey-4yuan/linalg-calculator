@@ -74,8 +74,10 @@ const server = http.createServer((req, res) => {
     let detail = null;
     let imgLen = 0;
     let imgSize = null;
+    let maxTokens = null;
     try {
       const parsed = JSON.parse(body);
+      maxTokens = typeof parsed.max_tokens === "number" ? parsed.max_tokens : null;
       const parts = parsed.messages?.[0]?.content ?? [];
       prompt = parts.find((p) => p.type === "text")?.text ?? "";
       const imgUrl = parts.find((p) => p.type === "image_url")?.image_url?.url ?? "";
@@ -87,7 +89,21 @@ const server = http.createServer((req, res) => {
     }
     const isProbe = prompt.includes("位置") && prompt.includes("box");
     const wantsBox = prompt.includes('"box"');
-    calls.push({ isProbe, detail, hasHint: prompt.includes("尺寸提示"), wantsBox, imgLen, imgSize });
+    calls.push({ isProbe, detail, hasHint: prompt.includes("尺寸提示"), wantsBox, imgLen, imgSize, maxTokens });
+
+    // 复刻智谱 GLM-4V 的真实行为：输出上限只有 1024，超过直接 400（错误码 1210）。
+    // 用户实测踩到的就是这条，报文原样照抄，专门用来锁住「降档重试」路径。
+    const TOKEN_CAP = 1024;
+    if (maxTokens !== null && maxTokens > TOKEN_CAP) {
+      calls[calls.length - 1].rejected = true;
+      res.writeHead(400, { ...cors, "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: { code: "1210", message: `max_tokens参数非法：限制数值范围[1,${TOKEN_CAP}]` },
+        })
+      );
+      return;
+    }
 
     // 用「推理模型」的返回形态应答：content 为空、只有 reasoning_content。
     // 这正是 deepseek-flash 的真实行为，能同时验证思维链兜底。
@@ -334,9 +350,30 @@ try {
   );
   check("识别后编辑器关闭", closeState === null, closeState);
 
-  const probe = calls.find((c) => c.isProbe);
-  const main = calls.find((c) => !c.isProbe);
+  const accepted = calls.filter((c) => !c.rejected);
+  const rejected = calls.filter((c) => c.rejected);
+  const probe = accepted.find((c) => c.isProbe);
+  const main = accepted.find((c) => !c.isProbe);
+
+  // max_tokens 自适应：智谱 GLM-4V 上限 1024，先发 8192 会被 400 拒掉，
+  // 客户端应当从报文里读出上限并降档重试，而不是把错误直接抛给用户。
+  check(
+    "首次请求按默认预算发 max_tokens=8192",
+    rejected.length > 0 && rejected[0].maxTokens === 8192,
+    JSON.stringify(rejected.map((c) => c.maxTokens))
+  );
+  check(
+    "被 400 拒绝后按报文里的上限 1024 降档重试",
+    accepted.length >= 2 && accepted.every((c) => c.maxTokens === 1024),
+    `accepted=${JSON.stringify(accepted.map((c) => c.maxTokens))}`
+  );
+  check(
+    "只有第一次被拒（上限已记住，主识别直接用 1024 不再撞墙）",
+    rejected.length === 1 && rejected[0].isProbe === true && accepted.length === 2,
+    `rejected=${rejected.length}(${rejected.map((c) => (c.isProbe ? "probe" : "main")).join(",")}) accepted=${accepted.length}`
+  );
   check("先发尺寸探测请求", !!probe);
+
   check("探测与主识别都使用 detail=high", probe?.detail === "high" && main?.detail === "high",
     JSON.stringify(calls.map((c) => c.detail)));
   check("主识别提示词带上了尺寸提示", main?.hasHint === true);

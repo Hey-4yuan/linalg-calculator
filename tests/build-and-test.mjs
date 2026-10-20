@@ -30,7 +30,7 @@ export { isIosDevice, isIosSafari, isStandaloneDisplay, shouldShowInstallHint } 
 export { joinRows, matrixToText } from ${JSON.stringify(
     path.join(SRC, "src/lib/copy-text.ts").replace(/\\/g, "/")
   )};
-export { parseOcrResponse, parseDimensionProbe, extractJsonFromReasoning, auditCellInk } from ${JSON.stringify(
+export { parseOcrResponse, parseDimensionProbe, extractJsonFromReasoning, auditCellInk, parseMaxTokensLimit } from ${JSON.stringify(
     path.join(SRC, "src/lib/ocr-parse.ts").replace(/\\/g, "/")
   )};
 export { OCR_PRESETS, matchPreset } from ${JSON.stringify(
@@ -64,6 +64,7 @@ const {
   parseDimensionProbe,
   extractJsonFromReasoning,
   auditCellInk,
+  parseMaxTokensLimit,
   buildOcrPrompt,
   buildDimensionProbePrompt,
 } = require(OUT);
@@ -546,6 +547,29 @@ function run() {
       require(OUT).matchPreset("https://open.bigmodel.cn/api/paas/v4/")?.id === "zhipu-flash",
     );
     check("未知地址返回 undefined", require(OUT).matchPreset("https://example.com/v1") === undefined);
+  }
+
+  // ── OCR-10 max_tokens 上限解析（智谱 GLM-4V 只有 1024） ──
+  // 真实报错：{"error":{"code":"1210","message":"max_tokens参数非法：限制数值范围[1,1024]"}}
+  // 各家写法不一样，这里把见过的几种都钉住，避免以后只认一种。
+  console.log("OCR-10 从 400 报文里读 max_tokens 上限");
+  {
+    const cases = [
+      ['{"error":{"code":"1210","message":"max_tokens参数非法：限制数值范围[1,1024]"}}', 1024, "智谱中文报文"],
+      ['{"error":{"message":"max_tokens is too large: 8192. This model supports at most 4096"}}', 4096, "OpenAI 风格 at most"],
+      ["max_tokens: maximum value is 2048", 2048, "maximum value is"],
+      ["max_tokens must be <= 1024", 1024, "must be <="],
+      ['{"message":"maxTokens参数超出范围，上限 4096"}', 4096, "中文上限"],
+    ];
+    for (const [text, want, label] of cases) {
+      const got = parseMaxTokensLimit(text);
+      check(`解析「${label}」→ ${want}`, got === want, `got=${got}`);
+    }
+
+    check("非 max_tokens 的报错返回 null", parseMaxTokensLimit('{"error":{"message":"invalid api key"}}') === null);
+    check("提到 token 但不是上限问题（如 token 过期）返回 null", parseMaxTokensLimit("token expired, please login") === null);
+    check("空字符串返回 null", parseMaxTokensLimit("") === null);
+    check("上限 0 视为无效", parseMaxTokensLimit("max_tokens 范围[1,0]") === null);
   }
 
   console.log(`\n结果：${pass} 通过，${fail} 失败`);

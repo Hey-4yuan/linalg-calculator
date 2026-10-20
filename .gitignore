@@ -11,8 +11,10 @@ tests/.build/
 # 本地归档（体积大，且是历史快照）
 _backup/
 
-# 安装包：体积大、二进制、且由安卓工程构建得到；需要时挂到 GitHub Releases
+# 安装包：二进制、由安卓工程构建。默认不入库（历史会永久膨胀），
+# 但仓库根那份是给同学直接下载的正式发布包，用否定规则单独放行。
 *.apk
+!线性代数计算器-v*.apk
 
 # 本地产物快照（单文件版与离线站由 npm run build 生成）
 source/linear-algebra-calculator/web-source/dist-standalone/

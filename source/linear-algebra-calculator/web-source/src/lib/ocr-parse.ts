@@ -469,3 +469,41 @@ export function auditCellInk(
     warning: `这 ${suspicious.length} 个位置图上有内容但被读成 0（${first}${more}），请重点核对`,
   };
 }
+
+/**
+ * 从 400 报文里读出服务端允许的 max_tokens 上限。
+ *
+ * 各家的报错文本完全不一样，实测过的几种：
+ *   智谱 GLM-4V ：{"error":{"code":"1210","message":"max_tokens参数非法：限制数值范围[1,1024]"}}
+ *   OpenAI 兼容层：{"error":{"message":"max_tokens is too large: 8192. This model supports at most 4096"}}
+ *   另一些写法  ："max_tokens: maximum value is 2048" / "max_tokens must be <= 1024"
+ *
+ * 解析不出来就返回 null（调用方退化成保守值），但只有报文确实在抱怨 max_tokens
+ * 时才去解析，否则会把别的错误里的数字误当成上限。
+ */
+export function parseMaxTokensLimit(errorText: string): number | null {
+  const text = errorText || "";
+  // 中英文都认：max_tokens / maxTokens / max tokens
+  const mentions = /max[_\s-]?tokens/i.test(text);
+  // 也兼容"输出长度""输出 token"这类中文表述
+  const mentionsZh = /(输出|生成长度|token\s*数)/.test(text) && /范围|上限|最大|限制/.test(text);
+  if (!mentions && !mentionsZh) return null;
+
+  const patterns = [
+    /\[1\s*,\s*(\d+)\]/i,                 // 限制数值范围[1,1024]
+    /at most\s+(\d+)/i,                   // supports at most 4096
+    /maximum value is\s+(\d+)/i,          // maximum value is 2048
+    /must be\s*(?:<=|less than or equal to|≤)\s*(\d+)/i,
+    /(?:上限|最大(?:值)?)\D{0,6}(\d{2,6})/,  // 中文：上限 1024 / 最大值 2048
+    /(?:<=|≤)\s*(\d+)/,
+  ];
+
+  for (const re of patterns) {
+    const m = text.match(re);
+    if (!m) continue;
+    const n = Number(m[1]);
+    // 上限必须是个正整数，且不该大到不像上限（8192 以上说明不是这条）
+    if (Number.isFinite(n) && n > 0 && n <= 65536) return n;
+  }
+  return null;
+}
