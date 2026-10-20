@@ -105,9 +105,10 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <li class="lv2"><a href="#overview-h2">二、功能总览</a></li>
 <li class="lv2"><a href="#overview-h3">三、快速开始</a></li>
 <li class="lv2"><a href="#overview-h4">四、目录结构</a></li>
-<li class="lv2"><a href="#overview-h5">五、文档索引</a></li>
-<li class="lv2"><a href="#overview-h6">六、必须知道的三条限制</a></li>
-<li class="lv2"><a href="#overview-h7">七、部署到 GitHub Pages（可选）</a></li></ul></div><div class="doc"><a href="#doc-user">用户手册</a><ul><li class="lv2"><a href="#user-h1">目录</a></li>
+<li class="lv3"><a href="#overview-h5">成品与归档在哪</a></li>
+<li class="lv2"><a href="#overview-h6">五、文档索引</a></li>
+<li class="lv2"><a href="#overview-h7">六、必须知道的三条限制</a></li>
+<li class="lv2"><a href="#overview-h8">七、部署到 GitHub Pages（可选）</a></li></ul></div><div class="doc"><a href="#doc-user">用户手册</a><ul><li class="lv2"><a href="#user-h1">目录</a></li>
 <li class="lv2"><a href="#user-h2">1. 安装与启动</a></li>
 <li class="lv2"><a href="#user-h3">2. 界面导览</a></li>
 <li class="lv2"><a href="#user-h4">3. 通用输入规则</a></li>
@@ -255,7 +256,7 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
   <div class="meta">
     <span class="pill">文档版本 v1.0</span>
     <span class="pill">产物构建 2026-10-18</span>
-    <span class="pill">生成于 2026-10-19 23:17</span>
+    <span class="pill">生成于 2026-10-20 09:03</span>
     <span class="pill">Ctrl/⌘ + P 可打印为 PDF</span>
   </div>
   <section class="doc-sec" id="doc-overview"><h1 id="_1">线性代数计算器</h1>
@@ -276,21 +277,21 @@ footer{color:var(--muted); font-size:12px; margin-top:50px; padding-top:16px; bo
 <tbody>
 <tr>
 <td>Web 单文件版</td>
-<td><code>线性代数计算器.html</code>（1.24 MB）</td>
+<td><code>线性代数计算器.html</code>（1.29 MB）</td>
 <td>单 HTML 内联全部 JS/CSS，双击即用</td>
-<td><strong>v1.2 源码构建</strong></td>
+<td>v1.11 源码构建；在 <code>说明文件/</code> 下</td>
 </tr>
 <tr>
 <td>Android 应用</td>
 <td><code>线性代数计算器.apk</code>（4.2 MB）</td>
 <td>Capacitor 6 壳 + 本地 Web 资源，包名 <code>com.doubao.linalg</code></td>
-<td>v1.0 旧构建；源码工程的网页资源已更新，重打包即得 v1.2</td>
+<td>仓库内为 v1.0 旧包；v1.11 构建材料见 <code>说明文件/线性代数计算器-安卓打包-v1.11.zip</code></td>
 </tr>
 <tr>
 <td>图像识别手册</td>
 <td><code>线性代数计算器图像识别功能使用手册.pdf</code></td>
 <td>5 页图文，手机端 OCR 配置流程</td>
-<td>首次配置 API Key 的新手</td>
+<td>首次配置 API Key 的新手；在 <code>说明文件/</code> 下</td>
 </tr>
 </tbody>
 </table>
@@ -352,8 +353,8 @@ v1.5 补了 iOS 交付细节（应用内「添加到主屏」引导、存储风�
 <p>每张结果卡右上角有<strong>「复制」</strong>：复制成制表符分列的纯文本，粘到 Excel / WPS 表格会自动分格。</p>
 <p><strong>iPhone / iPad</strong>：部署到 HTTPS 后建议先「分享 → 添加到主屏幕」再用。Safari 标签页里的本地数据（含 OCR 的 API Key）在 7 个「使用日」无交互后会被系统清理，主屏幕 Web App 使用独立存储，不受这条规则影响。应用内会主动弹提示。</p>
 <h2 id="overview-h3">三、快速开始</h2>
-<p><strong>Web 版</strong>：双击 <code>线性代数计算器.html</code> → 直接可用。首次打开无需联网（字体走系统回退），OCR 功能需先配置。</p>
-<p><strong>APK 版</strong>：安装 <code>线性代数计算器.apk</code> → 打开即用（仅申请网络权限，用于 OCR）。</p>
+<p><strong>Web 版</strong>：双击 <code>说明文件/线性代数计算器.html</code> → 直接可用。首次打开无需联网（字体走系统回退），OCR 功能需先配置。</p>
+<p><strong>APK 版</strong>：安装 <code>说明文件/线性代数计算器.apk</code> → 打开即用（仅申请网络权限，用于 OCR）。</p>
 <p><strong>配 OCR（两版通用）</strong>：在任意矩阵卡片标题右侧点「配置 OCR」→ 填 <code>Base URL</code>、<code>API Key</code>、<code>视觉模型名</code> → 保存。要求接口兼容 OpenAI Chat Completions 协议且支持图像输入。以 DeepSeek 中转为例：</p>
 <pre><code>Base URL: https://api.deepseek.com
 视觉模型名: deepseek-flash
@@ -364,10 +365,7 @@ API Key:  自行申请（见附图手册）
 <p>API Key 以明文保存在浏览器 <code>localStorage</code>，不会上传到任何第三方；换设备或清缓存后需重新填写。<strong>不要使用他人共享的 Key，也不要把自己的 Key 发给别人。</strong> 存储边界与加固方案见 <a href="#doc-cfg">docs/可行性-视觉模型配置存储.md</a>。</p>
 </blockquote>
 <h2 id="overview-h4">四、目录结构</h2>
-<pre><code>线性代数计算器/
-├── 线性代数计算器.html          # Web 单文件产物（v1.2，源码构建）
-├── 线性代数计算器.apk           # Android 产物（v1.0）
-├── 线性代数计算器图像识别功能使用手册.pdf
+<pre><code>GitHub提交包/                     ← 本仓库（可直接 push）
 ├── README.md / CHANGELOG.md
 ├── source/
 │   └── linear-algebra-calculator/
@@ -376,12 +374,16 @@ API Key:  自行申请（见附图手册）
 │       │   ├── src/pages/       #   页面与 5 个功能区块
 │       │   ├── src/components/  #   输入网格、结果渲染、OCR 对话框
 │       │   └── scripts/         #   make-standalone / make-single-file
-│       ├── android/             # Capacitor 6 工程 + build-apk.sh
+│       ├── android/             # Capacitor 6 工程 + build-apk.sh / build-apk.bat
 │       └── single-file/         # 单文件产物副本
-├── tests/build-and-test.mjs     # 103 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检 + 服务商预设）+ 19 项 OCR 端到端 + 9 项折叠端到端 + 42 项弹窗小屏端到端
-├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
+├── tests/
+│   ├── lib/env.mjs              # 各端到端脚本共用的路径/浏览器解析
+│   └── build-and-test.mjs       # 103 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检 + 服务商预设）
+│                                # 另有 19 项 OCR + 9 项折叠 + 42 项弹窗小屏端到端
+├── tools/
+│   ├── make-icons.py            # 生成 PWA / iOS 主屏图标
+│   └── make-android-package.py  # 一键出安卓构建材料 zip（含五项前置校验）
 ├── .github/workflows/           # GitHub Pages 自动部署
-├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）
 └── docs/
     ├── 用户手册.md              # 面向使用者
     ├── 技术手册.md              # 面向维护者：数据结构、算法、上限、缺陷
@@ -389,6 +391,7 @@ API Key:  自行申请（见附图手册）
     ├── 测试手册.md              # 验收与回归用例（含标准答案）
     ├── 源码解析.md              # 源码结构、数据流、构建链、与逆向结论的差异
     ├── 部署-GitHub-Pages.md     # 托管到 GitHub Pages + iOS 添加到主屏的完整步骤
+    ├── 安卓打包说明.md          # 交给云电脑打 APK 的自包含材料说明
     ├── 可行性-iOS端.md          # Windows 上开发/交付苹果端的四条路线
     ├── 可行性-视觉模型配置存储.md  # 浏览器保存 API Key 的可行性、风险与加固
     ├── 交接文档.md              # 给接手人：现状、决策、风险、未完成清单
@@ -396,7 +399,11 @@ API Key:  自行申请（见附图手册）
     ├── build_docs.py            # Markdown → 单文件 HTML 手册
     └── 手册.html                # 离线阅读版（构建产物）
 </code></pre>
-<h2 id="overview-h5">五、文档索引</h2>
+<h3 id="overview-h5">成品与归档在哪</h3>
+<p>安装包、PDF 手册、双击即用的单文件 HTML、历史备份（<code>_backup/</code>）都<strong>不在仓库里</strong>，
+放在与 <code>GitHub提交包/</code> 同级的 <strong><code>说明文件/</code></strong> 目录下。二进制与产物不必进版本库，
+需要分发时走 GitHub Releases。</p>
+<h2 id="overview-h6">五、文档索引</h2>
 <table>
 <thead>
 <tr>
@@ -451,13 +458,13 @@ API Key:  自行申请（见附图手册）
 </tr>
 </tbody>
 </table>
-<h2 id="overview-h6">六、必须知道的三条限制</h2>
+<h2 id="overview-h7">六、必须知道的三条限制</h2>
 <ol>
 <li><strong>矩阵数值全部走 JS 的 <code>number</code></strong>（<code>Fraction</code> 内部是 <code>num/den</code> 两个 double）。元素绝对值超过 <code>2^53</code> 或分数分子分母累乘过大时会出现精度漂移，此时结果不再严格精确。</li>
 <li><strong>n ≥ 3 的特征值用 QR 迭代近似</strong>（100 次 / 容差 1e-10），只保证实特征值收敛；复特征值仅在 2×2 时专门处理；阶数上限 5。</li>
 <li><strong>产物不要手改</strong>。压缩后的 bundle 可读性差，改了下次构建就丢；改 <code>source/</code> 再 <code>npm run build:all</code>。</li>
 </ol>
-<h2 id="overview-h7">七、部署到 GitHub Pages（可选）</h2>
+<h2 id="overview-h8">七、部署到 GitHub Pages（可选）</h2>
 <p>工程里已带 PWA 清单、Service Worker、iOS 主屏图标，以及一条 GitHub Actions 工作流：</p>
 <pre><code>push 到 main → 构建 → 跑 48 项回归 → 发布到 Pages
 </code></pre>
@@ -4241,12 +4248,13 @@ node tests/steps-accordion-e2e.mjs
 node tests/ocr-settings-dialog-e2e.mjs
 </code></pre>
 <p><strong>四个都必须是 <code>0 失败</code> 且退出码 0。</strong></p>
-<p>注意：端到端测试加载的是<strong>仓库根目录</strong>的 <code>线性代数计算器.html</code>，不是 <code>web-source/</code> 里的那份。改完源码必须：</p>
+<p>注意：端到端测试加载的是<strong>成品单文件</strong>，不是 <code>web-source/</code> 里的那份。改完源码必须：</p>
 <pre><code class="language-bash">cd source/linear-algebra-calculator/web-source
 npm run build:all
-cp 线性代数计算器.html ../../../线性代数计算器.html
+cp 线性代数计算器.html ../../../说明文件/线性代数计算器.html
 </code></pre>
 <p>否则测的是上一版产物。</p>
+<p>路径不用改代码也能换：<code>LINALG_HTML=&lt;任意 html 路径&gt; node tests/ocr-e2e.mjs</code>。三个脚本共用 <code>tests/lib/env.mjs</code> 探测位置，顺序是「环境变量 → 仓库根 → <code>../说明文件/</code> → <code>web-source/</code> 构建副本 → <code>dist-standalone/index.html</code>」。</p>
 <h3 id="test-h20">写端到端测试的两条经验</h3>
 <ol>
 <li><strong>假模型要复刻真实响应的失败形态</strong>。<code>ocr-e2e.mjs</code> 里的假服务端故意返回 <code>content: ""</code> + <code>reasoning_content</code> + <code>finish_reason: "length"</code>——这是推理模型的真实样子。早期版本返回正常的 <code>content</code>，导致整条链路「测试全绿、实际全崩」。</li>
@@ -4972,7 +4980,7 @@ node ../../../tests/build-and-test.mjs   # 18 项求解器断言（直接测源�
 <blockquote>
 <p>提交身份已设成本仓库局部配置 <code>Hey-4yuan@users.noreply.github.com</code>，公开仓库不会暴露你的 QQ 邮箱。若 GitHub 用户名不是 <code>Hey-4yuan</code>，跑一句
 <code>git config user.email "你的用户名@users.noreply.github.com"</code> 再 <code>git commit --amend --reset-author --no-edit</code>。</p>
-<p>入库范围：<code>node_modules/</code>、<code>dist*/</code>、<code>*.apk</code>、源码目录下的单文件副本都不入库（<code>.gitignore</code> 已覆盖）；根目录 <code>线性代数计算器.html</code> 保留，方便别人直接下载离线版。</p>
+<p>入库范围：<code>node_modules/</code>、<code>dist*/</code>、<code>*.apk</code>、单文件 HTML、PDF 手册都不入库（<code>.gitignore</code> 已覆盖）。这些成品放在与仓库同级的 <code>说明文件/</code> 目录里，需要对外分发时挂 GitHub Releases，不要塞进版本库。</p>
 </blockquote>
 <h3 id="pages-h8">工作流做了什么</h3>
 <pre><code>checkout → setup-node 22 → npm ci → npm run typecheck

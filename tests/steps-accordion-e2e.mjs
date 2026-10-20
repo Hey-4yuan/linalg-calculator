@@ -1,9 +1,8 @@
 // 验证「全部展开」：真的点一下，数展开的步骤数
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import { CHROME, PAGE } from "./lib/env.mjs";
 
-const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
-const PAGE = "file:///C:/Users/hp/OneDrive/Desktop/线性代数计算器/线性代数计算器.html";
 const PORT = 9344;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

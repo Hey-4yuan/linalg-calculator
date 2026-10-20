@@ -116,7 +116,7 @@ GitHub Pages 的项目站点地址是 `https://<user>.github.io/<repo>/`。原�
 > 提交身份已设成本仓库局部配置 `Hey-4yuan@users.noreply.github.com`，公开仓库不会暴露你的 QQ 邮箱。若 GitHub 用户名不是 `Hey-4yuan`，跑一句
 > `git config user.email "你的用户名@users.noreply.github.com"` 再 `git commit --amend --reset-author --no-edit`。
 
-> 入库范围：`node_modules/`、`dist*/`、`*.apk`、源码目录下的单文件副本都不入库（`.gitignore` 已覆盖）；根目录 `线性代数计算器.html` 保留，方便别人直接下载离线版。
+> 入库范围：`node_modules/`、`dist*/`、`*.apk`、单文件 HTML、PDF 手册都不入库（`.gitignore` 已覆盖）。这些成品放在与仓库同级的 `说明文件/` 目录里，需要对外分发时挂 GitHub Releases，不要塞进版本库。
 
 ### 工作流做了什么
 

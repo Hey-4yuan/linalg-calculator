@@ -15,32 +15,14 @@ import http from "node:http";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { ROOT, PAGE, CHROME } from "./lib/env.mjs";
 
-const ROOT = path.resolve(import.meta.dirname, "..");
-const PAGE = "file:///" + path.join(ROOT, "线性代数计算器.html").replace(/\\/g, "/");
 const FIXTURE = path.join(ROOT, "tests/fixtures/det5x5.png");
 const TMP = path.join(ROOT, "tests/.build");
 const API_PORT = 8777;
 const CDP_PORT = 9333;
 const PROFILE = path.join(TMP, "chrome-profile");
 
-const CHROME_CANDIDATES = [
-  process.env.CHROME_PATH,
-  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-  "/usr/bin/google-chrome",
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-].filter(Boolean);
-const CHROME = CHROME_CANDIDATES.find((p) => fs.existsSync(p));
-
-if (!CHROME) {
-  console.error("找不到 Chrome，可用 CHROME_PATH 指定");
-  process.exit(1);
-}
-if (!fs.existsSync(path.join(ROOT, "线性代数计算器.html"))) {
-  console.error("找不到 线性代数计算器.html，请先 npm run build:all");
-  process.exit(1);
-}
 
 
 /** 从 dataURL 里读出 JPEG 的宽高（找 SOF0/1/2 段） */

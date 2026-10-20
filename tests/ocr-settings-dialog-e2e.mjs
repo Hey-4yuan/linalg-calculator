@@ -2,9 +2,8 @@
 // 背景：DialogContent 是 fixed + translateY(-50%) 垂直居中，旧版没有高度上限，
 // 内容一高就同时向上、向下溢出，顶部标题和底部「保存配置」都被裁到屏幕外点不到。
 import { spawn } from "node:child_process";
+import { CHROME, PAGE } from "./lib/env.mjs";
 
-const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
-const PAGE = "file:///C:/Users/hp/OneDrive/Desktop/线性代数计算器/线性代数计算器.html";
 const PORT = 9345;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

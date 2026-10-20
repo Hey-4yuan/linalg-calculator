@@ -12,9 +12,9 @@
 
 | 产物 | 文件 | 形态 | 说明 |
 |---|---|---|---|
-| Web 单文件版 | `线性代数计算器.html`（1.24 MB） | 单 HTML 内联全部 JS/CSS，双击即用 | **v1.2 源码构建** |
-| Android 应用 | `线性代数计算器.apk`（4.2 MB） | Capacitor 6 壳 + 本地 Web 资源，包名 `com.doubao.linalg` | v1.0 旧构建；源码工程的网页资源已更新，重打包即得 v1.2 |
-| 图像识别手册 | `线性代数计算器图像识别功能使用手册.pdf` | 5 页图文，手机端 OCR 配置流程 | 首次配置 API Key 的新手 |
+| Web 单文件版 | `线性代数计算器.html`（1.29 MB） | 单 HTML 内联全部 JS/CSS，双击即用 | v1.11 源码构建；在 `说明文件/` 下 |
+| Android 应用 | `线性代数计算器.apk`（4.2 MB） | Capacitor 6 壳 + 本地 Web 资源，包名 `com.doubao.linalg` | 仓库内为 v1.0 旧包；v1.11 构建材料见 `说明文件/线性代数计算器-安卓打包-v1.11.zip` |
+| 图像识别手册 | `线性代数计算器图像识别功能使用手册.pdf` | 5 页图文，手机端 OCR 配置流程 | 首次配置 API Key 的新手；在 `说明文件/` 下 |
 
 > 两种前端产物来自同一份源码：Web 版是「单文件内联」，APK 版是「分块资源 + Capacitor 壳」。功能一致，存储键同格式。
 >
@@ -40,9 +40,9 @@
 
 ## 三、快速开始
 
-**Web 版**：双击 `线性代数计算器.html` → 直接可用。首次打开无需联网（字体走系统回退），OCR 功能需先配置。
+**Web 版**：双击 `说明文件/线性代数计算器.html` → 直接可用。首次打开无需联网（字体走系统回退），OCR 功能需先配置。
 
-**APK 版**：安装 `线性代数计算器.apk` → 打开即用（仅申请网络权限，用于 OCR）。
+**APK 版**：安装 `说明文件/线性代数计算器.apk` → 打开即用（仅申请网络权限，用于 OCR）。
 
 **配 OCR（两版通用）**：在任意矩阵卡片标题右侧点「配置 OCR」→ 填 `Base URL`、`API Key`、`视觉模型名` → 保存。要求接口兼容 OpenAI Chat Completions 协议且支持图像输入。以 DeepSeek 中转为例：
 
@@ -59,10 +59,7 @@ API Key:  自行申请（见附图手册）
 ## 四、目录结构
 
 ```
-线性代数计算器/
-├── 线性代数计算器.html          # Web 单文件产物（v1.2，源码构建）
-├── 线性代数计算器.apk           # Android 产物（v1.0）
-├── 线性代数计算器图像识别功能使用手册.pdf
+GitHub提交包/                     ← 本仓库（可直接 push）
 ├── README.md / CHANGELOG.md
 ├── source/
 │   └── linear-algebra-calculator/
@@ -71,12 +68,16 @@ API Key:  自行申请（见附图手册）
 │       │   ├── src/pages/       #   页面与 5 个功能区块
 │       │   ├── src/components/  #   输入网格、结果渲染、OCR 对话框
 │       │   └── scripts/         #   make-standalone / make-single-file
-│       ├── android/             # Capacitor 6 工程 + build-apk.sh
+│       ├── android/             # Capacitor 6 工程 + build-apk.sh / build-apk.bat
 │       └── single-file/         # 单文件产物副本
-├── tests/build-and-test.mjs     # 103 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检 + 服务商预设）+ 19 项 OCR 端到端 + 9 项折叠端到端 + 42 项弹窗小屏端到端
-├── tools/make-icons.py          # 生成 PWA / iOS 主屏图标
+├── tests/
+│   ├── lib/env.mjs              # 各端到端脚本共用的路径/浏览器解析
+│   └── build-and-test.mjs       # 103 项回归（求解器 + 路由 + iOS 判定 + 复制文本 + OCR 解析 + 像素自检 + 服务商预设）
+│                                # 另有 19 项 OCR + 9 项折叠 + 42 项弹窗小屏端到端
+├── tools/
+│   ├── make-icons.py            # 生成 PWA / iOS 主屏图标
+│   └── make-android-package.py  # 一键出安卓构建材料 zip（含五项前置校验）
 ├── .github/workflows/           # GitHub Pages 自动部署
-├── _backup/                     # 历史产物与旧补丁脚本（只读归档，已 gitignore）
 └── docs/
     ├── 用户手册.md              # 面向使用者
     ├── 技术手册.md              # 面向维护者：数据结构、算法、上限、缺陷
@@ -84,6 +85,7 @@ API Key:  自行申请（见附图手册）
     ├── 测试手册.md              # 验收与回归用例（含标准答案）
     ├── 源码解析.md              # 源码结构、数据流、构建链、与逆向结论的差异
     ├── 部署-GitHub-Pages.md     # 托管到 GitHub Pages + iOS 添加到主屏的完整步骤
+    ├── 安卓打包说明.md          # 交给云电脑打 APK 的自包含材料说明
     ├── 可行性-iOS端.md          # Windows 上开发/交付苹果端的四条路线
     ├── 可行性-视觉模型配置存储.md  # 浏览器保存 API Key 的可行性、风险与加固
     ├── 交接文档.md              # 给接手人：现状、决策、风险、未完成清单
@@ -91,6 +93,13 @@ API Key:  自行申请（见附图手册）
     ├── build_docs.py            # Markdown → 单文件 HTML 手册
     └── 手册.html                # 离线阅读版（构建产物）
 ```
+
+### 成品与归档在哪
+
+安装包、PDF 手册、双击即用的单文件 HTML、历史备份（`_backup/`）都**不在仓库里**，
+放在与 `GitHub提交包/` 同级的 **`说明文件/`** 目录下。二进制与产物不必进版本库，
+需要分发时走 GitHub Releases。
+
 
 ## 五、文档索引
 
