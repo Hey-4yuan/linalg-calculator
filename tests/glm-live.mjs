@@ -42,8 +42,48 @@ const CANDIDATES = ONLY.length
   : ["glm-4.5v", "glm-4v-plus", "glm-4v-flash", "glm-4.1v-thinking-flash", "glm-4-flash"];
 
 // ---------- 密钥 ----------
+/**
+ * 从任意文本里挑出密钥本体。
+ *
+ * 现实里 key.txt 往往不是干净的一行：可能有 BOM、有「Key: 」前缀、有中文备注、
+ * 一次粘了两行。直接塞进 HTTP 头会抛
+ *   Cannot convert argument to a ByteString because the character at index N has a code point > 255
+ * 这个报错完全看不出是 key 的问题，所以这里先挑行、再诊断。
+ */
+function normalizeKey(raw, source) {
+  const text = raw.replace(/^\uFEFF/, "").trim();
+  const isKeyish = (s) => /^[A-Za-z0-9._-]{20,}$/.test(s);
+
+  // 1) 整行就是密钥（最常见）
+  const whole = text.split(/\r?\n/).map((s) => s.trim()).find(isKeyish);
+  if (whole) return whole;
+
+  // 2) 密钥前后混了说明文字 / 全角符号：按非密钥字符切开，取最长的一段
+  const segments = text.split(/[^A-Za-z0-9._-]+/).filter(isKeyish);
+  if (segments.length > 0) {
+    const best = segments.sort((a, b) => b.length - a.length)[0];
+    console.warn(
+      `  ⚠ ${source} 里除了密钥还混了别的字符（去空白后 ${text.length} 字），` +
+        `已取其中最长的合法片段（${best.length} 字）。如果鉴权失败，请把文件改成只有一行密钥。`,
+    );
+    return best;
+  }
+
+  // 3) 彻底认不出来——不打印内容，只报形态
+  const idx = [...text].findIndex((c) => c.codePointAt(0) > 127);
+  const detail = [
+    `来源：${source}`,
+    `去空白后长度：${text.length}`,
+    `行数：${text.split(/\r?\n/).length}`,
+    idx >= 0 ? `第 ${idx} 个字符是非 ASCII（可能是中文说明或全角符号）` : "全是 ASCII，但长度或字符集不像密钥",
+    `首字符类别：${/^[A-Za-z0-9]/.test(text) ? "字母/数字" : JSON.stringify(text.slice(0, 1))}`,
+  ].join("\n  ");
+  console.error(`文件里没有找到可用的密钥（形如 xxx.yyy，20 位以上）。\n  ${detail}`);
+  process.exit(2);
+}
+
 function readKey() {
-  if (process.env.GLM_API_KEY) return process.env.GLM_API_KEY.trim();
+  if (process.env.GLM_API_KEY) return normalizeKey(process.env.GLM_API_KEY, "环境变量 GLM_API_KEY");
   const file = arg("key-file", "");
   if (file) {
     const p = path.resolve(file);
@@ -51,7 +91,7 @@ function readKey() {
       console.error(`密钥文件不存在：${p}`);
       process.exit(2);
     }
-    return fs.readFileSync(p, "utf-8").trim();
+    return normalizeKey(fs.readFileSync(p, "utf-8"), path.basename(p));
   }
   console.error(
     "缺少密钥。两种给法：\n" +
