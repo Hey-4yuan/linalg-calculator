@@ -44,11 +44,28 @@ export { buildOcrPrompt, buildDimensionProbePrompt } from ${JSON.stringify(
 );
 
 const esbuild = path.join(SRC, "node_modules/esbuild/bin/esbuild");
-execFileSync(
-  process.execPath,
-  [esbuild, ENTRY, "--bundle", "--format=cjs", "--platform=node", `--outfile=${OUT}`, "--log-level=warning"],
-  { stdio: "inherit" }
-);
+try {
+  execFileSync(
+    process.execPath,
+    [esbuild, ENTRY, "--bundle", "--format=cjs", "--platform=node", `--outfile=${OUT}`, "--log-level=warning"],
+    { stdio: "inherit" }
+  );
+} catch (e) {
+  // esbuild 的原生二进制是「按平台发的可选依赖」，npm ci 拉不到会静默跳过。
+  // 不解释的话，CI 上只会得到一句 exit code 1，看不出是环境问题还是代码问题。
+  console.error("\n[esbuild 打不出包] 这通常不是测试失败，而是原生二进制没装上。");
+  console.error(`  node      : ${process.version} (${process.platform}/${process.arch})`);
+  try {
+    const dirs = fs.readdirSync(path.join(SRC, "node_modules/@esbuild"));
+    console.error(`  @esbuild/*: ${dirs.join(", ")}`);
+  } catch {
+    console.error("  @esbuild/*: 目录不存在");
+  }
+  console.error("  修法：删掉 node_modules 与 package-lock.json 后重新 npm install，");
+  console.error("        或 npm install --no-save @esbuild/<你的平台>-<架构>");
+  throw e;
+}
+
 
 const require = createRequire(import.meta.url);
 const { solveLinearSystem, toFMatrix, resolveBasename, resolveRouterMode } = require(OUT);

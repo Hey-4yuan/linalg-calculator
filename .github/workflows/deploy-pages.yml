@@ -41,6 +41,32 @@ jobs:
         working-directory: source/linear-algebra-calculator/web-source
         run: npm run typecheck
 
+      # 原生二进制体检。这一组包（esbuild / rolldown / tailwind oxide / lightningcss）
+      # 都是「按平台发一个可选依赖」，npm ci 拉不到时会**静默跳过**、install 仍显示成功，
+      # 然后在第一次真正调用时 0 秒崩掉，日志里只剩一句 exit code 1，极难排查。
+      # 这里用 ::error:: / ::notice:: 输出：它们会变成 check-run annotation，
+      # 公开可读，不登录 GitHub 也能看到问题在哪。
+      - name: Check native binaries
+        if: always()
+        working-directory: source/linear-algebra-calculator/web-source
+        run: |
+          echo "::notice title=环境::node $(node -v) / npm $(npm -v) / $(uname -sm)"
+
+          for pkg in @esbuild/linux-x64 @rolldown/binding-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu lightningcss-linux-x64-gnu; do
+            if [ -d "node_modules/$pkg" ]; then
+              echo "  ok   $pkg"
+            else
+              echo "::error title=缺原生包::$pkg 没有装进 node_modules（npm ci 跳过了可选依赖）"
+            fi
+          done
+
+          if out=$(node node_modules/esbuild/bin/esbuild --version 2>&1); then
+            echo "::notice title=esbuild 可执行::esbuild 版本 $out"
+          else
+            first=$(printf '%s' "$out" | tr '\n' '|' | cut -c1-300)
+            echo "::error title=esbuild 无法启动::$first"
+          fi
+
       - name: Algorithm regression
         run: node tests/build-and-test.mjs
 
