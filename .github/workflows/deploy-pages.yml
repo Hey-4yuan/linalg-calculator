@@ -60,11 +60,13 @@ jobs:
             fi
           done
 
-          if out=$(node node_modules/esbuild/bin/esbuild --version 2>&1); then
-            echo "::notice title=esbuild 可执行::esbuild 版本 $out"
+          # 用 JS API 探测，不要 `node node_modules/esbuild/bin/esbuild`：
+          # 那个文件在 Linux 上是原生 ELF，用 node 解释会 SyntaxError（踩过）。
+          if out=$(node -e "console.log(require('esbuild').version)" 2>&1); then
+            echo "::notice title=esbuild 可用::esbuild 版本 $out"
           else
             first=$(printf '%s' "$out" | tr '\n' '|' | cut -c1-300)
-            echo "::error title=esbuild 无法启动::$first"
+            echo "::error title=esbuild 不可用::$first"
           fi
 
       - name: Algorithm regression

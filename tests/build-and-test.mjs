@@ -1,6 +1,5 @@
 // 方程组求解器回归测试：直接测源码 src/lib/*.ts，不依赖压缩产物。
 // 用法：node tests/build-and-test.mjs
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -43,17 +42,25 @@ export { buildOcrPrompt, buildDimensionProbePrompt } from ${JSON.stringify(
   "utf-8"
 );
 
-const esbuild = path.join(SRC, "node_modules/esbuild/bin/esbuild");
+// 用 esbuild 的 JS API，**不要**写成 `node node_modules/esbuild/bin/esbuild`。
+//
+// 这个坑踩过：`esbuild/bin/esbuild` 在 Windows 上是带 shebang 的 JS 垫片，
+// 但在 Linux / macOS 上，postinstall 会把它换成**原生可执行文件**。
+// 用 node 去解释一个 ELF，得到的是
+//   SyntaxError: Invalid or unexpected token   （第 1 行是 \x7fELF）
+// 也就是说本地 Windows 永远正常、CI 上 0 秒必挂。JS API 两个平台都对。
+const requireFromSrc = createRequire(path.join(SRC, "package.json"));
 try {
-  execFileSync(
-    process.execPath,
-    [esbuild, ENTRY, "--bundle", "--format=cjs", "--platform=node", `--outfile=${OUT}`, "--log-level=warning"],
-    { stdio: "inherit" }
-  );
+  requireFromSrc("esbuild").buildSync({
+    entryPoints: [ENTRY],
+    bundle: true,
+    format: "cjs",
+    platform: "node",
+    outfile: OUT,
+    logLevel: "warning",
+  });
 } catch (e) {
-  // esbuild 的原生二进制是「按平台发的可选依赖」，npm ci 拉不到会静默跳过。
-  // 不解释的话，CI 上只会得到一句 exit code 1，看不出是环境问题还是代码问题。
-  console.error("\n[esbuild 打不出包] 这通常不是测试失败，而是原生二进制没装上。");
+  console.error("\n[esbuild 打不出包] 先看是不是原生二进制没装好，不是代码问题。");
   console.error(`  node      : ${process.version} (${process.platform}/${process.arch})`);
   try {
     const dirs = fs.readdirSync(path.join(SRC, "node_modules/@esbuild"));
@@ -65,6 +72,7 @@ try {
   console.error("        或 npm install --no-save @esbuild/<你的平台>-<架构>");
   throw e;
 }
+
 
 
 const require = createRequire(import.meta.url);

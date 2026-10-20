@@ -15,7 +15,6 @@
 //   --rounds=2                            每个模型重复几次（看稳定性）
 //
 // 输出：控制台表格 + tests/.build/glm-live-report.json
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -117,19 +116,16 @@ export { parseOcrResponse, parseDimensionProbe, parseBox } from ${JSON.stringify
 `,
   "utf-8",
 );
-execFileSync(
-  process.execPath,
-  [
-    path.join(SRC, "node_modules/esbuild/bin/esbuild"),
-    ENTRY,
-    "--bundle",
-    "--format=cjs",
-    "--platform=node",
-    `--outfile=${OUT}`,
-    "--log-level=warning",
-  ],
-  { stdio: "inherit" },
-);
+// 同 build-and-test.mjs：用 JS API 而不是 `node bin/esbuild`。
+// 那个文件在 Linux 上是原生可执行文件，用 node 解释会 SyntaxError。
+createRequire(path.join(SRC, "package.json"))("esbuild").buildSync({
+  entryPoints: [ENTRY],
+  bundle: true,
+  format: "cjs",
+  platform: "node",
+  outfile: OUT,
+  logLevel: "warning",
+});
 const require = createRequire(import.meta.url);
 const { buildOcrPrompt, buildDimensionProbePrompt, parseOcrResponse, parseDimensionProbe } =
   require(OUT);
